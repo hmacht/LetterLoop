@@ -4,6 +4,7 @@
   "type": "module",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.5.1",
+    "firebase": "^10.8.0",
     "@sveltejs/kit": "^2.0.0",
     "firebase-frameworks": "^0.11.0",
     "firebase-functions": "^4.5.0",

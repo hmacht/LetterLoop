@@ -7,10 +7,12 @@
 	import { onMount } from 'svelte';
 	import { firebaseApp } from './firebaseConfig';
 	import { fetchFirebaseData } from './firebaseFetchData.js';
-	import { getAnalytics } from "firebase/analytics";
+	import { getAnalytics, logEvent } from "firebase/analytics";
+	import Timer from './Timer.svelte';
 
 	let showCompleteModal = false;
   let showHelpModal = false;
+	let showPauseModal = false;
 	let solutions = [];
 	solutions = solutions.map(solution => solution.toLowerCase());
   let letterBank;
@@ -22,14 +24,20 @@
 	let sharedLetterIndexes = [0, 4]
 	let showModal = false;
 	let attempts = 1;
+	let game_timer;
+	let elapsedSeconds = 0;
+
 
   onMount(async () => {
 		const analytics = getAnalytics(firebaseApp);
+		logEvent(analytics, 'screen_view', {
+			firebase_screen: "game_board_view",
+			firebase_screen_class: "game_board_controller"
+		});
 		const currentDatetime = new Date();
 		// Format the date as a string in "MM-DD-YYYY" format
 		const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
 		const formattedDate = currentDatetime.toLocaleDateString('en-US', options).replace(/\//g, '-');
-		console.log('solutions/' + formattedDate)
 
     try {
       const dataFromFirebase = await fetchFirebaseData('solutions/' + formattedDate);
@@ -37,14 +45,11 @@
       solutions = parsedData
 			letterBank = solutions[0]
 			scrambledLettersBank = scrambleLettersBank(letterBank)
-
-			console.log('solutions:', solutions);
+			game_timer.start();
     } catch (error) {
       console.error('Error fetching data from Firebase:', error);
     }
   });
-	
-
 
 	// @ts-ignore
 	function handleKeyPress(event) {
@@ -84,6 +89,8 @@
 		const selectedWord = selectedLetters.join('');
 		if (solutions.includes(selectedWord)) {
 			showCompleteModal = true
+			game_timer.stop();
+			// logEvent(analytics, 'action', { name: 'correct_answer_found'});
 		} else {
 			notifications.default('Incorrect', 1000)
 			attempts += 1
@@ -111,6 +118,7 @@
 	}
 
 	function share() {
+		// logEvent(analytics, 'action', { name: 'game_shared'});
 
 		// Build Emoji
 		let emojiString = "";
@@ -118,7 +126,7 @@
       emojiString += "🔴";
     }
 
-		let textToCopy = "Completed the LetterLoop in " + attempts + " attempts \n" + emojiString
+		let textToCopy = "I completed the LetterLoop in: \n" + "🔴" + elapsedSeconds + "🔴"
 		navigator.clipboard.writeText(textToCopy)
       .then(() => {
         console.log('Text successfully copied to clipboard:', textToCopy);
@@ -129,9 +137,31 @@
 				notifications.default('Error', 1000)
       });
 	}
+	
+	function pause_game() {
+		game_timer.stop();
+		showPauseModal = true;
+	}
+
+	function resume_game() {
+		game_timer.start();
+		showPauseModal = false;
+	}
+
+	function format_solution(solution) {
+		const firstPart = solution.substring(0, 5);
+    const lastPart = solution.substring(4, 8) + firstPart[0];
+
+    return `${firstPart} + ${lastPart}`;
+	}
 
 	// @ts-ignore
 	$: isDisabled = (index) => disabledKeys.includes(index);
+	$: todays_date = new Date().toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
 </script>
 
 
@@ -237,12 +267,23 @@
 	}
 
 	.title {
-		margin: 10px;
+		margin: 0;
 		font-family: "Playfair Display", serif;
 		font-optical-sizing: auto;
-		font-weight: 500;
+		font-size: 28px;;
+		font-weight: 700;
 		font-style: normal;
 		color: black;
+	}
+
+	.date {
+		margin: 0;
+		font-optical-sizing: auto;
+		font-size: 12px;;
+		font-weight: 100;
+		font-style: normal;
+		color: rgb(46, 46, 46);
+		padding: 15px;
 	}
 
 	.share-button {
@@ -255,6 +296,13 @@
 		margin: 10px;
 	}
 
+	.nav-flex-container {
+    display: flex;
+    align-items: center;
+		justify-content: space-between;
+		width: 100vw;
+		height: 80px;
+  }
 	.flex-container {
     display: flex;
     align-items: center;
@@ -262,20 +310,52 @@
   .spacer {
     flex-grow: 1;
   }
+	.timer-container {
+		padding: 10px;;
+	}
+	.title-container{
+		margin: 10px;
+		margin-left: 20px;
+		margin-top: 0;
+	}
+	.styled-header {
+		font-family: "Playfair Display", serif;
+		font-optical-sizing: auto;
+		font-size: 20px;;
+		font-weight: 700;
+	}
+	.sub-header {
+		font-optical-sizing: auto;
+		font-size: 15px;;
+		font-weight: 700;
+	}
+	
 </style>
 
 <main>
-	<div class="flex-container">
-		<h1 class="title">LetterLoop</h1>
-		<small>(public beta)</small>
+	<div class="nav-flex-container">
+		<div class="title-container ">
+			<p class="title">LetterLoop</p>	
+			<small style="color: rgb(46, 46, 46);">(public beta) · Edited by Henry Macht</small>
+		</div>
+		<div class="spacer"></div>
+		<div class="help-container" on:click={() => showHelpModal = true}>
+			<i class="fa-regular fa-circle-question"></i>
+			<p class="how-to-play">How to play</p>
+		</div>
 	</div>
 	<div class="divider"></div>
-	<div class="help-container" on:click={() => showHelpModal = true}>
-    <i class="fa-regular fa-circle-question"></i>
-    <p class="how-to-play">How to play</p>
-	</div>
+	
 
 	<Toast />
+
+	<div class="timer-container">
+		<Timer bind:this={game_timer} bind:elapsedSeconds />
+	</div>
+
+	<div on:click={pause_game} >
+		<i class="fa-solid fa-pause"></i>
+	</div>
 
 	{#if solutions.length > 0}
 		<div class="circle-container">
@@ -328,6 +408,8 @@
 				Enter
 			</div>
 		</div>
+
+		<p class="date">Puzzle for {todays_date}</p>
   {:else}
     <p>Loading Game...</p>
   {/if}
@@ -339,12 +421,18 @@
 
 <Modal bind:showModal={showCompleteModal}>
 	<div slot="header">
-		<b>Congratulations!</b>
+		<span class="styled-header">Congratulations!</span>
 		<br>
 		Share your results with your friends.
 	</div>
-	<h3>You Solved the circle in {attempts} attempts</h3>
-	<p>Fantastic Job!</p>
+	<span class="sub-header">Solved in {elapsedSeconds}</span>
+	<hr>
+	<span class="sub-header">Other Possible Solutions</span>
+	{#each solutions as solution}
+		<div class="solution">
+			{format_solution(solution)}
+		</div>
+	{/each}
 	<br>
 	
 	<div class="flex-container">
@@ -356,7 +444,7 @@
 
 <Modal bind:showModal={showHelpModal}>
 	<h2 slot="header">
-    <b>How To Play</b>
+		<span class="styled-header">How To Play</span>
 	</h2>
 	<h3>Find the 8-letter circle word</h3>
 	<ul class="definition-list">
@@ -381,4 +469,17 @@
 	<p>One correct solution:</p>
 	<img src={ex_solution} alt="Welcome" style="width: 150px; height: auto;" />
 	<p>Remember there can be more than one solution.</p>
+</Modal>
+
+
+<Modal bind:showModal={showPauseModal} hide_close={true}>
+	<h2 slot="header">
+		<span class="styled-header">Paused</span>
+	</h2>
+	
+	<div class="flex-container">
+		<div class="spacer"></div>
+		<button class="share-button" on:click={resume_game}>Resume</button>
+		<div class="spacer"></div>
+	</div>
 </Modal>

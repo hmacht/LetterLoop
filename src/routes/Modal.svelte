@@ -1,30 +1,44 @@
 <script>
-	import Toast from './Toast.svelte';
-	
-	export let showModal; // boolean
+  import Toast from './Toast.svelte';
 
-	let dialog; // HTMLDialogElement
+  export let showModal; // boolean
+	export let hide_close = false;
 
-	$: if (dialog && showModal) dialog.showModal();
+  let dialog; // HTMLDialogElement
+
+  $: if (dialog) {
+    if (showModal) {
+      dialog.showModal();
+    } else {
+      dialog.close();
+    }
+  }
+
+  // Close the dialog when showModal changes while the dialog is open
+  $: if (dialog && showModal === false && dialog.open) {
+    dialog.close();
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
 <dialog
-	bind:this={dialog}
-	on:close={() => (showModal = false)}
-	on:click|self={() => dialog.close()}
+  bind:this={dialog}
+  on:close={() => (showModal = false)}
+	on:click|self={() => !hide_close && dialog.close()}
 >
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<div on:click|stopPropagation>
-		<Toast />
-		<div class="flex-container">
-			<slot name="header" />
-			<div class="spacer"></div>
-			<i class="fa-solid fa-xmark" on:click={() => dialog.close()}></i>
-		</div>
-		<hr />
-		<slot />
-	</div>
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <div on:click|stopPropagation>
+    <Toast />
+    <div class="flex-container">
+      <slot name="header" />
+      <div class="spacer"></div>
+      {#if !hide_close}
+        <i class="fa-solid fa-xmark" on:click={() => dialog.close()}></i>
+      {/if}
+    </div>
+    <hr />
+    <slot />
+  </div>
 </dialog>
 
 <style>
@@ -75,5 +89,6 @@
 	.fa-xmark {
 		cursor: pointer;
 		font-size: 22px;;
+		padding-left: 15px;
 	}
 </style>
