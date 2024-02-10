@@ -2,25 +2,51 @@
 	import Modal from './Modal.svelte';
 	import ex_solution from '$lib/images/ex-solution.png';
 	import ex_letter_box from '$lib/images/ex-letter-box.png';
-	import completion_certificate from '$lib/images/completion-certificate.png';
 	import { notifications } from "./notifications.js";
 	import Toast from './Toast.svelte';
+	import { onMount } from 'svelte';
+	import { firebaseApp } from './firebaseConfig';
+	import { fetchFirebaseData } from './firebaseFetchData.js';
+	import { getAnalytics } from "firebase/analytics";
 
 	let showCompleteModal = false;
   let showHelpModal = false;
-
-	let solutions = ["musichar", "charmusi"];
+	let solutions = [];
 	solutions = solutions.map(solution => solution.toLowerCase());
-  let letterBank = solutions[0];
+  let letterBank;
 	let selectedLetters = Array(8).fill("");
+	// @ts-ignore
 	let disabledKeys = [];
-  let scrambledLettersBank = scrambleLettersBank(letterBank);
+  let scrambledLettersBank;
 	let currentIndex = 0
 	let sharedLetterIndexes = [0, 4]
 	let showModal = false;
 	let attempts = 1;
 
+  onMount(async () => {
+		const analytics = getAnalytics(firebaseApp);
+		const currentDatetime = new Date();
+		// Format the date as a string in "MM-DD-YYYY" format
+		const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+		const formattedDate = currentDatetime.toLocaleDateString('en-US', options).replace(/\//g, '-');
+		console.log('solutions/' + formattedDate)
 
+    try {
+      const dataFromFirebase = await fetchFirebaseData('solutions/' + formattedDate);
+			const parsedData = Object.values(dataFromFirebase);
+      solutions = parsedData
+			letterBank = solutions[0]
+			scrambledLettersBank = scrambleLettersBank(letterBank)
+
+			console.log('solutions:', solutions);
+    } catch (error) {
+      console.error('Error fetching data from Firebase:', error);
+    }
+  });
+	
+
+
+	// @ts-ignore
 	function handleKeyPress(event) {
     const keyPressed = event.key.toLowerCase();
     const index = scrambledLettersBank.indexOf(keyPressed);
@@ -35,11 +61,13 @@
 		
   }
 
+  // @ts-ignore
   function scrambleLettersBank(letterBank) {
     const scrambledArray = letterBank.split('').sort(() => Math.random() - 0.5);
     return scrambledArray.join('');
   }
 
+	// @ts-ignore
 	function letterSelected(letter, index) {		
 		 if (
       currentIndex < selectedLetters.length &&
@@ -47,6 +75,7 @@
     ) {
       selectedLetters[currentIndex] = letter;
       currentIndex += 1;
+			// @ts-ignore
       disabledKeys = [...disabledKeys, index];
     }
   }
@@ -76,19 +105,39 @@
 		if (currentIndex > 0) {
       selectedLetters[currentIndex - 1] = "";
       currentIndex -= 1;
+			// @ts-ignore
       disabledKeys = disabledKeys.slice(0, -1);
     }
 	}
 
 	function share() {
-		console.log("share")
+
+		// Build Emoji
+		let emojiString = "";
+    for (let i = 0; i < attempts; i++) {
+      emojiString += "🔴";
+    }
+
+		let textToCopy = "Completed the LetterLoop in " + attempts + " attempts \n" + emojiString
+		navigator.clipboard.writeText(textToCopy)
+      .then(() => {
+        console.log('Text successfully copied to clipboard:', textToCopy);
+				notifications.default('Copied Text!', 1000)
+      })
+      .catch((err) => {
+        console.error('Error copying text to clipboard:', err);
+				notifications.default('Error', 1000)
+      });
 	}
 
+	// @ts-ignore
 	$: isDisabled = (index) => disabledKeys.includes(index);
 </script>
 
 
 <style>
+	@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+
   main {
     display: flex;
     flex-direction: column;
@@ -189,6 +238,11 @@
 
 	.title {
 		margin: 10px;
+		font-family: "Playfair Display", serif;
+		font-optical-sizing: auto;
+		font-weight: 500;
+		font-style: normal;
+		color: black;
 	}
 
 	.share-button {
@@ -211,65 +265,74 @@
 </style>
 
 <main>
-	<h1 class="title">Circle Word game (public beta)</h1>
+	<div class="flex-container">
+		<h1 class="title">LetterLoop</h1>
+		<small>(public beta)</small>
+	</div>
 	<div class="divider"></div>
 	<div class="help-container" on:click={() => showHelpModal = true}>
     <i class="fa-regular fa-circle-question"></i>
-    <p class="how-to-play" href="/circlepuzzle/how-to-play">How to play</p>
+    <p class="how-to-play">How to play</p>
 	</div>
 
 	<Toast />
 
-  <div class="circle-container">
-		{#each selectedLetters as letter, index}
-			<div
-				class="circle"
-				class:filled={letter != ""}
-				class:shared={sharedLetterIndexes.includes(index)}
-				style={`
-					left: calc(40% + ${Math.cos(((index / selectedLetters.length) * 2 * Math.PI) - (Math.PI / 2)) * 100}px);
-					top: calc(37% + ${Math.sin(((index / selectedLetters.length) * 2 * Math.PI) - (Math.PI / 2)) * 100}px);
-			`}
-			>
-				{letter == "" ? "" : letter}
-			</div>
-		{/each}
-	</div>
+	{#if solutions.length > 0}
+		<div class="circle-container">
+			{#each selectedLetters as letter, index}
+				<div
+					class="circle"
+					class:filled={letter != ""}
+					class:shared={sharedLetterIndexes.includes(index)}
+					style={`
+						left: calc(40% + ${Math.cos(((index / selectedLetters.length) * 2 * Math.PI) - (Math.PI / 2)) * 100}px);
+						top: calc(37% + ${Math.sin(((index / selectedLetters.length) * 2 * Math.PI) - (Math.PI / 2)) * 100}px);
+				`}
+				>
+					{letter == "" ? "" : letter}
+				</div>
+			{/each}
+		</div>
 
-  <div class="keyboard">
-    {#each scrambledLettersBank as letter, index (index)}
-			<div
+		<div class="keyboard">
+			{#each scrambledLettersBank as letter, index (index)}
+				<div
+					class="key"
+					on:click={() => letterSelected(letter, index)}
+					class:disabled={isDisabled(index)}
+				>
+					{letter}
+				</div>
+			{/each}
+
+			<!-- Function Keys -->
+			<div 
 				class="key"
-				on:click={() => letterSelected(letter, index)}
-				class:disabled={isDisabled(index)}
-			>
-				{letter}
+				on:click={resetBoard}>
+				<i class="fa-solid fa-eraser"></i>
 			</div>
-		{/each}
+			<div 
+				class="key"
+				on:click={shuffleLetters}>
+				<i class="fa-solid fa-shuffle"></i>
+			</div>
+			<div 
+				class="key"
+				on:click={deleteLetter}>
+				<i class="fa-solid fa-delete-left"></i>
+			</div>
 
-		<!-- Function Keys -->
-		<div 
-			class="key"
-			on:click={resetBoard}>
-			<i class="fa-solid fa-eraser"></i>
+			<div 
+				class="key enter-key"
+				on:click={checkSolution}>
+				Enter
+			</div>
 		</div>
-		<div 
-			class="key"
-			on:click={shuffleLetters}>
-			<i class="fa-solid fa-shuffle"></i>
-		</div>
-		<div 
-			class="key"
-			on:click={deleteLetter}>
-			<i class="fa-solid fa-delete-left"></i>
-		</div>
+  {:else}
+    <p>Loading Game...</p>
+  {/if}
 
-		<div 
-			class="key enter-key"
-			on:click={checkSolution}>
-			Enter
-		</div>
-  </div>
+  
 </main>
 
 <svelte:window on:keydown|preventDefault={handleKeyPress} />
@@ -293,29 +356,29 @@
 
 <Modal bind:showModal={showHelpModal}>
 	<h2 slot="header">
-		<b>How To Play</b>
+    <b>How To Play</b>
 	</h2>
-	<h3>Find the 8 letter circle word</h3>
+	<h3>Find the 8-letter circle word</h3>
 	<ul class="definition-list">
-		<li>There are 2 words.</li>
-		<li>Letters may only be used once and have to be in the letter bank</li>
-		<li>The red circles are shared letters between the two words</li>
+			<li>There are 2 words to find.</li>
+			<li>Letters may only be used once and have to be in the letter bank.</li>
+			<li>The red circles are shared letters between the two words.</li>
 	</ul>
 	<h3>Example</h3>
-	<p>If we had these letters</p>
+	<p>If we had these letters:</p>
 	<img src={ex_letter_box} alt="Welcome" style="width: 350px; height: auto;" />
 	<p>
-		We could spell the word 
-		<b>
-			<span style="color: red;">M</span>USI<span style="color: red;">C</span>
-		</b> 
-		and 
-		<b>
-			<span style="color: red;">C</span>HAR<span style="color: red;">M</span>
-		</b>. 
+			We could spell the words 
+			<b>
+					<span style="color: red;">M</span>USI<span style="color: red;">C</span>
+			</b> 
+			and 
+			<b>
+					<span style="color: red;">C</span>HAR<span style="color: red;">M</span>
+			</b>. 
 	</p>
-	<p>Notice how these words share a <span style="color: red;">M</span> and a <span style="color: red;">C</span></p>
-	<p>One correct solution: </p>
+	<p>Notice how these words share an <b><span style="color: red;">M</span></b> and a <b><span style="color: red;">C</span></b>.</p>
+	<p>One correct solution:</p>
 	<img src={ex_solution} alt="Welcome" style="width: 150px; height: auto;" />
-	<p>Remeber there is more than one solition.</p>
+	<p>Remember there can be more than one solution.</p>
 </Modal>

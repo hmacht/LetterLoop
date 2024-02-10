@@ -1,4 +1,6 @@
 <script>
+	import Toast from './Toast.svelte';
+	
 	export let showModal; // boolean
 
 	let dialog; // HTMLDialogElement
@@ -14,6 +16,7 @@
 >
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div on:click|stopPropagation>
+		<Toast />
 		<div class="flex-container">
 			<slot name="header" />
 			<div class="spacer"></div>
