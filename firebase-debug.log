@@ -1,0 +1,147 @@
+[debug] [2024-02-11T04:45:46.064Z] ----------------------------------------------------------------------
+[debug] [2024-02-11T04:45:46.066Z] Command:       /Users/henrymacht/.nvm/versions/node/v20.11.0/bin/node /Users/henrymacht/.npm-global/bin/firebase deploy
+[debug] [2024-02-11T04:45:46.067Z] CLI Version:   13.2.1
+[debug] [2024-02-11T04:45:46.067Z] Platform:      darwin
+[debug] [2024-02-11T04:45:46.068Z] Node Version:  v20.11.0
+[debug] [2024-02-11T04:45:46.068Z] Time:          Sat Feb 10 2024 23:45:46 GMT-0500 (Eastern Standard Time)
+[debug] [2024-02-11T04:45:46.068Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-02-11T04:45:46.144Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-02-11T04:45:46.145Z] > authorizing via signed-in user (henryamacht@gmail.com)
+[debug] [2024-02-11T04:45:46.146Z] [iam] checking project circlepuzzlegame-1738d for permissions ["firebase.projects.get","firebasedatabase.instances.update","firebasehosting.sites.update"]
+[debug] [2024-02-11T04:45:46.147Z] > refreshing access token with scopes: []
+[debug] [2024-02-11T04:45:46.148Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2024-02-11T04:45:46.148Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2024-02-11T04:45:46.379Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2024-02-11T04:45:46.380Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2024-02-11T04:45:46.398Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/circlepuzzlegame-1738d:testIamPermissions [none]
+[debug] [2024-02-11T04:45:46.398Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/circlepuzzlegame-1738d:testIamPermissions x-goog-quota-user=projects/circlepuzzlegame-1738d
+[debug] [2024-02-11T04:45:46.399Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/circlepuzzlegame-1738d:testIamPermissions {"permissions":["firebase.projects.get","firebasedatabase.instances.update","firebasehosting.sites.update"]}
+[debug] [2024-02-11T04:45:46.679Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/circlepuzzlegame-1738d:testIamPermissions 200
+[debug] [2024-02-11T04:45:46.680Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/circlepuzzlegame-1738d:testIamPermissions {"permissions":["firebase.projects.get","firebasedatabase.instances.update","firebasehosting.sites.update"]}
+[debug] [2024-02-11T04:45:46.682Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d [none]
+[debug] [2024-02-11T04:45:46.944Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d 200
+[debug] [2024-02-11T04:45:46.945Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d {"projectId":"circlepuzzlegame-1738d","projectNumber":"62490740969","displayName":"CirclePuzzleGame","name":"projects/circlepuzzlegame-1738d","resources":{"hostingSite":"circlepuzzlegame-1738d","realtimeDatabaseInstance":"circlepuzzlegame-1738d-default-rtdb"},"state":"ACTIVE","etag":"1_0fd62d71-26ba-45d4-a23e-006710fd29c9"}
+[debug] [2024-02-11T04:45:46.945Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d [none]
+[debug] [2024-02-11T04:45:47.113Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d 200
+[debug] [2024-02-11T04:45:47.114Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d {"projectId":"circlepuzzlegame-1738d","projectNumber":"62490740969","displayName":"CirclePuzzleGame","name":"projects/circlepuzzlegame-1738d","resources":{"hostingSite":"circlepuzzlegame-1738d","realtimeDatabaseInstance":"circlepuzzlegame-1738d-default-rtdb"},"state":"ACTIVE","etag":"1_0fd62d71-26ba-45d4-a23e-006710fd29c9"}
+[debug] [2024-02-11T04:45:48.439Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d/sites pageToken=&pageSize=10
+[debug] [2024-02-11T04:45:48.910Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d/sites 200
+[debug] [2024-02-11T04:45:48.910Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d/sites {"sites":[{"name":"projects/circlepuzzlegame-1738d/sites/circlepuzzlegame-1738d","defaultUrl":"https://circlepuzzlegame-1738d.web.app","appId":"1:62490740969:web:719c6ea78f8148089f4878","type":"DEFAULT_SITE"}]}
+[debug] [2024-02-11T04:45:48.911Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:62490740969:web:719c6ea78f8148089f4878/config [none]
+[debug] [2024-02-11T04:45:49.472Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:62490740969:web:719c6ea78f8148089f4878/config 200
+[debug] [2024-02-11T04:45:49.472Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:62490740969:web:719c6ea78f8148089f4878/config {"projectId":"circlepuzzlegame-1738d","appId":"1:62490740969:web:719c6ea78f8148089f4878","databaseURL":"https://circlepuzzlegame-1738d-default-rtdb.firebaseio.com","storageBucket":"circlepuzzlegame-1738d.appspot.com","apiKey":"AIzaSyD4qZNCNnlVihIZbdgtBB82R48AIC0bqG4","authDomain":"circlepuzzlegame-1738d.firebaseapp.com","messagingSenderId":"62490740969","measurementId":"G-EEEKPPSEN9"}
+[info] 
+   Thank you for trying our experimental support for SvelteKit on Firebase Hosting.
+   While this integration is maintained by Googlers it is not a supported Firebase product.
+   Issues filed on GitHub will be addressed on a best-effort basis by maintainers and other community members.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/frameworks-overview
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2024-02-11T04:45:54.854Z] Error: [vite-plugin-sveltekit-compile] [vite:esbuild-transpile] Transform failed with 1 error:
+_app/immutable/nodes/2.!~{004}~.js:10099:0: ERROR: Top-level await is not available in the configured target environment ("chrome87", "edge88", "es2020", "firefox78", "safari14" + 2 overrides)
+
+Top-level await is not available in the configured target environment ("chrome87", "edge88", "es2020", "firefox78", "safari14" + 2 overrides)
+10097|  
+10098|  // Give user a anonymous sign in to access db
+10099|  await signIn();
+   |  ^
+10100|  
+10101|  var define_process_env_default = {};
+
+
+Top-level await is not available in the configured target environment ("chrome87", "edge88", "es2020", "firefox78", "safari14" + 2 overrides)
+10097|  
+10098|  // Give user a anonymous sign in to access db
+10099|  await signIn();
+   |  ^
+10100|  
+10101|  var define_process_env_default = {};
+
+    at failureErrorWithLog (/Users/henrymacht/Dev/MachtDevelopment/CirclePuzzleGame/node_modules/esbuild/lib/main.js:1651:15)
+    at /Users/henrymacht/Dev/MachtDevelopment/CirclePuzzleGame/node_modules/esbuild/lib/main.js:849:29
+    at responseCallbacks.<computed> (/Users/henrymacht/Dev/MachtDevelopment/CirclePuzzleGame/node_modules/esbuild/lib/main.js:704:9)
+    at handleIncomingPacket (/Users/henrymacht/Dev/MachtDevelopment/CirclePuzzleGame/node_modules/esbuild/lib/main.js:764:9)
+    at Socket.readFromStdout (/Users/henrymacht/Dev/MachtDevelopment/CirclePuzzleGame/node_modules/esbuild/lib/main.js:680:7)
+    at Socket.emit (node:events:518:28)
+    at Socket.emit (node:domain:488:12)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-02-11T04:46:07.425Z] ----------------------------------------------------------------------
+[debug] [2024-02-11T04:46:07.428Z] Command:       /Users/henrymacht/.nvm/versions/node/v20.11.0/bin/node /Users/henrymacht/.npm-global/bin/firebase deploy
+[debug] [2024-02-11T04:46:07.428Z] CLI Version:   13.2.1
+[debug] [2024-02-11T04:46:07.429Z] Platform:      darwin
+[debug] [2024-02-11T04:46:07.429Z] Node Version:  v20.11.0
+[debug] [2024-02-11T04:46:07.429Z] Time:          Sat Feb 10 2024 23:46:07 GMT-0500 (Eastern Standard Time)
+[debug] [2024-02-11T04:46:07.429Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-02-11T04:46:07.491Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-02-11T04:46:07.491Z] > authorizing via signed-in user (henryamacht@gmail.com)
+[debug] [2024-02-11T04:46:07.492Z] [iam] checking project circlepuzzlegame-1738d for permissions ["firebase.projects.get","firebasedatabase.instances.update","firebasehosting.sites.update"]
+[debug] [2024-02-11T04:46:07.493Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/circlepuzzlegame-1738d:testIamPermissions [none]
+[debug] [2024-02-11T04:46:07.494Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/circlepuzzlegame-1738d:testIamPermissions x-goog-quota-user=projects/circlepuzzlegame-1738d
+[debug] [2024-02-11T04:46:07.494Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/circlepuzzlegame-1738d:testIamPermissions {"permissions":["firebase.projects.get","firebasedatabase.instances.update","firebasehosting.sites.update"]}
+[debug] [2024-02-11T04:46:07.843Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/circlepuzzlegame-1738d:testIamPermissions 200
+[debug] [2024-02-11T04:46:07.844Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/circlepuzzlegame-1738d:testIamPermissions {"permissions":["firebase.projects.get","firebasedatabase.instances.update","firebasehosting.sites.update"]}
+[debug] [2024-02-11T04:46:07.846Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d [none]
+[debug] [2024-02-11T04:46:08.190Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d 200
+[debug] [2024-02-11T04:46:08.190Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d {"projectId":"circlepuzzlegame-1738d","projectNumber":"62490740969","displayName":"CirclePuzzleGame","name":"projects/circlepuzzlegame-1738d","resources":{"hostingSite":"circlepuzzlegame-1738d","realtimeDatabaseInstance":"circlepuzzlegame-1738d-default-rtdb"},"state":"ACTIVE","etag":"1_0fd62d71-26ba-45d4-a23e-006710fd29c9"}
+[debug] [2024-02-11T04:46:08.192Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d [none]
+[debug] [2024-02-11T04:46:08.476Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d 200
+[debug] [2024-02-11T04:46:08.477Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d {"projectId":"circlepuzzlegame-1738d","projectNumber":"62490740969","displayName":"CirclePuzzleGame","name":"projects/circlepuzzlegame-1738d","resources":{"hostingSite":"circlepuzzlegame-1738d","realtimeDatabaseInstance":"circlepuzzlegame-1738d-default-rtdb"},"state":"ACTIVE","etag":"1_0fd62d71-26ba-45d4-a23e-006710fd29c9"}
+[debug] [2024-02-11T04:46:09.788Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d/sites pageToken=&pageSize=10
+[debug] [2024-02-11T04:46:10.480Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d/sites 200
+[debug] [2024-02-11T04:46:10.481Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/circlepuzzlegame-1738d/sites {"sites":[{"name":"projects/circlepuzzlegame-1738d/sites/circlepuzzlegame-1738d","defaultUrl":"https://circlepuzzlegame-1738d.web.app","appId":"1:62490740969:web:719c6ea78f8148089f4878","type":"DEFAULT_SITE"}]}
+[debug] [2024-02-11T04:46:10.482Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:62490740969:web:719c6ea78f8148089f4878/config [none]
+[debug] [2024-02-11T04:46:11.038Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:62490740969:web:719c6ea78f8148089f4878/config 200
+[debug] [2024-02-11T04:46:11.038Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:62490740969:web:719c6ea78f8148089f4878/config {"projectId":"circlepuzzlegame-1738d","appId":"1:62490740969:web:719c6ea78f8148089f4878","databaseURL":"https://circlepuzzlegame-1738d-default-rtdb.firebaseio.com","storageBucket":"circlepuzzlegame-1738d.appspot.com","apiKey":"AIzaSyD4qZNCNnlVihIZbdgtBB82R48AIC0bqG4","authDomain":"circlepuzzlegame-1738d.firebaseapp.com","messagingSenderId":"62490740969","measurementId":"G-EEEKPPSEN9"}
+[info] 
+   Thank you for trying our experimental support for SvelteKit on Firebase Hosting.
+   While this integration is maintained by Googlers it is not a supported Firebase product.
+   Issues filed on GitHub will be addressed on a best-effort basis by maintainers and other community members.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/frameworks-overview
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2024-02-11T04:46:16.578Z] Error: [vite-plugin-sveltekit-compile] [vite:esbuild-transpile] Transform failed with 1 error:
+_app/immutable/nodes/2.!~{004}~.js:10099:0: ERROR: Top-level await is not available in the configured target environment ("chrome87", "edge88", "es2020", "firefox78", "safari14" + 2 overrides)
+
+Top-level await is not available in the configured target environment ("chrome87", "edge88", "es2020", "firefox78", "safari14" + 2 overrides)
+10097|  
+10098|  // Give user a anonymous sign in to access db
+10099|  await signIn();
+   |  ^
+10100|  
+10101|  var define_process_env_default = {};
+
+
+Top-level await is not available in the configured target environment ("chrome87", "edge88", "es2020", "firefox78", "safari14" + 2 overrides)
+10097|  
+10098|  // Give user a anonymous sign in to access db
+10099|  await signIn();
+   |  ^
+10100|  
+10101|  var define_process_env_default = {};
+
+    at failureErrorWithLog (/Users/henrymacht/Dev/MachtDevelopment/CirclePuzzleGame/node_modules/esbuild/lib/main.js:1651:15)
+    at /Users/henrymacht/Dev/MachtDevelopment/CirclePuzzleGame/node_modules/esbuild/lib/main.js:849:29
+    at responseCallbacks.<computed> (/Users/henrymacht/Dev/MachtDevelopment/CirclePuzzleGame/node_modules/esbuild/lib/main.js:704:9)
+    at handleIncomingPacket (/Users/henrymacht/Dev/MachtDevelopment/CirclePuzzleGame/node_modules/esbuild/lib/main.js:764:9)
+    at Socket.readFromStdout (/Users/henrymacht/Dev/MachtDevelopment/CirclePuzzleGame/node_modules/esbuild/lib/main.js:680:7)
+    at Socket.emit (node:events:518:28)
+    at Socket.emit (node:domain:488:12)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+[error] 
+[error] Error: An unexpected error has occurred.

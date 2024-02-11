@@ -7,7 +7,7 @@
 	import { notifications } from "./notifications.js";
 	import Toast from './Toast.svelte';
 	import { onMount } from 'svelte';
-	import { firebaseApp } from './firebaseConfig';
+	import { firebaseApp, signIn } from './firebaseConfig';
 	import { fetchFirebaseData } from './firebaseFetchData.js';
 	import { logTime } from './logCompletionTime.js';
 	import { getAnalytics, logEvent } from "firebase/analytics";
@@ -43,6 +43,7 @@
 		const formattedDate = currentDatetime.toLocaleDateString('en-US', options).replace(/\//g, '-');
 
     try {
+			await signIn()
       const dataFromFirebase = await fetchFirebaseData('solutions/' + formattedDate);
 			const parsedData = Object.values(dataFromFirebase);
 			puzzle_author = parsedData[0]

@@ -21,7 +21,7 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 
-const signIn = async () => {
+export const signIn = async () => {
   signInAnonymously(auth).then(() => {
     // Signed in
   }).catch((error) => {
@@ -30,9 +30,6 @@ const signIn = async () => {
     console.log("Failed to sign in anonymously")
   });
 }
-
-// Give user a anonymous sign in to access db
-await signIn()
 
 // Initialize and export Firebase app
 export { firebaseApp };
