@@ -1,5 +1,7 @@
+// @ts-nocheck
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
+import { getAuth, signInAnonymously } from "firebase/auth";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -17,6 +19,21 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+
+const signIn = async () => {
+  signInAnonymously(auth).then(() => {
+    // Signed in
+  }).catch((error) => {
+    var errorCode = error.code;
+    var errorMessage = error.message;
+    console.log("Failed to sign in anonymously")
+  });
+}
+
+// Give user a anonymous sign in to access db
+await signIn()
 
 // Initialize and export Firebase app
 export { firebaseApp };
+		
