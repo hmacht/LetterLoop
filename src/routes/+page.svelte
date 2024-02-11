@@ -7,6 +7,7 @@
 	import { onMount } from 'svelte';
 	import { firebaseApp } from './firebaseConfig';
 	import { fetchFirebaseData } from './firebaseFetchData.js';
+	import { logTime } from './logCompletionTime.js';
 	import { getAnalytics, logEvent } from "firebase/analytics";
 	import Timer from './Timer.svelte';
 
@@ -90,7 +91,7 @@
 		if (solutions.includes(selectedWord)) {
 			showCompleteModal = true
 			game_timer.stop();
-			// logEvent(analytics, 'action', { name: 'correct_answer_found'});
+			logTime(elapsedSeconds)
 		} else {
 			notifications.default('Incorrect', 1000)
 			attempts += 1
@@ -180,7 +181,6 @@
 		width: 200px;
 		height: 200px;
 		padding: 40px;
-		margin-top: 20px;;
 	}
 
 	.circle {
@@ -349,12 +349,14 @@
 
 	<Toast />
 
-	<div class="timer-container">
-		<Timer bind:this={game_timer} bind:elapsedSeconds />
-	</div>
-
-	<div on:click={pause_game} >
-		<i class="fa-solid fa-pause"></i>
+	<div class="flex-container">
+		<div class="timer-container">
+			<Timer bind:this={game_timer} bind:elapsedSeconds />
+		</div>
+	
+		<div on:click={pause_game} >
+			<i class="fa-solid fa-pause"></i>
+		</div>
 	</div>
 
 	{#if solutions.length > 0}
