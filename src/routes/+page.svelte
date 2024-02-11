@@ -12,6 +12,7 @@
 	import { logTime } from './logCompletionTime.js';
 	import { getAnalytics, logEvent } from "firebase/analytics";
 	import Timer from './Timer.svelte';
+	import { Confetti } from 'svelte-confetti'
 
 	let showCompleteModal = false;
   let showHelpModal = false;
@@ -55,11 +56,19 @@
       console.error('Error fetching data from Firebase:', error);
     }
   });
-
+	
+	function findPressedKeyIndex(bank, letter) {
+		for (let i = 0; i < bank.length; i++) {
+			if (bank[i] == letter && !isDisabled(i)) {
+				return i;
+			}
+		}
+		return -1;
+	}
 
 	function handleKeyPress(event) {
     const keyPressed = event.key.toLowerCase();
-    const index = scrambledLettersBank.indexOf(keyPressed);
+    const index = findPressedKeyIndex(scrambledLettersBank, keyPressed)
 
 		if (event.keyCode === 13) {
 			checkSolution()
@@ -68,7 +77,6 @@
 		} else if (index !== -1 && !isDisabled(index)) {
       letterSelected(keyPressed, index);
     }
-		
   }
 
   function scrambleLettersBank(letterBank) {

@@ -1,6 +1,7 @@
 import { c as create_ssr_component, a as subscribe, b as each, e as escape, n as null_to_empty, d as add_attribute, v as validate_component } from "../../chunks/ssr.js";
 import { d as derived, w as writable, r as readable } from "../../chunks/index.js";
 import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 import "firebase/database";
 import "firebase/analytics";
 function createNotificationStore(timeout) {
@@ -78,7 +79,8 @@ const firebaseConfig = {
   appId: "1:62490740969:web:719c6ea78f8148089f4878",
   measurementId: "G-EEEKPPSEN9"
 };
-initializeApp(firebaseConfig);
+const firebaseApp = initializeApp(firebaseConfig);
+getAuth(firebaseApp);
 const css$1 = {
   code: "span.timer.svelte-1y1osaq{padding:0 0.2em}",
   map: null
@@ -172,6 +174,7 @@ const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   let sharedLetterIndexes = [0, 4];
   let game_timer;
   let elapsedSeconds = 0;
+  let puzzle_author = "---";
   $$result.css.add(css);
   let $$settled;
   let $$rendered;
@@ -185,7 +188,7 @@ const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
       month: "long",
       day: "numeric"
     });
-    $$rendered = `<main class="svelte-j8rz3o"><div class="nav-flex-container svelte-j8rz3o"><div class="title-container  svelte-j8rz3o" data-svelte-h="svelte-12b2d73"><p class="title svelte-j8rz3o">LetterLoop</p> <small style="color: rgb(46, 46, 46);">(public beta) · Edited by Henry Macht</small></div> <div class="spacer svelte-j8rz3o"></div> <div class="help-container svelte-j8rz3o" data-svelte-h="svelte-zy39qn"><i class="fa-regular fa-circle-question"></i> <p class="how-to-play svelte-j8rz3o">How to play</p></div></div> <div class="divider svelte-j8rz3o"></div> ${validate_component(Toast, "Toast").$$render($$result, {}, {}, {})} <div class="flex-container svelte-j8rz3o"><div class="timer-container svelte-j8rz3o">${validate_component(Timer, "Timer").$$render(
+    $$rendered = `<main class="svelte-j8rz3o"><div class="nav-flex-container svelte-j8rz3o"><div class="title-container  svelte-j8rz3o"><p class="title svelte-j8rz3o" data-svelte-h="svelte-1qmyjs9">LetterLoop</p> <small style="color: rgb(46, 46, 46);">(public beta) · Edited by ${escape(puzzle_author)}</small></div> <div class="spacer svelte-j8rz3o"></div> <div class="help-container svelte-j8rz3o" data-svelte-h="svelte-zy39qn"><i class="fa-regular fa-circle-question"></i> <p class="how-to-play svelte-j8rz3o">How to play</p></div></div> <div class="divider svelte-j8rz3o"></div> ${validate_component(Toast, "Toast").$$render($$result, {}, {}, {})} <div class="flex-container svelte-j8rz3o"><div class="timer-container svelte-j8rz3o">${validate_component(Timer, "Timer").$$render(
       $$result,
       { this: game_timer, elapsedSeconds },
       {
