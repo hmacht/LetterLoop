@@ -150,7 +150,7 @@ const Timer = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   return `  <span class="timer svelte-1y1osaq"><span class="value">${escape(f(hh))}</span>:<span class="value">${escape(f(mm))}</span>:<span class="value">${escape(f(ss))}</span> </span>`;
 });
 const css = {
-  code: `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');main.svelte-t5r176{display:flex;flex-direction:column;align-items:center;height:100vh}.circle-container.svelte-t5r176{position:relative;width:200px;height:200px;padding:40px;margin-top:20px;;}.circle.svelte-t5r176{position:absolute;width:60px;height:60px;border-radius:50%;background-color:transparent;border:2px solid #EBEBEB;display:flex;align-items:center;justify-content:center;text-transform:uppercase;font-size:25px;font-weight:600}.filled.svelte-t5r176{background-color:#F0EBEB;color:rgb(0, 0, 0);border:none}.shared.svelte-t5r176{background-color:#ec2525;color:white;border:none}.keyboard.svelte-t5r176{display:grid;grid-template-columns:repeat(4, 50px);grid-gap:20px;margin-top:40px}.key.svelte-t5r176{width:60px;height:60px;border-radius:50%;background-color:#F0EBEB;display:flex;justify-content:center;align-items:center;cursor:pointer;text-transform:uppercase;font-size:25px;font-weight:600}.enter-key.svelte-t5r176{font-size:12px;background-color:transparent !important;border:2px solid #EBEBEB}.disabled.svelte-t5r176{opacity:0.25;cursor:not-allowed}.help-container.svelte-t5r176{display:flex;align-items:center;color:#333;padding:10px}.how-to-play.svelte-t5r176{color:#333;padding:5px}.how-to-play.svelte-t5r176:hover{text-decoration:underline;cursor:pointer}.divider.svelte-t5r176{height:1.5px;width:100vw;background-color:#333;opacity:0.1}.title.svelte-t5r176{margin:0;font-family:"Playfair Display", serif;font-optical-sizing:auto;font-size:28px;;;font-weight:700;font-style:normal;color:black}.date.svelte-t5r176{margin:0;font-optical-sizing:auto;font-size:12px;;;font-weight:100;font-style:normal;color:rgb(46, 46, 46);padding:15px}.share-button.svelte-t5r176{background-color:#ec2525;color:white;border-radius:25px;width:150px;height:50px;border:none;margin:10px}.nav-flex-container.svelte-t5r176{display:flex;align-items:center;justify-content:space-between;width:100vw;height:80px}.flex-container.svelte-t5r176{display:flex;align-items:center}.spacer.svelte-t5r176{flex-grow:1}.timer-container.svelte-t5r176{padding:10px;;}.title-container.svelte-t5r176{margin:10px;margin-left:20px;margin-top:0}.styled-header.svelte-t5r176{font-family:"Playfair Display", serif;font-optical-sizing:auto;font-size:20px;;;font-weight:700}.sub-header.svelte-t5r176{font-optical-sizing:auto;font-size:15px;;;font-weight:700}`,
+  code: `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');main.svelte-1y9a3pw{display:flex;flex-direction:column;align-items:center;height:100vh}.circle-container.svelte-1y9a3pw{position:relative;width:200px;height:200px;padding:40px}.circle.svelte-1y9a3pw{position:absolute;width:60px;height:60px;border-radius:50%;background-color:transparent;border:2px solid #EBEBEB;display:flex;align-items:center;justify-content:center;text-transform:uppercase;font-size:25px;font-weight:600}.filled.svelte-1y9a3pw{background-color:#F0EBEB;color:rgb(0, 0, 0);border:none}.shared.svelte-1y9a3pw{background-color:#ec2525;color:white;border:none}.keyboard.svelte-1y9a3pw{display:grid;grid-template-columns:repeat(4, 50px);grid-gap:20px;margin-top:40px}.key.svelte-1y9a3pw{width:60px;height:60px;border-radius:50%;background-color:#F0EBEB;display:flex;justify-content:center;align-items:center;cursor:pointer;text-transform:uppercase;font-size:25px;font-weight:600}.enter-key.svelte-1y9a3pw{font-size:12px;background-color:transparent !important;border:2px solid #EBEBEB}.disabled.svelte-1y9a3pw{opacity:0.25;cursor:not-allowed}.help-container.svelte-1y9a3pw{display:flex;align-items:center;color:#333;padding:10px}.how-to-play.svelte-1y9a3pw{color:#333;padding:5px}.how-to-play.svelte-1y9a3pw:hover{text-decoration:underline;cursor:pointer}.divider.svelte-1y9a3pw{height:1.5px;width:100vw;background-color:#333;opacity:0.1}.title.svelte-1y9a3pw{margin:0;font-family:"Playfair Display", serif;font-optical-sizing:auto;font-size:28px;;;font-weight:700;font-style:normal;color:black}.date.svelte-1y9a3pw{margin:0;font-optical-sizing:auto;font-size:12px;;;font-weight:100;font-style:normal;color:rgb(46, 46, 46);padding:15px}.share-button.svelte-1y9a3pw{background-color:#ec2525;color:white;border-radius:25px;width:150px;height:50px;border:none;margin:10px}.nav-flex-container.svelte-1y9a3pw{display:flex;align-items:center;justify-content:space-between;width:100vw;height:80px}.flex-container.svelte-1y9a3pw{display:flex;align-items:center}.spacer.svelte-1y9a3pw{flex-grow:1}.timer-container.svelte-1y9a3pw{padding:10px;;}.title-container.svelte-1y9a3pw{margin:10px;margin-left:20px;margin-top:0}.styled-header.svelte-1y9a3pw{font-family:"Playfair Display", serif;font-optical-sizing:auto;font-size:20px;;;font-weight:700}.sub-header.svelte-1y9a3pw{font-optical-sizing:auto;font-size:15px;;;font-weight:700}`,
   map: null
 };
 function format_solution(solution) {
@@ -185,7 +185,7 @@ const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
       month: "long",
       day: "numeric"
     });
-    $$rendered = `<main class="svelte-t5r176"><div class="nav-flex-container svelte-t5r176"><div class="title-container  svelte-t5r176" data-svelte-h="svelte-12b2d73"><p class="title svelte-t5r176">LetterLoop</p> <small style="color: rgb(46, 46, 46);">(public beta) · Edited by Henry Macht</small></div> <div class="spacer svelte-t5r176"></div> <div class="help-container svelte-t5r176" data-svelte-h="svelte-zy39qn"><i class="fa-regular fa-circle-question"></i> <p class="how-to-play svelte-t5r176">How to play</p></div></div> <div class="divider svelte-t5r176"></div> ${validate_component(Toast, "Toast").$$render($$result, {}, {}, {})} <div class="timer-container svelte-t5r176">${validate_component(Timer, "Timer").$$render(
+    $$rendered = `<main class="svelte-1y9a3pw"><div class="nav-flex-container svelte-1y9a3pw"><div class="title-container  svelte-1y9a3pw" data-svelte-h="svelte-12b2d73"><p class="title svelte-1y9a3pw">LetterLoop</p> <small style="color: rgb(46, 46, 46);">(public beta) · Edited by Henry Macht</small></div> <div class="spacer svelte-1y9a3pw"></div> <div class="help-container svelte-1y9a3pw" data-svelte-h="svelte-zy39qn"><i class="fa-regular fa-circle-question"></i> <p class="how-to-play svelte-1y9a3pw">How to play</p></div></div> <div class="divider svelte-1y9a3pw"></div> ${validate_component(Toast, "Toast").$$render($$result, {}, {}, {})} <div class="flex-container svelte-1y9a3pw"><div class="timer-container svelte-1y9a3pw">${validate_component(Timer, "Timer").$$render(
       $$result,
       { this: game_timer, elapsedSeconds },
       {
@@ -199,9 +199,9 @@ const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
         }
       },
       {}
-    )}</div> <div data-svelte-h="svelte-1mxj5gn"><i class="fa-solid fa-pause"></i></div> ${solutions.length > 0 ? `<div class="circle-container svelte-t5r176">${each(selectedLetters, (letter, index) => {
+    )}</div> <div data-svelte-h="svelte-sbbujr"><i class="fa-solid fa-pause"></i></div></div> ${solutions.length > 0 ? `<div class="circle-container svelte-1y9a3pw">${each(selectedLetters, (letter, index) => {
       return `<div class="${[
-        "circle svelte-t5r176",
+        "circle svelte-1y9a3pw",
         (letter != "" ? "filled" : "") + " " + (sharedLetterIndexes.includes(index) ? "shared" : "")
       ].join(" ").trim()}"${add_attribute(
         "style",
@@ -211,9 +211,9 @@ const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
 				`,
         0
       )}>${escape(letter == "" ? "" : letter)} </div>`;
-    })}</div> <div class="keyboard svelte-t5r176">${each(scrambledLettersBank, (letter, index) => {
-      return `<div class="${["key svelte-t5r176", isDisabled(index) ? "disabled" : ""].join(" ").trim()}">${escape(letter)} </div>`;
-    })}  <div class="key svelte-t5r176" data-svelte-h="svelte-qtb4kv"><i class="fa-solid fa-eraser"></i></div> <div class="key svelte-t5r176" data-svelte-h="svelte-krp8l1"><i class="fa-solid fa-shuffle"></i></div> <div class="key svelte-t5r176" data-svelte-h="svelte-1jsmx3m"><i class="fa-solid fa-delete-left"></i></div> <div class="key enter-key svelte-t5r176" data-svelte-h="svelte-1qinv54">Enter</div></div> <p class="date svelte-t5r176">Puzzle for ${escape(todays_date)}</p>` : `<p data-svelte-h="svelte-kk77ic">Loading Game...</p>`}</main>  ${validate_component(Modal, "Modal").$$render(
+    })}</div> <div class="keyboard svelte-1y9a3pw">${each(scrambledLettersBank, (letter, index) => {
+      return `<div class="${["key svelte-1y9a3pw", isDisabled(index) ? "disabled" : ""].join(" ").trim()}">${escape(letter)} </div>`;
+    })}  <div class="key svelte-1y9a3pw" data-svelte-h="svelte-qtb4kv"><i class="fa-solid fa-eraser"></i></div> <div class="key svelte-1y9a3pw" data-svelte-h="svelte-krp8l1"><i class="fa-solid fa-shuffle"></i></div> <div class="key svelte-1y9a3pw" data-svelte-h="svelte-1jsmx3m"><i class="fa-solid fa-delete-left"></i></div> <div class="key enter-key svelte-1y9a3pw" data-svelte-h="svelte-1qinv54">Enter</div></div> <p class="date svelte-1y9a3pw">Puzzle for ${escape(todays_date)}</p>` : `<p data-svelte-h="svelte-kk77ic">Loading Game...</p>`}</main>  ${validate_component(Modal, "Modal").$$render(
       $$result,
       { showModal: showCompleteModal },
       {
@@ -224,13 +224,13 @@ const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
       },
       {
         header: () => {
-          return `<div slot="header" data-svelte-h="svelte-jqfhji"><span class="styled-header svelte-t5r176">Congratulations!</span> <br>
+          return `<div slot="header" data-svelte-h="svelte-jqfhji"><span class="styled-header svelte-1y9a3pw">Congratulations!</span> <br>
 		Share your results with your friends.</div>`;
         },
         default: () => {
-          return `<span class="sub-header svelte-t5r176">Solved in ${escape(elapsedSeconds)}</span> <hr> <span class="sub-header svelte-t5r176" data-svelte-h="svelte-zm2m22">Other Possible Solutions</span> ${each(solutions, (solution) => {
+          return `<span class="sub-header svelte-1y9a3pw">Solved in ${escape(elapsedSeconds)}</span> <hr> <span class="sub-header svelte-1y9a3pw" data-svelte-h="svelte-zm2m22">Other Possible Solutions</span> ${each(solutions, (solution) => {
             return `<div class="solution">${escape(format_solution(solution))} </div>`;
-          })} <br> <div class="flex-container svelte-t5r176"><div class="spacer svelte-t5r176"></div> <button class="share-button svelte-t5r176" data-svelte-h="svelte-1urjot1">Share</button> <div class="spacer svelte-t5r176"></div></div>`;
+          })} <br> <div class="flex-container svelte-1y9a3pw"><div class="spacer svelte-1y9a3pw"></div> <button class="share-button svelte-1y9a3pw" data-svelte-h="svelte-1urjot1">Share</button> <div class="spacer svelte-1y9a3pw"></div></div>`;
         }
       }
     )} ${validate_component(Modal, "Modal").$$render(
@@ -244,7 +244,7 @@ const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
       },
       {
         header: () => {
-          return `<h2 slot="header" data-svelte-h="svelte-agigkf"><span class="styled-header svelte-t5r176">How To Play</span></h2>`;
+          return `<h2 slot="header" data-svelte-h="svelte-agigkf"><span class="styled-header svelte-1y9a3pw">How To Play</span></h2>`;
         },
         default: () => {
           return `<h3 data-svelte-h="svelte-1j8js8f">Find the 8-letter circle word</h3> <ul class="definition-list" data-svelte-h="svelte-wtdfry"><li>There are 2 words to find.</li> <li>Letters may only be used once and have to be in the letter bank.</li> <li>The red circles are shared letters between the two words.</li></ul> <h3 data-svelte-h="svelte-qg4234">Example</h3> <p data-svelte-h="svelte-eqhtsw">If we had these letters:</p> <img${add_attribute("src", ex_letter_box, 0)} alt="Welcome" style="width: 350px; height: auto;"> <p data-svelte-h="svelte-14urd7p">We could spell the words 
@@ -267,10 +267,10 @@ const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
       },
       {
         header: () => {
-          return `<h2 slot="header" data-svelte-h="svelte-he3kx2"><span class="styled-header svelte-t5r176">Paused</span></h2>`;
+          return `<h2 slot="header" data-svelte-h="svelte-he3kx2"><span class="styled-header svelte-1y9a3pw">Paused</span></h2>`;
         },
         default: () => {
-          return `<div class="flex-container svelte-t5r176"><div class="spacer svelte-t5r176"></div> <button class="share-button svelte-t5r176" data-svelte-h="svelte-o41kx2">Resume</button> <div class="spacer svelte-t5r176"></div></div>`;
+          return `<div class="flex-container svelte-1y9a3pw"><div class="spacer svelte-1y9a3pw"></div> <button class="share-button svelte-1y9a3pw" data-svelte-h="svelte-o41kx2">Resume</button> <div class="spacer svelte-1y9a3pw"></div></div>`;
         }
       }
     )}`;

@@ -1,4 +1,6 @@
 <script>
+// @ts-nocheck
+
 	import Modal from './Modal.svelte';
 	import ex_solution from '$lib/images/ex-solution.png';
 	import ex_letter_box from '$lib/images/ex-letter-box.png';
@@ -18,7 +20,6 @@
 	solutions = solutions.map(solution => solution.toLowerCase());
   let letterBank;
 	let selectedLetters = Array(8).fill("");
-	// @ts-ignore
 	let disabledKeys = [];
   let scrambledLettersBank;
 	let currentIndex = 0
@@ -52,7 +53,7 @@
     }
   });
 
-	// @ts-ignore
+
 	function handleKeyPress(event) {
     const keyPressed = event.key.toLowerCase();
     const index = scrambledLettersBank.indexOf(keyPressed);
@@ -67,13 +68,11 @@
 		
   }
 
-  // @ts-ignore
   function scrambleLettersBank(letterBank) {
     const scrambledArray = letterBank.split('').sort(() => Math.random() - 0.5);
     return scrambledArray.join('');
   }
 
-	// @ts-ignore
 	function letterSelected(letter, index) {		
 		 if (
       currentIndex < selectedLetters.length &&
@@ -81,7 +80,6 @@
     ) {
       selectedLetters[currentIndex] = letter;
       currentIndex += 1;
-			// @ts-ignore
       disabledKeys = [...disabledKeys, index];
     }
   }
@@ -119,14 +117,6 @@
 	}
 
 	function share() {
-		// logEvent(analytics, 'action', { name: 'game_shared'});
-
-		// Build Emoji
-		let emojiString = "";
-    for (let i = 0; i < attempts; i++) {
-      emojiString += "🔴";
-    }
-
 		let textToCopy = "I completed the LetterLoop in: \n" + "🔴" + elapsedSeconds + "🔴"
 		navigator.clipboard.writeText(textToCopy)
       .then(() => {
@@ -156,7 +146,6 @@
     return `${firstPart} + ${lastPart}`;
 	}
 
-	// @ts-ignore
 	$: isDisabled = (index) => disabledKeys.includes(index);
 	$: todays_date = new Date().toLocaleDateString(undefined, {
     year: 'numeric',
@@ -212,9 +201,9 @@
 
   .keyboard {
     display: grid;
-    grid-template-columns: repeat(4, 50px);
-    grid-gap: 20px;
-		margin-top: 40px;
+    grid-template-columns: repeat(4, 60px);
+    grid-gap: 12px;
+		margin-top: 35px;
   }
 
   .key {
@@ -367,8 +356,8 @@
 					class:filled={letter != ""}
 					class:shared={sharedLetterIndexes.includes(index)}
 					style={`
-						left: calc(40% + ${Math.cos(((index / selectedLetters.length) * 2 * Math.PI) - (Math.PI / 2)) * 100}px);
-						top: calc(37% + ${Math.sin(((index / selectedLetters.length) * 2 * Math.PI) - (Math.PI / 2)) * 100}px);
+						left: calc(38% + ${Math.cos(((index / selectedLetters.length) * 2 * Math.PI) - (Math.PI / 2)) * 100}px);
+						top: calc(38% + ${Math.sin(((index / selectedLetters.length) * 2 * Math.PI) - (Math.PI / 2)) * 100}px);
 				`}
 				>
 					{letter == "" ? "" : letter}
