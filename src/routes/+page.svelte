@@ -28,6 +28,7 @@
 	let attempts = 1;
 	let game_timer;
 	let elapsedSeconds = 0;
+	let puzzle_author = "---";
 
 
   onMount(async () => {
@@ -44,7 +45,8 @@
     try {
       const dataFromFirebase = await fetchFirebaseData('solutions/' + formattedDate);
 			const parsedData = Object.values(dataFromFirebase);
-      solutions = parsedData
+			puzzle_author = parsedData[0]
+      solutions = parsedData[1]
 			letterBank = solutions[0]
 			scrambledLettersBank = scrambleLettersBank(letterBank)
 			game_timer.start();
@@ -325,7 +327,7 @@
 	<div class="nav-flex-container">
 		<div class="title-container ">
 			<p class="title">LetterLoop</p>	
-			<small style="color: rgb(46, 46, 46);">(public beta) · Edited by Henry Macht</small>
+			<small style="color: rgb(46, 46, 46);">(public beta) · Edited by {puzzle_author}</small>
 		</div>
 		<div class="spacer"></div>
 		<div class="help-container" on:click={() => showHelpModal = true}>
