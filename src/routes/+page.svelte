@@ -12,7 +12,6 @@
 	import { logTime } from './logCompletionTime.js';
 	import { getAnalytics, logEvent } from "firebase/analytics";
 	import Timer from './Timer.svelte';
-	import { Confetti } from 'svelte-confetti'
 
 	let showCompleteModal = false;
   let showHelpModal = false;
@@ -25,33 +24,33 @@
   let scrambledLettersBank;
 	let currentIndex = 0
 	let sharedLetterIndexes = [0, 4]
-	let showModal = false;
-	let attempts = 1;
 	let game_timer;
 	let elapsedSeconds = 0;
 	let puzzle_author = "---";
 
-
   onMount(async () => {
+		
 		const analytics = getAnalytics(firebaseApp);
 		logEvent(analytics, 'screen_view', {
 			firebase_screen: "game_board_view",
 			firebase_screen_class: "game_board_controller"
 		});
-		const currentDatetime = new Date();
+
 		// Format the date as a string in "MM-DD-YYYY" format
+		const currentDatetime = new Date();
 		const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
 		const formattedDate = currentDatetime.toLocaleDateString('en-US', options).replace(/\//g, '-');
 
     try {
-			await signIn()
-      const dataFromFirebase = await fetchFirebaseData('solutions/' + formattedDate);
-			const parsedData = Object.values(dataFromFirebase);
-			puzzle_author = parsedData[0]
-      solutions = parsedData[1]
-			letterBank = solutions[0]
-			scrambledLettersBank = scrambleLettersBank(letterBank)
-			game_timer.start();
+			if (await signIn()) {
+				const dataFromFirebase = await fetchFirebaseData('solutions/' + formattedDate);
+				const parsedData = Object.values(dataFromFirebase);
+				puzzle_author = parsedData[0]
+				solutions = parsedData[1]
+				letterBank = solutions[0]
+				scrambledLettersBank = scrambleLettersBank(letterBank)
+				game_timer.start();
+			}
     } catch (error) {
       console.error('Error fetching data from Firebase:', error);
     }

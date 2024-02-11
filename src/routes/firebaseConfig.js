@@ -21,13 +21,19 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 
-export const signIn = async () => {
-  signInAnonymously(auth).then(() => {
-    // Signed in
-  }).catch((error) => {
-    var errorCode = error.code;
-    var errorMessage = error.message;
-    console.log("Failed to sign in anonymously")
+export async function signIn() {
+  return new Promise((resolve, reject) => {
+    signInAnonymously(auth)
+      .then(() => {
+        // Signed in successfully
+        resolve(true);
+      })
+      .catch((error) => {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        console.error("Failed to sign in anonymously:", errorMessage);
+        resolve(false);
+      });
   });
 }
 

@@ -1,4 +1,3 @@
-import { firebaseApp } from './firebaseConfig';
 import { getDatabase, ref, onValue } from "firebase/database";
 
 // @ts-ignore
