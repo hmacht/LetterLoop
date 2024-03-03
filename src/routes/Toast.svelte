@@ -21,7 +21,8 @@
 <style>
   .notifications {
       position: fixed;
-      top: 130px;
+      top: 13
+      0px;
       left: 0;
       right: 0;
       margin: 0 auto;

@@ -1,11 +1,11 @@
 {
   ".svelte-kit/generated/client-optimized/app.js": {
-    "file": "_app/immutable/entry/app.DEuPDq1e.js",
+    "file": "_app/immutable/entry/app.CqZol-gH.js",
     "src": ".svelte-kit/generated/client-optimized/app.js",
     "isEntry": true,
     "imports": [
-      "_scheduler.CwIiqDyD.js",
-      "_index.CIKh10TN.js"
+      "_scheduler.CMvsSfs7.js",
+      "_index.DDDBvH_P.js"
     ],
     "dynamicImports": [
       ".svelte-kit/generated/client-optimized/nodes/0.js",
@@ -14,16 +14,16 @@
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/0.js": {
-    "file": "_app/immutable/nodes/0.D56GkImm.js",
+    "file": "_app/immutable/nodes/0.FhM0mkh-.js",
     "src": ".svelte-kit/generated/client-optimized/nodes/0.js",
     "isEntry": true,
     "isDynamicEntry": true,
     "imports": [
-      "_scheduler.CwIiqDyD.js",
-      "_index.CIKh10TN.js"
+      "_scheduler.CMvsSfs7.js",
+      "_index.DDDBvH_P.js"
     ],
     "css": [
-      "_app/immutable/assets/0.CDA8BmfZ.css"
+      "_app/immutable/assets/0.Dqz41zvz.css"
     ],
     "assets": [
       "_app/immutable/assets/fira-mono-cyrillic-ext-400-normal.B04YIrm4.woff2",
@@ -44,55 +44,56 @@
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/1.js": {
-    "file": "_app/immutable/nodes/1.D9ZzPqKn.js",
+    "file": "_app/immutable/nodes/1.TN8wD4k4.js",
     "src": ".svelte-kit/generated/client-optimized/nodes/1.js",
     "isEntry": true,
     "isDynamicEntry": true,
     "imports": [
-      "_scheduler.CwIiqDyD.js",
-      "_index.CIKh10TN.js",
-      "_entry.DOOR6p0Q.js"
+      "_scheduler.CMvsSfs7.js",
+      "_index.DDDBvH_P.js",
+      "_entry.Dfb-Vkmr.js"
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/2.js": {
-    "file": "_app/immutable/nodes/2.hDjjexuu.js",
+    "file": "_app/immutable/nodes/2.COjCoJwB.js",
     "src": ".svelte-kit/generated/client-optimized/nodes/2.js",
     "isEntry": true,
     "isDynamicEntry": true,
     "imports": [
-      "_scheduler.CwIiqDyD.js",
-      "_index.CIKh10TN.js",
-      "_index.NVK073Jc.js"
+      "_scheduler.CMvsSfs7.js",
+      "_index.DDDBvH_P.js",
+      "_index.DBtNhGCQ.js"
     ],
     "css": [
-      "_app/immutable/assets/2.CeKGYFNJ.css"
+      "_app/immutable/assets/2.BBvVciKb.css"
     ],
     "assets": [
       "_app/immutable/assets/ex-solution.DMtatkDj.png",
-      "_app/immutable/assets/ex-letter-box.mgBNjwYG.png"
+      "_app/immutable/assets/ex-letter-box.mgBNjwYG.png",
+      "_app/immutable/assets/logo.R4y_qj9s.png"
     ]
   },
-  "_entry.DOOR6p0Q.js": {
-    "file": "_app/immutable/chunks/entry.DOOR6p0Q.js",
+  "_entry.Dfb-Vkmr.js": {
+    "file": "_app/immutable/chunks/entry.Dfb-Vkmr.js",
     "imports": [
-      "_scheduler.CwIiqDyD.js",
-      "_index.NVK073Jc.js"
+      "_scheduler.CMvsSfs7.js",
+      "_index.DBtNhGCQ.js"
     ]
   },
-  "_index.CIKh10TN.js": {
-    "file": "_app/immutable/chunks/index.CIKh10TN.js",
+  "_index.DBtNhGCQ.js": {
+    "file": "_app/immutable/chunks/index.DBtNhGCQ.js",
     "imports": [
-      "_scheduler.CwIiqDyD.js"
+      "_scheduler.CMvsSfs7.js"
     ]
   },
-  "_index.NVK073Jc.js": {
-    "file": "_app/immutable/chunks/index.NVK073Jc.js",
+  "_index.DDDBvH_P.js": {
+    "file": "_app/immutable/chunks/index.DDDBvH_P.js",
     "imports": [
-      "_scheduler.CwIiqDyD.js"
+      "_scheduler.CMvsSfs7.js"
     ]
   },
-  "_scheduler.CwIiqDyD.js": {
-    "file": "_app/immutable/chunks/scheduler.CwIiqDyD.js"
+  "_scheduler.CMvsSfs7.js": {
+    "file": "_app/immutable/chunks/scheduler.CMvsSfs7.js"
   },
   "node_modules/@fontsource/fira-mono/files/fira-mono-all-400-normal.woff": {
     "file": "_app/immutable/assets/fira-mono-all-400-normal.B2mvLtSD.woff",
@@ -155,11 +156,11 @@
     "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.woff2"
   },
   "node_modules/@sveltejs/kit/src/runtime/client/entry.js": {
-    "file": "_app/immutable/entry/start.BRQOLGua.js",
+    "file": "_app/immutable/entry/start.CVYDcVQD.js",
     "src": "node_modules/@sveltejs/kit/src/runtime/client/entry.js",
     "isEntry": true,
     "imports": [
-      "_entry.DOOR6p0Q.js"
+      "_entry.Dfb-Vkmr.js"
     ]
   },
   "src/lib/images/ex-letter-box.png": {
@@ -169,5 +170,9 @@
   "src/lib/images/ex-solution.png": {
     "file": "_app/immutable/assets/ex-solution.DMtatkDj.png",
     "src": "src/lib/images/ex-solution.png"
+  },
+  "src/lib/images/logo.png": {
+    "file": "_app/immutable/assets/logo.R4y_qj9s.png",
+    "src": "src/lib/images/logo.png"
   }
 }

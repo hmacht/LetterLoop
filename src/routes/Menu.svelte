@@ -21,6 +21,7 @@
     align-items: center;
     height: 100vh;
     margin: 0;
+    width: 100%;
   }
 
   .content {
@@ -80,10 +81,33 @@
     color: #000 !important;
     border: 1px solid #000;
   }
+
+  .adparent {
+    align-items: center;
+    min-width: 320px;
+  }
 </style>
 
 <div class="page">
   <div class="content">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8474194726617008"
+      crossorigin="anonymous"></script>
+    <!-- MenuAd -->
+    <div class='adparent'>
+      <ins class="adsbygoogle"
+        style="display:block"
+        data-ad-client="ca-pub-8474194726617008"
+        data-ad-slot="5686489609"
+        data-ad-format="auto"
+        data-full-width-responsive="true">
+      </ins>
+    </div>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+
+
+
     <img class="logo" src={logo_src} alt="Our Little Loop Logo" />
 
     <p class="menu-header">The LetterLoop</p>

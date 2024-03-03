@@ -8,7 +8,6 @@
 </script>
 
 
-
 <main>
 	{#if gameHasStarted}
 		<GameBoard/>

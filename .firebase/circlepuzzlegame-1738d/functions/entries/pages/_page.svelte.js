@@ -68,8 +68,6 @@ const Modal = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   $$result.css.add(css$2);
   return ` <dialog class="svelte-kvu5ns"${add_attribute("this", dialog, 0)}> <div class="svelte-kvu5ns">${validate_component(Toast, "Toast").$$render($$result, {}, {}, {})} <div class="flex-container svelte-kvu5ns">${slots.header ? slots.header({}) : ``} <div class="spacer svelte-kvu5ns"></div> ${!hide_close ? `<i class="fa-solid fa-xmark svelte-kvu5ns"></i>` : ``}</div> <hr> ${slots.default ? slots.default({}) : ``}</div> </dialog>`;
 });
-const ex_solution = "/_app/immutable/assets/ex-solution.DMtatkDj.png";
-const ex_letter_box = "/_app/immutable/assets/ex-letter-box.mgBNjwYG.png";
 const firebaseConfig = {
   apiKey: "AIzaSyD4qZNCNnlVihIZbdgtBB82R48AIC0bqG4",
   authDomain: "circlepuzzlegame-1738d.firebaseapp.com",
@@ -151,16 +149,20 @@ const Timer = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   $$unsubscribe_elapsedTime();
   return `  <span class="timer svelte-1y1osaq"><span class="value">${escape(f(hh))}</span>:<span class="value">${escape(f(mm))}</span>:<span class="value">${escape(f(ss))}</span> </span>`;
 });
-const css = {
-  code: `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');main.svelte-j8rz3o{display:flex;flex-direction:column;align-items:center;height:100vh}.circle-container.svelte-j8rz3o{position:relative;width:200px;height:200px;padding:40px}.circle.svelte-j8rz3o{position:absolute;width:60px;height:60px;border-radius:50%;background-color:transparent;border:2px solid #EBEBEB;display:flex;align-items:center;justify-content:center;text-transform:uppercase;font-size:25px;font-weight:600}.filled.svelte-j8rz3o{background-color:#F0EBEB;color:rgb(0, 0, 0);border:none}.shared.svelte-j8rz3o{background-color:#ec2525;color:white;border:none}.keyboard.svelte-j8rz3o{display:grid;grid-template-columns:repeat(4, 60px);grid-gap:12px;margin-top:35px}.key.svelte-j8rz3o{width:60px;height:60px;border-radius:50%;background-color:#F0EBEB;display:flex;justify-content:center;align-items:center;cursor:pointer;text-transform:uppercase;font-size:25px;font-weight:600}.enter-key.svelte-j8rz3o{font-size:12px;background-color:transparent !important;border:2px solid #EBEBEB}.disabled.svelte-j8rz3o{opacity:0.25;cursor:not-allowed}.help-container.svelte-j8rz3o{display:flex;align-items:center;color:#333;padding:10px}.how-to-play.svelte-j8rz3o{color:#333;padding:5px}.how-to-play.svelte-j8rz3o:hover{text-decoration:underline;cursor:pointer}.divider.svelte-j8rz3o{height:1.5px;width:100vw;background-color:#333;opacity:0.1}.title.svelte-j8rz3o{margin:0;font-family:"Playfair Display", serif;font-optical-sizing:auto;font-size:28px;;;font-weight:700;font-style:normal;color:black}.date.svelte-j8rz3o{margin:0;font-optical-sizing:auto;font-size:12px;;;font-weight:100;font-style:normal;color:rgb(46, 46, 46);padding:15px}.share-button.svelte-j8rz3o{background-color:#ec2525;color:white;border-radius:25px;width:150px;height:50px;border:none;margin:10px}.nav-flex-container.svelte-j8rz3o{display:flex;align-items:center;justify-content:space-between;width:100vw;height:80px}.flex-container.svelte-j8rz3o{display:flex;align-items:center}.spacer.svelte-j8rz3o{flex-grow:1}.timer-container.svelte-j8rz3o{padding:10px;;}.title-container.svelte-j8rz3o{margin:10px;margin-left:20px;margin-top:0}.styled-header.svelte-j8rz3o{font-family:"Playfair Display", serif;font-optical-sizing:auto;font-size:20px;;;font-weight:700}.sub-header.svelte-j8rz3o{font-optical-sizing:auto;font-size:15px;;;font-weight:700}`,
-  map: null
-};
+const ex_solution = "/_app/immutable/assets/ex-solution.DMtatkDj.png";
+const ex_letter_box = "/_app/immutable/assets/ex-letter-box.mgBNjwYG.png";
+const Help = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+  return `<h3 data-svelte-h="svelte-1j8js8f">Find the 8-letter circle word</h3> <ul class="definition-list" data-svelte-h="svelte-1eowta5"><li>There are 2 words to find.</li> <li>Letters may only be used once and have to be in the letter bank.</li> <li>The red circles are shared letters between the two words.</li> <li>You must fill in every word before submitting.</li></ul> <h3 data-svelte-h="svelte-qg4234">Example</h3> <p data-svelte-h="svelte-eqhtsw">If we had these letters:</p> <img${add_attribute("src", ex_letter_box, 0)} alt="Welcome" style="width: 350px; height: auto;"> <p data-svelte-h="svelte-9c7ajy">We could spell the words 
+    <b><span style="color: red;">M</span>USI<span style="color: red;">C</span></b> 
+    and 
+    <b><span style="color: red;">C</span>HAR<span style="color: red;">M</span> </b>.</p> <p data-svelte-h="svelte-1xer9do">Notice how these words share an <b><span style="color: red;">M</span></b> and a <b><span style="color: red;">C</span></b>.</p> <p data-svelte-h="svelte-1tryhud">One correct solution:</p> <img${add_attribute("src", ex_solution, 0)} alt="Welcome" style="width: 150px; height: auto;"> <p data-svelte-h="svelte-1imbt6f">Remember there can be more than one solution.</p>`;
+});
 function format_solution(solution) {
   const firstPart = solution.substring(0, 5);
   const lastPart = solution.substring(4, 8) + firstPart[0];
   return `${firstPart} + ${lastPart}`;
 }
-const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   let isDisabled;
   let todays_date;
   let showCompleteModal = false;
@@ -175,7 +177,6 @@ const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   let game_timer;
   let elapsedSeconds = 0;
   let puzzle_author = "---";
-  $$result.css.add(css);
   let $$settled;
   let $$rendered;
   let previous_head = $$result.head;
@@ -188,7 +189,7 @@ const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
       month: "long",
       day: "numeric"
     });
-    $$rendered = `<main class="svelte-j8rz3o"><div class="nav-flex-container svelte-j8rz3o"><div class="title-container  svelte-j8rz3o"><p class="title svelte-j8rz3o" data-svelte-h="svelte-1qmyjs9">LetterLoop</p> <small style="color: rgb(46, 46, 46);">(public beta) · Edited by ${escape(puzzle_author)}</small></div> <div class="spacer svelte-j8rz3o"></div> <div class="help-container svelte-j8rz3o" data-svelte-h="svelte-zy39qn"><i class="fa-regular fa-circle-question"></i> <p class="how-to-play svelte-j8rz3o">How to play</p></div></div> <div class="divider svelte-j8rz3o"></div> ${validate_component(Toast, "Toast").$$render($$result, {}, {}, {})} <div class="flex-container svelte-j8rz3o"><div class="timer-container svelte-j8rz3o">${validate_component(Timer, "Timer").$$render(
+    $$rendered = `<main><div class="nav-flex-container"><div class="title-container "><p class="title" data-svelte-h="svelte-1qmyjs9">LetterLoop</p> <small style="color: rgb(46, 46, 46);">(public beta) · Edited by ${escape(puzzle_author)}</small></div> <div class="spacer"></div> <div class="help-container" data-svelte-h="svelte-1i75e1h"><i class="fa-regular fa-circle-question"></i> <p class="how-to-play">How to play</p></div></div> <div class="divider"></div> ${validate_component(Toast, "Toast").$$render($$result, {}, {}, {})} <div class="flex-container"><div class="timer-container">${validate_component(Timer, "Timer").$$render(
       $$result,
       { this: game_timer, elapsedSeconds },
       {
@@ -202,21 +203,21 @@ const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
         }
       },
       {}
-    )}</div> <div data-svelte-h="svelte-sbbujr"><i class="fa-solid fa-pause"></i></div></div> ${solutions.length > 0 ? `<div class="circle-container svelte-j8rz3o">${each(selectedLetters, (letter, index) => {
+    )}</div> <div data-svelte-h="svelte-1mqs5ls"><i class="fa-solid fa-pause"></i></div></div> ${solutions.length > 0 ? `<div class="circle-container">${each(selectedLetters, (letter, index) => {
       return `<div class="${[
-        "circle svelte-j8rz3o",
+        "circle",
         (letter != "" ? "filled" : "") + " " + (sharedLetterIndexes.includes(index) ? "shared" : "")
       ].join(" ").trim()}"${add_attribute(
         "style",
         `
-						left: calc(38% + ${Math.cos(index / selectedLetters.length * 2 * Math.PI - Math.PI / 2) * 100}px);
-						top: calc(38% + ${Math.sin(index / selectedLetters.length * 2 * Math.PI - Math.PI / 2) * 100}px);
-				`,
+              left: calc(38% + ${Math.cos(index / selectedLetters.length * 2 * Math.PI - Math.PI / 2) * 100}px);
+              top: calc(38% + ${Math.sin(index / selectedLetters.length * 2 * Math.PI - Math.PI / 2) * 100}px);
+          `,
         0
       )}>${escape(letter == "" ? "" : letter)} </div>`;
-    })}</div> <div class="keyboard svelte-j8rz3o">${each(scrambledLettersBank, (letter, index) => {
-      return `<div class="${["key svelte-j8rz3o", isDisabled(index) ? "disabled" : ""].join(" ").trim()}">${escape(letter)} </div>`;
-    })}  <div class="key svelte-j8rz3o" data-svelte-h="svelte-qtb4kv"><i class="fa-solid fa-eraser"></i></div> <div class="key svelte-j8rz3o" data-svelte-h="svelte-krp8l1"><i class="fa-solid fa-shuffle"></i></div> <div class="key svelte-j8rz3o" data-svelte-h="svelte-1jsmx3m"><i class="fa-solid fa-delete-left"></i></div> <div class="key enter-key svelte-j8rz3o" data-svelte-h="svelte-1qinv54">Enter</div></div> <p class="date svelte-j8rz3o">Puzzle for ${escape(todays_date)}</p>` : `<p data-svelte-h="svelte-kk77ic">Loading Game...</p>`}</main>  ${validate_component(Modal, "Modal").$$render(
+    })}</div> <div class="keyboard">${each(scrambledLettersBank, (letter, index) => {
+      return `<div class="${["key", isDisabled(index) ? "disabled" : ""].join(" ").trim()}">${escape(letter)} </div>`;
+    })}  <div class="key" data-svelte-h="svelte-pcdrzy"><i class="fa-solid fa-eraser"></i></div> <div class="key" data-svelte-h="svelte-1nazuqy"><i class="fa-solid fa-shuffle"></i></div> <div class="key" data-svelte-h="svelte-1lzlrm1"><i class="fa-solid fa-delete-left"></i></div> <div class="key enter-key" data-svelte-h="svelte-10umx21">Enter</div></div> <p class="date">Puzzle for ${escape(todays_date)}</p>` : `<p data-svelte-h="svelte-kk77ic">Loading Game...</p>`}</main>  ${validate_component(Modal, "Modal").$$render(
       $$result,
       { showModal: showCompleteModal },
       {
@@ -227,13 +228,13 @@ const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
       },
       {
         header: () => {
-          return `<div slot="header" data-svelte-h="svelte-jqfhji"><span class="styled-header svelte-j8rz3o">Congratulations!</span> <br>
-		Share your results with your friends.</div>`;
+          return `<div slot="header" data-svelte-h="svelte-wca559"><span class="styled-header">Congratulations!</span> <br>
+      Share your results with your friends.</div>`;
         },
         default: () => {
-          return `<span class="sub-header svelte-j8rz3o">Solved in ${escape(elapsedSeconds)}</span> <hr> <span class="sub-header svelte-j8rz3o" data-svelte-h="svelte-zm2m22">Other Possible Solutions</span> ${each(solutions, (solution) => {
+          return `<span class="sub-header">Solved in ${escape(elapsedSeconds)}</span> <hr> <span class="sub-header" data-svelte-h="svelte-zm2m22">Other Possible Solutions</span> ${each(solutions, (solution) => {
             return `<div class="solution">${escape(format_solution(solution))} </div>`;
-          })} <br> <div class="flex-container svelte-j8rz3o"><div class="spacer svelte-j8rz3o"></div> <button class="share-button svelte-j8rz3o" data-svelte-h="svelte-1urjot1">Share</button> <div class="spacer svelte-j8rz3o"></div></div>`;
+          })} <br> <div class="flex-container"><div class="spacer"></div> <button class="share-button" data-svelte-h="svelte-1urjot1">Share</button> <div class="spacer"></div></div>`;
         }
       }
     )} ${validate_component(Modal, "Modal").$$render(
@@ -247,13 +248,10 @@ const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
       },
       {
         header: () => {
-          return `<h2 slot="header" data-svelte-h="svelte-agigkf"><span class="styled-header svelte-j8rz3o">How To Play</span></h2>`;
+          return `<h2 slot="header" data-svelte-h="svelte-1kct8zk"><span class="styled-header">How To Play</span></h2>`;
         },
         default: () => {
-          return `<h3 data-svelte-h="svelte-1j8js8f">Find the 8-letter circle word</h3> <ul class="definition-list" data-svelte-h="svelte-wtdfry"><li>There are 2 words to find.</li> <li>Letters may only be used once and have to be in the letter bank.</li> <li>The red circles are shared letters between the two words.</li></ul> <h3 data-svelte-h="svelte-qg4234">Example</h3> <p data-svelte-h="svelte-eqhtsw">If we had these letters:</p> <img${add_attribute("src", ex_letter_box, 0)} alt="Welcome" style="width: 350px; height: auto;"> <p data-svelte-h="svelte-14urd7p">We could spell the words 
-			<b><span style="color: red;">M</span>USI<span style="color: red;">C</span></b> 
-			and 
-			<b><span style="color: red;">C</span>HAR<span style="color: red;">M</span> </b>.</p> <p data-svelte-h="svelte-1xer9do">Notice how these words share an <b><span style="color: red;">M</span></b> and a <b><span style="color: red;">C</span></b>.</p> <p data-svelte-h="svelte-1tryhud">One correct solution:</p> <img${add_attribute("src", ex_solution, 0)} alt="Welcome" style="width: 150px; height: auto;"> <p data-svelte-h="svelte-1imbt6f">Remember there can be more than one solution.</p>`;
+          return `${validate_component(Help, "Help").$$render($$result, {}, {}, {})}`;
         }
       }
     )} ${validate_component(Modal, "Modal").$$render(
@@ -270,13 +268,74 @@ const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
       },
       {
         header: () => {
-          return `<h2 slot="header" data-svelte-h="svelte-he3kx2"><span class="styled-header svelte-j8rz3o">Paused</span></h2>`;
+          return `<h2 slot="header" data-svelte-h="svelte-1ught0z"><span class="styled-header">Paused</span></h2>`;
         },
         default: () => {
-          return `<div class="flex-container svelte-j8rz3o"><div class="spacer svelte-j8rz3o"></div> <button class="share-button svelte-j8rz3o" data-svelte-h="svelte-o41kx2">Resume</button> <div class="spacer svelte-j8rz3o"></div></div>`;
+          return `<div class="flex-container"><div class="spacer"></div> <button class="share-button" data-svelte-h="svelte-o41kx2">Resume</button> <div class="spacer"></div></div>`;
         }
       }
     )}`;
+  } while (!$$settled);
+  return $$rendered;
+});
+const logo_src = "/_app/immutable/assets/logo.R4y_qj9s.png";
+const css = {
+  code: '.page.svelte-pzxcfz{display:flex;justify-content:center;align-items:center;height:100vh;margin:0}.content.svelte-pzxcfz{text-align:center;padding:20px;color:#D8CFD2\n  }.logo.svelte-pzxcfz{width:65px;height:65px}.menu-header.svelte-pzxcfz{font-size:32px;margin:3px;color:black;font-family:"Playfair Display", serif}.menu-sub-header.svelte-pzxcfz{font-size:20px;margin:3px;color:black;margin-bottom:10px}.menu-small-text.svelte-pzxcfz{font-size:12px;margin:3px;color:black}.menu-date.svelte-pzxcfz{font-size:15px;margin:3px;color:black;font-weight:800;margin-top:15px}.menu-btn.svelte-pzxcfz{padding:10px 20px;font-size:16px;background-color:#000000;border-radius:50px;color:#fff;border:none;cursor:pointer;width:130px;height:50px;margin-bottom:10px}.no-fill.svelte-pzxcfz{background-color:transparent !important;color:#000 !important;border:1px solid #000}',
+  map: null
+};
+const Menu = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+  let { gameHasStarted } = $$props;
+  let showHelpModal = false;
+  let today = (/* @__PURE__ */ new Date()).toLocaleDateString();
+  if ($$props.gameHasStarted === void 0 && $$bindings.gameHasStarted && gameHasStarted !== void 0)
+    $$bindings.gameHasStarted(gameHasStarted);
+  $$result.css.add(css);
+  let $$settled;
+  let $$rendered;
+  let previous_head = $$result.head;
+  do {
+    $$settled = true;
+    $$result.head = previous_head;
+    $$rendered = `<div class="page svelte-pzxcfz"><div class="content svelte-pzxcfz"><img class="logo svelte-pzxcfz"${add_attribute("src", logo_src, 0)} alt="Our Little Loop Logo"> <p class="menu-header svelte-pzxcfz" data-svelte-h="svelte-1k2sjsl">The LetterLoop</p> <p class="menu-sub-header svelte-pzxcfz" data-svelte-h="svelte-j0rk1k">Two 5-letter words, two shared letters, one loop</p> <div><button class="menu-btn svelte-pzxcfz" data-svelte-h="svelte-1h0esab">Play</button></div> <div><button class="menu-btn no-fill svelte-pzxcfz" data-svelte-h="svelte-lan869">How to play</button></div> <p class="menu-date svelte-pzxcfz">${escape(today)}</p> <i class="menu-small-text svelte-pzxcfz" data-svelte-h="svelte-1ec062z">For those who love morning games</i></div></div> ${validate_component(Modal, "Modal").$$render(
+      $$result,
+      { showModal: showHelpModal },
+      {
+        showModal: ($$value) => {
+          showHelpModal = $$value;
+          $$settled = false;
+        }
+      },
+      {
+        header: () => {
+          return `<h2 slot="header" data-svelte-h="svelte-r01ry8"><span class="styled-header">How To Play</span></h2>`;
+        },
+        default: () => {
+          return `${validate_component(Help, "Help").$$render($$result, {}, {}, {})}`;
+        }
+      }
+    )}`;
+  } while (!$$settled);
+  return $$rendered;
+});
+const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+  let gameHasStarted = false;
+  let $$settled;
+  let $$rendered;
+  let previous_head = $$result.head;
+  do {
+    $$settled = true;
+    $$result.head = previous_head;
+    $$rendered = `<main>${gameHasStarted ? `${validate_component(GameBoard, "GameBoard").$$render($$result, {}, {}, {})}` : `${validate_component(Menu, "Menu").$$render(
+      $$result,
+      { gameHasStarted },
+      {
+        gameHasStarted: ($$value) => {
+          gameHasStarted = $$value;
+          $$settled = false;
+        }
+      },
+      {}
+    )}`}</main>`;
   } while (!$$settled);
   return $$rendered;
 });
