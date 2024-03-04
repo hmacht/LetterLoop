@@ -95,15 +95,20 @@
   
     function checkSolution() {
       const selectedWord = selectedLetters.join('');
+      const numSelected = selectedLetters.filter(letter => letter !== "").length;
+
+      console.log(selectedLetters)
       if (solutions.includes(selectedWord)) {
         showCompleteModal = true
         game_timer.stop();
         logTime(elapsedSeconds)
+      } else if (numSelected != 8) {
+        notifications.default('You Must fill in every letter', 1000)
       } else {
         notifications.default('Incorrect', 1000)
-        attempts += 1
       }
     }
+
   
     function resetBoard() {
       selectedLetters = Array(8).fill("");

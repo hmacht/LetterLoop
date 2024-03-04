@@ -41,7 +41,7 @@ function id() {
 }
 const notifications = createNotificationStore();
 const css$3 = {
-  code: ".notifications.svelte-15ecllt{position:fixed;top:130px;left:0;right:0;margin:0 auto;padding:0;z-index:9999;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;pointer-events:none}.toast.svelte-15ecllt{flex:0 0 auto;margin-bottom:10px;border-radius:10px;;}.content.svelte-15ecllt{padding:10px;display:block;color:rgb(17, 17, 17);font-weight:500}",
+  code: ".notifications.svelte-3xaubh{position:fixed;top:13\n      0px;left:0;right:0;margin:0 auto;padding:0;z-index:9999;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;pointer-events:none}.toast.svelte-3xaubh{flex:0 0 auto;margin-bottom:10px;border-radius:10px;;}.content.svelte-3xaubh{padding:10px;display:block;color:rgb(17, 17, 17);font-weight:500}",
   map: null
 };
 const Toast = create_ssr_component(($$result, $$props, $$bindings, slots) => {
@@ -49,8 +49,8 @@ const Toast = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   $$unsubscribe_notifications = subscribe(notifications, (value) => $notifications = value);
   $$result.css.add(css$3);
   $$unsubscribe_notifications();
-  return `<div class="notifications svelte-15ecllt">${each($notifications, (notification) => {
-    return `<div class="toast svelte-15ecllt" style="background: #EBEBEB;"><div class="content svelte-15ecllt">${escape(notification.message)}</div> ${notification.icon ? `<i class="${escape(null_to_empty(notification.icon), true) + " svelte-15ecllt"}"></i>` : ``} </div>`;
+  return `<div class="notifications svelte-3xaubh">${each($notifications, (notification) => {
+    return `<div class="toast svelte-3xaubh" style="background: #EBEBEB;"><div class="content svelte-3xaubh">${escape(notification.message)}</div> ${notification.icon ? `<i class="${escape(null_to_empty(notification.icon), true) + " svelte-3xaubh"}"></i>` : ``} </div>`;
   })} </div>`;
 });
 const css$2 = {
@@ -280,7 +280,7 @@ const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) =>
 });
 const logo_src = "/_app/immutable/assets/logo.R4y_qj9s.png";
 const css = {
-  code: '.page.svelte-pzxcfz{display:flex;justify-content:center;align-items:center;height:100vh;margin:0}.content.svelte-pzxcfz{text-align:center;padding:20px;color:#D8CFD2\n  }.logo.svelte-pzxcfz{width:65px;height:65px}.menu-header.svelte-pzxcfz{font-size:32px;margin:3px;color:black;font-family:"Playfair Display", serif}.menu-sub-header.svelte-pzxcfz{font-size:20px;margin:3px;color:black;margin-bottom:10px}.menu-small-text.svelte-pzxcfz{font-size:12px;margin:3px;color:black}.menu-date.svelte-pzxcfz{font-size:15px;margin:3px;color:black;font-weight:800;margin-top:15px}.menu-btn.svelte-pzxcfz{padding:10px 20px;font-size:16px;background-color:#000000;border-radius:50px;color:#fff;border:none;cursor:pointer;width:130px;height:50px;margin-bottom:10px}.no-fill.svelte-pzxcfz{background-color:transparent !important;color:#000 !important;border:1px solid #000}',
+  code: '.page.svelte-179v2fh{display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh !important;margin:0;width:100vw}.content.svelte-179v2fh{text-align:center;padding:20px;color:#D8CFD2\n  }.logo.svelte-179v2fh{width:65px;height:65px}.menu-header.svelte-179v2fh{font-size:32px;margin:3px;color:black;font-family:"Playfair Display", serif}.menu-sub-header.svelte-179v2fh{font-size:20px;margin:3px;color:black;margin-bottom:10px}.menu-small-text.svelte-179v2fh{font-size:12px;margin:3px;color:black}.menu-date.svelte-179v2fh{font-size:15px;margin:3px;color:black;font-weight:800;margin-top:15px}.menu-btn.svelte-179v2fh{padding:10px 20px;font-size:16px;background-color:#000000;border-radius:50px;color:#fff;border:none;cursor:pointer;width:130px;height:50px;margin-bottom:10px}.no-fill.svelte-179v2fh{background-color:transparent !important;color:#000 !important;border:1px solid #000}.adparent.svelte-179v2fh{align-items:center;min-width:320px;margin-bottom:15px;background-color:rgb(241, 239, 239);width:100vw}',
   map: null
 };
 const Menu = create_ssr_component(($$result, $$props, $$bindings, slots) => {
@@ -296,7 +296,7 @@ const Menu = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   do {
     $$settled = true;
     $$result.head = previous_head;
-    $$rendered = `<div class="page svelte-pzxcfz"><div class="content svelte-pzxcfz"><img class="logo svelte-pzxcfz"${add_attribute("src", logo_src, 0)} alt="Our Little Loop Logo"> <p class="menu-header svelte-pzxcfz" data-svelte-h="svelte-1k2sjsl">The LetterLoop</p> <p class="menu-sub-header svelte-pzxcfz" data-svelte-h="svelte-j0rk1k">Two 5-letter words, two shared letters, one loop</p> <div><button class="menu-btn svelte-pzxcfz" data-svelte-h="svelte-1h0esab">Play</button></div> <div><button class="menu-btn no-fill svelte-pzxcfz" data-svelte-h="svelte-lan869">How to play</button></div> <p class="menu-date svelte-pzxcfz">${escape(today)}</p> <i class="menu-small-text svelte-pzxcfz" data-svelte-h="svelte-1ec062z">For those who love morning games</i></div></div> ${validate_component(Modal, "Modal").$$render(
+    $$rendered = `<div class="page svelte-179v2fh"> <div class="content svelte-179v2fh"><img class="logo svelte-179v2fh"${add_attribute("src", logo_src, 0)} alt="Our Little Loop Logo"> <p class="menu-header svelte-179v2fh" data-svelte-h="svelte-1k2sjsl">The LetterLoop</p> <p class="menu-sub-header svelte-179v2fh" data-svelte-h="svelte-j0rk1k">Two 5-letter words, two shared letters, one loop</p> <div><button class="menu-btn svelte-179v2fh" data-svelte-h="svelte-1h0esab">Play</button></div> <div><button class="menu-btn no-fill svelte-179v2fh" data-svelte-h="svelte-lan869">How to play</button></div> <p class="menu-date svelte-179v2fh">${escape(today)}</p> <i class="menu-small-text svelte-179v2fh" data-svelte-h="svelte-1ec062z">For those who love morning games</i></div>  <div class="adparent svelte-179v2fh" data-svelte-h="svelte-u5tbbf"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8474194726617008" data-ad-slot="5686489609" data-ad-format="auto" data-full-width-responsive="true"></ins></div> <i style="font-size:12px;" data-svelte-h="svelte-z3pww">*advertisement</i></div> ${validate_component(Modal, "Modal").$$render(
       $$result,
       { showModal: showHelpModal },
       {
