@@ -60,13 +60,16 @@ const css$2 = {
 const Modal = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   let { showModal } = $$props;
   let { hide_close = false } = $$props;
+  let { modalType } = $$props;
   let dialog;
   if ($$props.showModal === void 0 && $$bindings.showModal && showModal !== void 0)
     $$bindings.showModal(showModal);
   if ($$props.hide_close === void 0 && $$bindings.hide_close && hide_close !== void 0)
     $$bindings.hide_close(hide_close);
+  if ($$props.modalType === void 0 && $$bindings.modalType && modalType !== void 0)
+    $$bindings.modalType(modalType);
   $$result.css.add(css$2);
-  return ` <dialog class="svelte-kvu5ns"${add_attribute("this", dialog, 0)}> <div class="svelte-kvu5ns">${validate_component(Toast, "Toast").$$render($$result, {}, {}, {})} <div class="flex-container svelte-kvu5ns">${slots.header ? slots.header({}) : ``} <div class="spacer svelte-kvu5ns"></div> ${!hide_close ? `<i class="fa-solid fa-xmark svelte-kvu5ns"></i>` : ``}</div> <hr> ${slots.default ? slots.default({}) : ``}</div> </dialog>`;
+  return ` <dialog class="svelte-kvu5ns"${add_attribute("this", dialog, 0)}> <div class="svelte-kvu5ns">${validate_component(Toast, "Toast").$$render($$result, {}, {}, {})} <div class="flex-container svelte-kvu5ns">${slots.header ? slots.header({}) : ``} <div class="spacer svelte-kvu5ns"></div> ${!hide_close ? `<i class="fa-solid fa-xmark svelte-kvu5ns"></i>` : ``}</div> <hr> ${slots.default ? slots.default({}) : ``} ${modalType === "end" ? `<div class="adparent" data-svelte-h="svelte-hhcwfj"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8474194726617008" data-ad-slot="5686489609" data-ad-format="auto" data-full-width-responsive="true"></ins></div> <i style="font-size:12px;" data-svelte-h="svelte-z3pww">*advertisement</i>` : ``}</div> </dialog>`;
 });
 const firebaseConfig = {
   apiKey: "AIzaSyD4qZNCNnlVihIZbdgtBB82R48AIC0bqG4",
@@ -219,7 +222,10 @@ const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) =>
       return `<div class="${["key", isDisabled(index) ? "disabled" : ""].join(" ").trim()}">${escape(letter)} </div>`;
     })}  <div class="key" data-svelte-h="svelte-pcdrzy"><i class="fa-solid fa-eraser"></i></div> <div class="key" data-svelte-h="svelte-1nazuqy"><i class="fa-solid fa-shuffle"></i></div> <div class="key" data-svelte-h="svelte-1lzlrm1"><i class="fa-solid fa-delete-left"></i></div> <div class="key enter-key" data-svelte-h="svelte-10umx21">Enter</div></div> <p class="date">Puzzle for ${escape(todays_date)}</p>` : `<p data-svelte-h="svelte-kk77ic">Loading Game...</p>`}</main>  ${validate_component(Modal, "Modal").$$render(
       $$result,
-      { showModal: showCompleteModal },
+      {
+        modalType: "end",
+        showModal: showCompleteModal
+      },
       {
         showModal: ($$value) => {
           showCompleteModal = $$value;
@@ -239,7 +245,10 @@ const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) =>
       }
     )} ${validate_component(Modal, "Modal").$$render(
       $$result,
-      { showModal: showHelpModal },
+      {
+        modalType: "help",
+        showModal: showHelpModal
+      },
       {
         showModal: ($$value) => {
           showHelpModal = $$value;
@@ -258,6 +267,7 @@ const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) =>
       $$result,
       {
         hide_close: true,
+        modalType: "pause",
         showModal: showPauseModal
       },
       {
@@ -280,7 +290,7 @@ const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) =>
 });
 const logo_src = "/_app/immutable/assets/logo.R4y_qj9s.png";
 const css = {
-  code: '.page.svelte-179v2fh{display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh !important;margin:0;width:100vw}.content.svelte-179v2fh{text-align:center;padding:20px;color:#D8CFD2\n  }.logo.svelte-179v2fh{width:65px;height:65px}.menu-header.svelte-179v2fh{font-size:32px;margin:3px;color:black;font-family:"Playfair Display", serif}.menu-sub-header.svelte-179v2fh{font-size:20px;margin:3px;color:black;margin-bottom:10px}.menu-small-text.svelte-179v2fh{font-size:12px;margin:3px;color:black}.menu-date.svelte-179v2fh{font-size:15px;margin:3px;color:black;font-weight:800;margin-top:15px}.menu-btn.svelte-179v2fh{padding:10px 20px;font-size:16px;background-color:#000000;border-radius:50px;color:#fff;border:none;cursor:pointer;width:130px;height:50px;margin-bottom:10px}.no-fill.svelte-179v2fh{background-color:transparent !important;color:#000 !important;border:1px solid #000}.adparent.svelte-179v2fh{align-items:center;min-width:320px;margin-bottom:15px;background-color:rgb(241, 239, 239);width:100vw}',
+  code: '.page.svelte-1vc19sr{display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh !important;margin:0;width:100vw}.content.svelte-1vc19sr{text-align:center;padding:20px;color:#D8CFD2\n  }.logo.svelte-1vc19sr{width:65px;height:65px}.menu-header.svelte-1vc19sr{font-size:32px;margin:3px;color:black;font-family:"Playfair Display", serif}.menu-sub-header.svelte-1vc19sr{font-size:20px;margin:3px;color:black;margin-bottom:10px}.menu-small-text.svelte-1vc19sr{font-size:12px;margin:3px;color:black}.menu-date.svelte-1vc19sr{font-size:15px;margin:3px;color:black;font-weight:800;margin-top:15px}.menu-btn.svelte-1vc19sr{padding:10px 20px;font-size:16px;background-color:#000000;border-radius:50px;color:#fff;border:none;cursor:pointer;width:130px;height:50px;margin-bottom:10px}.no-fill.svelte-1vc19sr{background-color:transparent !important;color:#000 !important;border:1px solid #000}',
   map: null
 };
 const Menu = create_ssr_component(($$result, $$props, $$bindings, slots) => {
@@ -296,9 +306,12 @@ const Menu = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   do {
     $$settled = true;
     $$result.head = previous_head;
-    $$rendered = `<div class="page svelte-179v2fh"> <div class="content svelte-179v2fh"><img class="logo svelte-179v2fh"${add_attribute("src", logo_src, 0)} alt="Our Little Loop Logo"> <p class="menu-header svelte-179v2fh" data-svelte-h="svelte-1k2sjsl">The LetterLoop</p> <p class="menu-sub-header svelte-179v2fh" data-svelte-h="svelte-j0rk1k">Two 5-letter words, two shared letters, one loop</p> <div><button class="menu-btn svelte-179v2fh" data-svelte-h="svelte-1h0esab">Play</button></div> <div><button class="menu-btn no-fill svelte-179v2fh" data-svelte-h="svelte-lan869">How to play</button></div> <p class="menu-date svelte-179v2fh">${escape(today)}</p> <i class="menu-small-text svelte-179v2fh" data-svelte-h="svelte-1ec062z">For those who love morning games</i></div>  <div class="adparent svelte-179v2fh" data-svelte-h="svelte-u5tbbf"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8474194726617008" data-ad-slot="5686489609" data-ad-format="auto" data-full-width-responsive="true"></ins></div> <i style="font-size:12px;" data-svelte-h="svelte-z3pww">*advertisement</i></div> ${validate_component(Modal, "Modal").$$render(
+    $$rendered = `<div class="page svelte-1vc19sr"> <div class="content svelte-1vc19sr"><img class="logo svelte-1vc19sr"${add_attribute("src", logo_src, 0)} alt="Our Little Loop Logo"> <p class="menu-header svelte-1vc19sr" data-svelte-h="svelte-1k2sjsl">The LetterLoop</p> <p class="menu-sub-header svelte-1vc19sr" data-svelte-h="svelte-j0rk1k">Two 5-letter words, two shared letters, one loop</p> <div><button class="menu-btn svelte-1vc19sr" data-svelte-h="svelte-1h0esab">Play</button></div> <div><button class="menu-btn no-fill svelte-1vc19sr" data-svelte-h="svelte-lan869">How to play</button></div> <p class="menu-date svelte-1vc19sr">${escape(today)}</p> <i class="menu-small-text svelte-1vc19sr" data-svelte-h="svelte-1ec062z">For those who love morning games</i></div></div> ${validate_component(Modal, "Modal").$$render(
       $$result,
-      { showModal: showHelpModal },
+      {
+        modalType: "help",
+        showModal: showHelpModal
+      },
       {
         showModal: ($$value) => {
           showHelpModal = $$value;

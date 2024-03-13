@@ -1,14 +1,23 @@
 <script>
   import Toast from './Toast.svelte';
+	import { onMount } from 'svelte';
 
   export let showModal; // boolean
 	export let hide_close = false;
+	export let modalType;
 
   let dialog; // HTMLDialogElement
 
   $: if (dialog) {
     if (showModal) {
       dialog.showModal();
+			if (modalType === "end") {
+				try {
+					(window.adsbygoogle = window.adsbygoogle || []).push({});
+				} catch (error) {
+					console.error("Ad failed to push");
+				}
+			}
     } else {
       dialog.close();
     }
@@ -18,6 +27,8 @@
   $: if (dialog && showModal === false && dialog.open) {
     dialog.close();
   }
+
+	
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
@@ -38,6 +49,18 @@
     </div>
     <hr />
     <slot />
+		{#if modalType === "end"}
+			<div class='adparent'>
+				<ins class="adsbygoogle"
+					style="display:block"
+					data-ad-client="ca-pub-8474194726617008"
+					data-ad-slot="5686489609"
+					data-ad-format="auto"
+					data-full-width-responsive="true">
+				</ins>
+			</div>
+			<i style="font-size:12px;">*advertisement</i>
+		{/if}
   </div>
 </dialog>
 

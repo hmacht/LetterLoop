@@ -97,7 +97,6 @@
       const selectedWord = selectedLetters.join('');
       const numSelected = selectedLetters.filter(letter => letter !== "").length;
 
-      console.log(selectedLetters)
       if (solutions.includes(selectedWord)) {
         showCompleteModal = true
         game_timer.stop();
@@ -259,7 +258,7 @@
   
   <svelte:window on:keydown|preventDefault={handleKeyPress} />
   
-  <Modal bind:showModal={showCompleteModal}>
+  <Modal bind:showModal={showCompleteModal} modalType={"end"}>
     <div slot="header">
       <span class="styled-header">Congratulations!</span>
       <br>
@@ -282,15 +281,16 @@
     </div>
   </Modal>
   
-  <Modal bind:showModal={showHelpModal}>
+  <Modal bind:showModal={showHelpModal} modalType={"help"}>
     <h2 slot="header">
       <span class="styled-header">How To Play</span>
     </h2>
+    
     <Help />
   </Modal>
   
   
-  <Modal bind:showModal={showPauseModal} hide_close={true}>
+  <Modal bind:showModal={showPauseModal} hide_close={true} modalType={"pause"}>
     <h2 slot="header">
       <span class="styled-header">Paused</span>
     </h2>

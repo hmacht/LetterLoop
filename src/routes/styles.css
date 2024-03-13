@@ -261,3 +261,10 @@ main {
 	font-size: 15px;;
 	font-weight: 700;
 }
+
+/* Google Ad Styling */
+.adparent {
+	align-items: center;
+	margin-top: 15px;
+	background-color: rgb(241, 239, 239);
+}

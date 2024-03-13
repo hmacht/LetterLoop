@@ -2,7 +2,6 @@
   import logo_src from '$lib/images/logo.png';
   import Modal from './Modal.svelte';
   import Help from './Help.svelte';
-  import { onMount } from 'svelte';
 
   export let gameHasStarted;
 
@@ -13,9 +12,6 @@
     gameHasStarted = true
   }
 
-  onMount(() => {
-    (window.adsbygoogle = window.adsbygoogle || []).push({});
-  });
 </script>
 
 <style>
@@ -88,21 +84,13 @@
     border: 1px solid #000;
   }
 
-  .adparent {
-    align-items: center;
-    min-width: 320px;
-    margin-bottom: 15px;
-    background-color: rgb(241, 239, 239);
-    width: 100vw;
-  }
-
   .spacer {
     flex-grow: 1;
   }
+
 </style>
 
 <div class="page">
-
   <!-- Main Page Content -->
   <div class="content">
     <img class="logo" src={logo_src} alt="Our Little Loop Logo" />
@@ -115,23 +103,18 @@
     
       <p class="menu-date">{today}</p>
       <i class="menu-small-text">For those who love morning games</i>
-  </div>
 
-  <!-- MenuAd -->
-  <div class='adparent'>
-    <ins class="adsbygoogle"
-      style="display:block"
-      data-ad-client="ca-pub-8474194726617008"
-      data-ad-slot="5686489609"
-      data-ad-format="auto"
-      data-full-width-responsive="true">
-    </ins>
+      <div style="padding-top:10px;">
+        <a href="/Privacy-Policy">Privacy Policy</a>
+        |
+        <a href="/Terms">terms and conditions</a>
+      </div>
+
   </div>
-  <i style="font-size:12px;">*advertisement</i>
 </div>
 
 
-<Modal bind:showModal={showHelpModal}>
+<Modal bind:showModal={showHelpModal} modalType={"help"}>
   <h2 slot="header">
     <span class="styled-header">How To Play</span>
   </h2>
