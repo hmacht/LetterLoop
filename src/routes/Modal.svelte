@@ -11,13 +11,6 @@
   $: if (dialog) {
     if (showModal) {
       dialog.showModal();
-			if (modalType === "end") {
-				try {
-					(window.adsbygoogle = window.adsbygoogle || []).push({});
-				} catch (error) {
-					console.error("Ad failed to push");
-				}
-			}
     } else {
       dialog.close();
     }
@@ -41,26 +34,13 @@
   <div on:click|stopPropagation>
     <Toast />
     <div class="flex-container">
-      <slot name="header" />
       <div class="spacer"></div>
       {#if !hide_close}
-        <i class="fa-solid fa-xmark" on:click={() => dialog.close()}></i>
+				<i class="fa-solid fa-xmark" on:click={() => dialog.close()}></i>
       {/if}
     </div>
-    <hr />
+		<slot name="header" />
     <slot />
-		{#if modalType === "end"}
-			<div class='adparent'>
-				<ins class="adsbygoogle"
-					style="display:block"
-					data-ad-client="ca-pub-8474194726617008"
-					data-ad-slot="5686489609"
-					data-ad-format="auto"
-					data-full-width-responsive="true">
-				</ins>
-			</div>
-			<i style="font-size:12px;">*advertisement</i>
-		{/if}
   </div>
 </dialog>
 

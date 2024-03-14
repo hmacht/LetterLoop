@@ -8,8 +8,13 @@ export async function fetchFirebaseData(databasePath) {
   return new Promise((resolve, reject) => {
     // @ts-ignore
     onValue(db_ref, (snapshot) => {
-      const data = snapshot.val() || [];
-      resolve(data);
+      if (snapshot.exists()) {
+        const data = snapshot.val() || [];
+        resolve(data);
+      } else {
+        resolve("NOREF");
+      }
+      
     // @ts-ignore
     }, (error) => {
       reject(error);

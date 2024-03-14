@@ -2,10 +2,12 @@
   import logo_src from '$lib/images/logo.png';
   import Modal from './Modal.svelte';
   import Help from './Help.svelte';
+  import Stats from './Stats.svelte';
 
   export let gameHasStarted;
 
   let showHelpModal = false;
+  let showStatsModal = false;
   let today = new Date().toLocaleDateString();
 
   function startButtonClick() {
@@ -100,6 +102,7 @@
     
       <div><button class="menu-btn" on:click={startButtonClick}>Play</button></div>
       <div><button class="menu-btn no-fill" on:click={() => showHelpModal = true}>How to play</button></div>
+      <div><button class="menu-btn no-fill" on:click={() => showStatsModal = true}>Stats</button></div>
     
       <p class="menu-date">{today}</p>
       <i class="menu-small-text">For those who love morning games</i>
@@ -113,10 +116,18 @@
   </div>
 </div>
 
-
 <Modal bind:showModal={showHelpModal} modalType={"help"}>
   <h2 slot="header">
     <span class="styled-header">How To Play</span>
   </h2>
+  <hr>
   <Help />
+</Modal>
+
+<Modal bind:showModal={showStatsModal} modalType={"stats"}>
+  <h2 slot="header">
+    <span class="styled-header">Today's Stats</span>
+  </h2>
+  <hr>
+  <Stats />
 </Modal>

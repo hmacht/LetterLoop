@@ -261,10 +261,25 @@ main {
 	font-size: 15px;;
 	font-weight: 700;
 }
-
-/* Google Ad Styling */
-.adparent {
-	align-items: center;
-	margin-top: 15px;
-	background-color: rgb(241, 239, 239);
+.small-header {
+	text-transform: uppercase;
+	font-size: 12px;
+	font-weight: 600;
+	margin: 0;
+	letter-spacing: 1px;
+}
+.large-header {
+	font-size: 30px;
+	font-weight: 700;
+	margin: 0;
+}
+.small-modal-text {
+	font-size: 12px;
+	font-weight: 300;
+	margin: 0;
+}
+.large-modal-text {
+	font-size: 15px;
+	font-weight: 300;
+	margin: 0;
 }

@@ -11,6 +11,7 @@
     import { getAnalytics, logEvent } from "firebase/analytics";
     import Timer from './Timer.svelte';
     import Help from './Help.svelte';
+    import Stats from './Stats.svelte';
   
     let showCompleteModal = false;
     let showHelpModal = false;
@@ -26,6 +27,7 @@
     let game_timer;
     let elapsedSeconds = 0;
     let puzzle_author = "---";
+    let globalStats;
   
     onMount(async () => {
       
@@ -101,6 +103,12 @@
         showCompleteModal = true
         game_timer.stop();
         logTime(elapsedSeconds)
+          .then((result) => {
+              globalStats = result;
+          })
+          .catch((error) => {
+              console.error('Error:', error);
+          });
       } else if (numSelected != 8) {
         notifications.default('You Must fill in every letter', 1000)
       } else {
@@ -133,7 +141,6 @@
       let textToCopy = "I completed the LetterLoop in: \n" + "🔴" + elapsedSeconds + "🔴"
       navigator.clipboard.writeText(textToCopy)
         .then(() => {
-          console.log('Text successfully copied to clipboard:', textToCopy);
           notifications.default('Copied Text!', 1000)
         })
         .catch((err) => {
@@ -259,21 +266,45 @@
   <svelte:window on:keydown|preventDefault={handleKeyPress} />
   
   <Modal bind:showModal={showCompleteModal} modalType={"end"}>
-    <div slot="header">
-      <span class="styled-header">Congratulations!</span>
-      <br>
-      Share your results with your friends.
-    </div>
-    <span class="sub-header">Solved in {elapsedSeconds}</span>
+    <p class="small-header">Solved in</p>
+    <p class="large-header">{elapsedSeconds}</p>
     <hr>
-    <span class="sub-header">Other Possible Solutions</span>
-    {#each solutions as solution}
-      <div class="solution">
-        {format_solution(solution)}
-      </div>
-    {/each}
+    <span class="small-header">Global Stats</span>
     <br>
+
+    <Stats {globalStats}/>
+
+    <hr>
+    {#if globalStats && globalStats["isHighScore"]}
+      <div class="flex-container">
+        <span style="font-size:30px;padding-right:5px;">🙀</span>
+        <div>
+          <p class="small-modal-text">New High Score!</p>
+          <p class="small-modal-text">You're officialy the fastest looper today!</p>
+        </div>
+      </div>
+    {:else}
+      {#if globalStats && globalStats["isUnderAverage"]}
+        <div class="flex-container">
+          <span style="font-size:30px;padding-right:5px;">🥇</span>
+          <div>
+            <p class="small-modal-text">Congratulations speedster.</p>
+            <p class="small-modal-text">You're under today's average - very clever.</p>
+          </div>
+        </div>
+      {:else}
+        <div class="flex-container">
+          <span style="font-size:30px;padding-right:5px;">🥉</span>
+          <div>
+            <p class="small-modal-text">Oooof.</p>
+            <p class="small-modal-text">You're over today's average - try for gold tomorrow</p>
+          </div>
+        </div>
+      {/if}
+    {/if}
+    <hr>
     
+
     <div class="flex-container">
       <div class="spacer"></div>
       <button class="share-button" on:click={share}>Share</button>
@@ -285,6 +316,7 @@
     <h2 slot="header">
       <span class="styled-header">How To Play</span>
     </h2>
+    <hr />
     
     <Help />
   </Modal>
@@ -294,6 +326,7 @@
     <h2 slot="header">
       <span class="styled-header">Paused</span>
     </h2>
+    <hr />
     
     <div class="flex-container">
       <div class="spacer"></div>
