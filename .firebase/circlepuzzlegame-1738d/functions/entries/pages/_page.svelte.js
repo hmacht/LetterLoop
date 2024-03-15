@@ -69,7 +69,7 @@ const Modal = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   if ($$props.modalType === void 0 && $$bindings.modalType && modalType !== void 0)
     $$bindings.modalType(modalType);
   $$result.css.add(css$2);
-  return ` <dialog class="svelte-kvu5ns"${add_attribute("this", dialog, 0)}> <div class="svelte-kvu5ns">${validate_component(Toast, "Toast").$$render($$result, {}, {}, {})} <div class="flex-container svelte-kvu5ns">${slots.header ? slots.header({}) : ``} <div class="spacer svelte-kvu5ns"></div> ${!hide_close ? `<i class="fa-solid fa-xmark svelte-kvu5ns"></i>` : ``}</div> <hr> ${slots.default ? slots.default({}) : ``} ${modalType === "end" ? `<div class="adparent" data-svelte-h="svelte-hhcwfj"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8474194726617008" data-ad-slot="5686489609" data-ad-format="auto" data-full-width-responsive="true"></ins></div> <i style="font-size:12px;" data-svelte-h="svelte-z3pww">*advertisement</i>` : ``}</div> </dialog>`;
+  return ` <dialog class="svelte-kvu5ns"${add_attribute("this", dialog, 0)}> <div class="svelte-kvu5ns">${validate_component(Toast, "Toast").$$render($$result, {}, {}, {})} <div class="flex-container svelte-kvu5ns"><div class="spacer svelte-kvu5ns"></div> ${!hide_close ? `<i class="fa-solid fa-xmark svelte-kvu5ns"></i>` : ``}</div> ${slots.header ? slots.header({}) : ``} ${slots.default ? slots.default({}) : ``}</div> </dialog>`;
 });
 const firebaseConfig = {
   apiKey: "AIzaSyD4qZNCNnlVihIZbdgtBB82R48AIC0bqG4",
@@ -160,11 +160,12 @@ const Help = create_ssr_component(($$result, $$props, $$bindings, slots) => {
     and 
     <b><span style="color: red;">C</span>HAR<span style="color: red;">M</span> </b>.</p> <p data-svelte-h="svelte-1xer9do">Notice how these words share an <b><span style="color: red;">M</span></b> and a <b><span style="color: red;">C</span></b>.</p> <p data-svelte-h="svelte-1tryhud">One correct solution:</p> <img${add_attribute("src", ex_solution, 0)} alt="Welcome" style="width: 150px; height: auto;"> <p data-svelte-h="svelte-1imbt6f">Remember there can be more than one solution.</p>`;
 });
-function format_solution(solution) {
-  const firstPart = solution.substring(0, 5);
-  const lastPart = solution.substring(4, 8) + firstPart[0];
-  return `${firstPart} + ${lastPart}`;
-}
+const Stats = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+  let { globalStats } = $$props;
+  if ($$props.globalStats === void 0 && $$bindings.globalStats && globalStats !== void 0)
+    $$bindings.globalStats(globalStats);
+  return `${globalStats == "NOREF" ? `<p data-svelte-h="svelte-3f4ohi">Stats not availible yet today</p>` : `${globalStats ? `<p class="large-modal-text" style="padding-top:10px;"><b>${escape(globalStats.count)}</b> people have looped today.</p> <p class="large-modal-text" style="padding-top:10px;">Average Time: 🔴 ${escape(globalStats.averageTime)} 🔴</p> <p class="large-modal-text">High Score: 🔴 ${escape(globalStats.minTime)} 🔴</p>` : `<p data-svelte-h="svelte-lb7i7x">Loading Stats...</p>`}`}`;
+});
 const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   let isDisabled;
   let todays_date;
@@ -180,6 +181,7 @@ const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) =>
   let game_timer;
   let elapsedSeconds = 0;
   let puzzle_author = "---";
+  let globalStats;
   let $$settled;
   let $$rendered;
   let previous_head = $$result.head;
@@ -233,14 +235,8 @@ const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) =>
         }
       },
       {
-        header: () => {
-          return `<div slot="header" data-svelte-h="svelte-wca559"><span class="styled-header">Congratulations!</span> <br>
-      Share your results with your friends.</div>`;
-        },
         default: () => {
-          return `<span class="sub-header">Solved in ${escape(elapsedSeconds)}</span> <hr> <span class="sub-header" data-svelte-h="svelte-zm2m22">Other Possible Solutions</span> ${each(solutions, (solution) => {
-            return `<div class="solution">${escape(format_solution(solution))} </div>`;
-          })} <br> <div class="flex-container"><div class="spacer"></div> <button class="share-button" data-svelte-h="svelte-1urjot1">Share</button> <div class="spacer"></div></div>`;
+          return `<p class="small-header" data-svelte-h="svelte-1do05u2">Solved in</p> <p class="large-header">${escape(elapsedSeconds)}</p> <hr> <span class="small-header" data-svelte-h="svelte-eapto">Global Stats</span> <br> ${validate_component(Stats, "Stats").$$render($$result, { globalStats }, {}, {})} <hr> ${`${`<div class="flex-container" data-svelte-h="svelte-1dnxwdz"><span style="font-size:30px;padding-right:5px;">🥉</span> <div><p class="small-modal-text">Oooof.</p> <p class="small-modal-text">You&#39;re over today&#39;s average - try for gold tomorrow</p></div></div>`}`} <hr> <div class="flex-container"><div class="spacer"></div> <button class="share-button" data-svelte-h="svelte-1urjot1">Share</button> <div class="spacer"></div></div>`;
         }
       }
     )} ${validate_component(Modal, "Modal").$$render(
@@ -260,7 +256,7 @@ const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) =>
           return `<h2 slot="header" data-svelte-h="svelte-1kct8zk"><span class="styled-header">How To Play</span></h2>`;
         },
         default: () => {
-          return `${validate_component(Help, "Help").$$render($$result, {}, {}, {})}`;
+          return `<hr> ${validate_component(Help, "Help").$$render($$result, {}, {}, {})}`;
         }
       }
     )} ${validate_component(Modal, "Modal").$$render(
@@ -281,7 +277,7 @@ const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) =>
           return `<h2 slot="header" data-svelte-h="svelte-1ught0z"><span class="styled-header">Paused</span></h2>`;
         },
         default: () => {
-          return `<div class="flex-container"><div class="spacer"></div> <button class="share-button" data-svelte-h="svelte-o41kx2">Resume</button> <div class="spacer"></div></div>`;
+          return `<hr> <div class="flex-container"><div class="spacer"></div> <button class="share-button" data-svelte-h="svelte-o41kx2">Resume</button> <div class="spacer"></div></div>`;
         }
       }
     )}`;
@@ -296,6 +292,7 @@ const css = {
 const Menu = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   let { gameHasStarted } = $$props;
   let showHelpModal = false;
+  let showStatsModal = false;
   let today = (/* @__PURE__ */ new Date()).toLocaleDateString();
   if ($$props.gameHasStarted === void 0 && $$bindings.gameHasStarted && gameHasStarted !== void 0)
     $$bindings.gameHasStarted(gameHasStarted);
@@ -306,7 +303,7 @@ const Menu = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   do {
     $$settled = true;
     $$result.head = previous_head;
-    $$rendered = `<div class="page svelte-1fbxowr"> <div class="content svelte-1fbxowr"><img class="logo svelte-1fbxowr"${add_attribute("src", logo_src, 0)} alt="Our Little Loop Logo"> <p class="menu-header svelte-1fbxowr" data-svelte-h="svelte-1k2sjsl">The LetterLoop</p> <p class="menu-sub-header svelte-1fbxowr" data-svelte-h="svelte-j0rk1k">Two 5-letter words, two shared letters, one loop</p> <div><button class="menu-btn svelte-1fbxowr" data-svelte-h="svelte-1h0esab">Play</button></div> <div><button class="menu-btn no-fill svelte-1fbxowr" data-svelte-h="svelte-lan869">How to play</button></div> <p class="menu-date svelte-1fbxowr">${escape(today)}</p> <i class="menu-small-text svelte-1fbxowr" data-svelte-h="svelte-1ec062z">For those who love morning games</i> <div style="padding-top:10px;" data-svelte-h="svelte-zj8w2l"><a href="/Privacy-Policy">Privacy Policy</a>
+    $$rendered = `<div class="page svelte-1fbxowr"> <div class="content svelte-1fbxowr"><img class="logo svelte-1fbxowr"${add_attribute("src", logo_src, 0)} alt="Our Little Loop Logo"> <p class="menu-header svelte-1fbxowr" data-svelte-h="svelte-1k2sjsl">The LetterLoop</p> <p class="menu-sub-header svelte-1fbxowr" data-svelte-h="svelte-j0rk1k">Two 5-letter words, two shared letters, one loop</p> <div><button class="menu-btn svelte-1fbxowr" data-svelte-h="svelte-1h0esab">Play</button></div> <div><button class="menu-btn no-fill svelte-1fbxowr" data-svelte-h="svelte-lan869">How to play</button></div> <div><button class="menu-btn no-fill svelte-1fbxowr" data-svelte-h="svelte-136ie3n">Stats</button></div> <p class="menu-date svelte-1fbxowr">${escape(today)}</p> <i class="menu-small-text svelte-1fbxowr" data-svelte-h="svelte-1ec062z">For those who love morning games</i> <div style="padding-top:10px;" data-svelte-h="svelte-zj8w2l"><a href="/Privacy-Policy">Privacy Policy</a>
         |
         <a href="/Terms">terms and conditions</a></div></div></div> ${validate_component(Modal, "Modal").$$render(
       $$result,
@@ -325,7 +322,27 @@ const Menu = create_ssr_component(($$result, $$props, $$bindings, slots) => {
           return `<h2 slot="header" data-svelte-h="svelte-r01ry8"><span class="styled-header">How To Play</span></h2>`;
         },
         default: () => {
-          return `${validate_component(Help, "Help").$$render($$result, {}, {}, {})}`;
+          return `<hr> ${validate_component(Help, "Help").$$render($$result, {}, {}, {})}`;
+        }
+      }
+    )} ${validate_component(Modal, "Modal").$$render(
+      $$result,
+      {
+        modalType: "stats",
+        showModal: showStatsModal
+      },
+      {
+        showModal: ($$value) => {
+          showStatsModal = $$value;
+          $$settled = false;
+        }
+      },
+      {
+        header: () => {
+          return `<h2 slot="header" data-svelte-h="svelte-1gfnj8z"><span class="styled-header">Today&#39;s Stats</span></h2>`;
+        },
+        default: () => {
+          return `<hr> ${validate_component(Stats, "Stats").$$render($$result, {}, {}, {})}`;
         }
       }
     )}`;

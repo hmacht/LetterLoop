@@ -136,18 +136,29 @@
         disabledKeys = disabledKeys.slice(0, -1);
       }
     }
-  
-    function share() {
-      let textToCopy = "I completed the LetterLoop in: \n" + "🔴" + elapsedSeconds + "🔴"
-      navigator.clipboard.writeText(textToCopy)
-        .then(() => {
-          notifications.default('Copied Text!', 1000)
-        })
-        .catch((err) => {
-          console.error('Error copying text to clipboard:', err);
+
+    const share = async () => {
+      let shareText = "I completed the LetterLoop in: \n" + "🔴" + elapsedSeconds + "🔴"
+
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "",
+            text: shareText,
+            url: window.location.href
+          });
+        } catch (error) {
           notifications.default('Error', 1000)
-        });
-    }
+        }
+      } else {
+        try {
+          await navigator.clipboard.writeText(shareText);
+          notifications.default('Copied Text!', 1000)
+        } catch (error) {
+          notifications.default('Error', 1000)
+        }
+      }
+    };
     
     function pause_game() {
       game_timer.stop();
@@ -160,10 +171,22 @@
     }
   
     function format_solution(solution) {
+      if (!solution) {
+        return "Loading Solutions...";
+      }
+      
       const firstPart = solution.substring(0, 5);
       const lastPart = solution.substring(4, 8) + firstPart[0];
-  
-      return `${firstPart} + ${lastPart}`;
+    
+      const htmlString = `
+        <div>
+          <a href="https://www.merriam-webster.com/dictionary/${firstPart}" target="blank">${firstPart}</a> 
+          + 
+          <a href="https://www.merriam-webster.com/dictionary/${lastPart}" target="blank">${lastPart}</a>
+        </div>
+      `;
+    
+      return htmlString;
     }
   
     $: isDisabled = (index) => disabledKeys.includes(index);
@@ -254,8 +277,6 @@
           Enter
         </div>
       </div>
-  
-      <p class="date">Puzzle for {todays_date}</p>
     {:else}
       <p>Loading Game...</p>
     {/if}
@@ -274,6 +295,21 @@
 
     <Stats {globalStats}/>
 
+    <hr>
+
+    <span class="small-header">Solutions</span>
+    <p style="height:6px;margin:0;padding;0px;"></p>
+    {#if solutions && solutions.length > 2}
+      {#each solutions as solution}
+        {@html format_solution(solution)}
+      {/each}
+    {:else}
+      {#if solutions && solutions.length > 0}
+        {@html format_solution(solutions[0])}
+      {:else}
+        Loading Solutions...
+      {/if}
+    {/if}
     <hr>
     {#if globalStats && globalStats["isHighScore"]}
       <div class="flex-container">

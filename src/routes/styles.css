@@ -21,7 +21,7 @@ body {
 	min-height: 100vh;
 	margin: 0;
 	background-attachment: fixed;
-	background-color: white;
+	background-color: rgb(241, 237, 237);
 	background-size: 100vw 100vh;
 }
 
@@ -121,7 +121,7 @@ main {
 	height: 60px;
 	border-radius: 50%;
 	background-color: transparent;
-	border: 2px solid #EBEBEB;
+	border: 2px solid #dfdbdb;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -131,13 +131,13 @@ main {
 }
 
 .filled {
-	background-color: #F0EBEB;
+	background-color: #e2dcdc;
 	color: rgb(0, 0, 0);
 	border: none;
 }
 
 .shared {
-	background-color: #ec2525;
+	background-image: linear-gradient(to bottom, #FF5793, #F70303);
 	color: white;
 	border: none;
 }
@@ -153,7 +153,7 @@ main {
 	width: 60px;
 	height: 60px;
 	border-radius: 50%;
-	background-color: #F0EBEB;
+	background-color: #e2dcdc;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -166,7 +166,7 @@ main {
 .enter-key {
 	font-size: 12px;
 	background-color: transparent !important;
-	border: 2px solid #EBEBEB;
+	border: 2px solid #dfdbdb;
 }
 
 .disabled {
