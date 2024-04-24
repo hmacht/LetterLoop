@@ -1,7 +1,7 @@
 <script>
 // @ts-nocheck
 
-  import { fetchFirebaseData } from './firebaseFetchData.js';
+  import { fetchFirebaseData } from '../firebaseFetchData.js';
   import { onMount } from 'svelte';
 
   export let globalStats;

@@ -1,17 +1,17 @@
 <script>
   // @ts-nocheck
   
-    import Modal from './Modal.svelte';
-    import { notifications } from "./notifications.js";
-    import Toast from './Toast.svelte';
+    import Modal from '../shared/Modal.svelte';
+    import { notifications } from "../notifications.js";
+    import Toast from '../shared/Toast.svelte';
     import { onMount } from 'svelte';
-    import { firebaseApp, signIn } from './firebaseConfig';
-    import { fetchFirebaseData } from './firebaseFetchData.js';
-    import { logTime } from './logCompletionTime.js';
+    import { firebaseApp, signIn } from '../firebaseConfig';
+    import { fetchFirebaseData } from '../firebaseFetchData.js';
+    import { logTime } from '../logCompletionTime.js';
     import { getAnalytics, logEvent } from "firebase/analytics";
     import Timer from './Timer.svelte';
-    import Help from './Help.svelte';
-    import Stats from './Stats.svelte';
+    import Help from '../shared/Help.svelte';
+    import Stats from '../shared/Stats.svelte';
   
     let showCompleteModal = false;
     let showHelpModal = false;

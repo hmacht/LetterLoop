@@ -1,10 +1,8 @@
 <script>
   import logo_src from '$lib/images/logo.png';
-  import Modal from './Modal.svelte';
-  import Help from './Help.svelte';
-  import Stats from './Stats.svelte';
-
-  export let gameHasStarted;
+  import Modal from './shared/Modal.svelte';
+  import Help from './shared/Help.svelte';
+  import Stats from './shared/Stats.svelte';
 
   let showHelpModal = false;
   let showStatsModal = false;
@@ -20,7 +18,7 @@
   }
 
   function startButtonClick() {
-    gameHasStarted = true
+    window.location.href = "/gameboard";
   }
 
 </script>
@@ -36,7 +34,7 @@
     margin: 0;
     width: 100vw;
     background-color: #DDC1C1;
-}
+  }
 
   .content {
     text-align: center;

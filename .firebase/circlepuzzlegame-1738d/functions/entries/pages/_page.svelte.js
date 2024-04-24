@@ -54,7 +54,7 @@ const Toast = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   })} </div>`;
 });
 const css$2 = {
-  code: "dialog.svelte-kvu5ns.svelte-kvu5ns{max-width:32em;border-radius:0.2em;border:none;padding:0}dialog.svelte-kvu5ns.svelte-kvu5ns::backdrop{background:rgba(0, 0, 0, 0.3)}dialog.svelte-kvu5ns>div.svelte-kvu5ns{padding:1em}dialog[open].svelte-kvu5ns.svelte-kvu5ns{animation:svelte-kvu5ns-zoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)}@keyframes svelte-kvu5ns-zoom{from{transform:scale(0.95)}to{transform:scale(1)}}dialog[open].svelte-kvu5ns.svelte-kvu5ns::backdrop{animation:svelte-kvu5ns-fade 0.2s ease-out}@keyframes svelte-kvu5ns-fade{from{opacity:0}to{opacity:1}}.flex-container.svelte-kvu5ns.svelte-kvu5ns{display:flex;align-items:center}.spacer.svelte-kvu5ns.svelte-kvu5ns{flex-grow:1}.fa-xmark.svelte-kvu5ns.svelte-kvu5ns{cursor:pointer;font-size:22px;;;padding-left:15px}",
+  code: "dialog.svelte-1cg8oiu.svelte-1cg8oiu{max-width:32em;border-radius:0.2em;border:none;padding:0;background-color:rgb(241, 237, 237)}dialog.svelte-1cg8oiu.svelte-1cg8oiu::backdrop{background:rgba(0, 0, 0, 0.3)}dialog.svelte-1cg8oiu>div.svelte-1cg8oiu{padding:1em}dialog[open].svelte-1cg8oiu.svelte-1cg8oiu{animation:svelte-1cg8oiu-zoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)}@keyframes svelte-1cg8oiu-zoom{from{transform:scale(0.95)}to{transform:scale(1)}}dialog[open].svelte-1cg8oiu.svelte-1cg8oiu::backdrop{animation:svelte-1cg8oiu-fade 0.2s ease-out}@keyframes svelte-1cg8oiu-fade{from{opacity:0}to{opacity:1}}.flex-container.svelte-1cg8oiu.svelte-1cg8oiu{display:flex;align-items:center}.spacer.svelte-1cg8oiu.svelte-1cg8oiu{flex-grow:1}.fa-xmark.svelte-1cg8oiu.svelte-1cg8oiu{cursor:pointer;font-size:22px;;;padding-left:15px}",
   map: null
 };
 const Modal = create_ssr_component(($$result, $$props, $$bindings, slots) => {
@@ -69,7 +69,7 @@ const Modal = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   if ($$props.modalType === void 0 && $$bindings.modalType && modalType !== void 0)
     $$bindings.modalType(modalType);
   $$result.css.add(css$2);
-  return ` <dialog class="svelte-kvu5ns"${add_attribute("this", dialog, 0)}> <div class="svelte-kvu5ns">${validate_component(Toast, "Toast").$$render($$result, {}, {}, {})} <div class="flex-container svelte-kvu5ns"><div class="spacer svelte-kvu5ns"></div> ${!hide_close ? `<i class="fa-solid fa-xmark svelte-kvu5ns"></i>` : ``}</div> ${slots.header ? slots.header({}) : ``} ${slots.default ? slots.default({}) : ``}</div> </dialog>`;
+  return ` <dialog class="svelte-1cg8oiu"${add_attribute("this", dialog, 0)}> <div class="svelte-1cg8oiu">${validate_component(Toast, "Toast").$$render($$result, {}, {}, {})} <div class="flex-container svelte-1cg8oiu"><div class="spacer svelte-1cg8oiu"></div> ${!hide_close ? `<i class="fa-solid fa-xmark svelte-1cg8oiu"></i>` : ``}</div> ${slots.header ? slots.header({}) : ``} ${slots.default ? slots.default({}) : ``}</div> </dialog>`;
 });
 const firebaseConfig = {
   apiKey: "AIzaSyD4qZNCNnlVihIZbdgtBB82R48AIC0bqG4",
@@ -152,8 +152,8 @@ const Timer = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   $$unsubscribe_elapsedTime();
   return `  <span class="timer svelte-1y1osaq"><span class="value">${escape(f(hh))}</span>:<span class="value">${escape(f(mm))}</span>:<span class="value">${escape(f(ss))}</span> </span>`;
 });
-const ex_solution = "/_app/immutable/assets/ex-solution.DMtatkDj.png";
-const ex_letter_box = "/_app/immutable/assets/ex-letter-box.mgBNjwYG.png";
+const ex_solution = "/_app/immutable/assets/ex-solution.Cz2E2Fv4.png";
+const ex_letter_box = "/_app/immutable/assets/ex-letter-box.CI-HL_Lb.png";
 const Help = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   return `<h3 data-svelte-h="svelte-1j8js8f">Find the 8-letter circle word</h3> <ul class="definition-list" data-svelte-h="svelte-1eowta5"><li>There are 2 words to find.</li> <li>Letters may only be used once and have to be in the letter bank.</li> <li>The red circles are shared letters between the two words.</li> <li>You must fill in every word before submitting.</li></ul> <h3 data-svelte-h="svelte-qg4234">Example</h3> <p data-svelte-h="svelte-eqhtsw">If we had these letters:</p> <img${add_attribute("src", ex_letter_box, 0)} alt="Welcome" style="width: 350px; height: auto;"> <p data-svelte-h="svelte-9c7ajy">We could spell the words 
     <b><span style="color: red;">M</span>USI<span style="color: red;">C</span></b> 
@@ -166,9 +166,23 @@ const Stats = create_ssr_component(($$result, $$props, $$bindings, slots) => {
     $$bindings.globalStats(globalStats);
   return `${globalStats == "NOREF" ? `<p data-svelte-h="svelte-3f4ohi">Stats not availible yet today</p>` : `${globalStats ? `<p class="large-modal-text" style="padding-top:10px;"><b>${escape(globalStats.count)}</b> people have looped today.</p> <p class="large-modal-text" style="padding-top:10px;">Average Time: 🔴 ${escape(globalStats.averageTime)} 🔴</p> <p class="large-modal-text">High Score: 🔴 ${escape(globalStats.minTime)} 🔴</p>` : `<p data-svelte-h="svelte-lb7i7x">Loading Stats...</p>`}`}`;
 });
+function format_solution(solution) {
+  if (!solution) {
+    return "Loading Solutions...";
+  }
+  const firstPart = solution.substring(0, 5);
+  const lastPart = solution.substring(4, 8) + firstPart[0];
+  const htmlString = `
+        <div>
+          <a href="https://www.merriam-webster.com/dictionary/${firstPart}" target="blank">${firstPart}</a> 
+          + 
+          <a href="https://www.merriam-webster.com/dictionary/${lastPart}" target="blank">${lastPart}</a>
+        </div>
+      `;
+  return htmlString;
+}
 const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   let isDisabled;
-  let todays_date;
   let showCompleteModal = false;
   let showHelpModal = false;
   let showPauseModal = false;
@@ -189,7 +203,7 @@ const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) =>
     $$settled = true;
     $$result.head = previous_head;
     isDisabled = (index) => disabledKeys.includes(index);
-    todays_date = (/* @__PURE__ */ new Date()).toLocaleDateString(void 0, {
+    (/* @__PURE__ */ new Date()).toLocaleDateString(void 0, {
       year: "numeric",
       month: "long",
       day: "numeric"
@@ -222,7 +236,7 @@ const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) =>
       )}>${escape(letter == "" ? "" : letter)} </div>`;
     })}</div> <div class="keyboard">${each(scrambledLettersBank, (letter, index) => {
       return `<div class="${["key", isDisabled(index) ? "disabled" : ""].join(" ").trim()}">${escape(letter)} </div>`;
-    })}  <div class="key" data-svelte-h="svelte-pcdrzy"><i class="fa-solid fa-eraser"></i></div> <div class="key" data-svelte-h="svelte-1nazuqy"><i class="fa-solid fa-shuffle"></i></div> <div class="key" data-svelte-h="svelte-1lzlrm1"><i class="fa-solid fa-delete-left"></i></div> <div class="key enter-key" data-svelte-h="svelte-10umx21">Enter</div></div> <p class="date">Puzzle for ${escape(todays_date)}</p>` : `<p data-svelte-h="svelte-kk77ic">Loading Game...</p>`}</main>  ${validate_component(Modal, "Modal").$$render(
+    })}  <div class="key" data-svelte-h="svelte-pcdrzy"><i class="fa-solid fa-eraser"></i></div> <div class="key" data-svelte-h="svelte-1nazuqy"><i class="fa-solid fa-shuffle"></i></div> <div class="key" data-svelte-h="svelte-1lzlrm1"><i class="fa-solid fa-delete-left"></i></div> <div class="key enter-key" data-svelte-h="svelte-10umx21">Enter</div></div>` : `<p data-svelte-h="svelte-kk77ic">Loading Game...</p>`}</main>  ${validate_component(Modal, "Modal").$$render(
       $$result,
       {
         modalType: "end",
@@ -236,7 +250,9 @@ const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) =>
       },
       {
         default: () => {
-          return `<p class="small-header" data-svelte-h="svelte-1do05u2">Solved in</p> <p class="large-header">${escape(elapsedSeconds)}</p> <hr> <span class="small-header" data-svelte-h="svelte-eapto">Global Stats</span> <br> ${validate_component(Stats, "Stats").$$render($$result, { globalStats }, {}, {})} <hr> ${`${`<div class="flex-container" data-svelte-h="svelte-1dnxwdz"><span style="font-size:30px;padding-right:5px;">🥉</span> <div><p class="small-modal-text">Oooof.</p> <p class="small-modal-text">You&#39;re over today&#39;s average - try for gold tomorrow</p></div></div>`}`} <hr> <div class="flex-container"><div class="spacer"></div> <button class="share-button" data-svelte-h="svelte-1urjot1">Share</button> <div class="spacer"></div></div>`;
+          return `<p class="small-header" data-svelte-h="svelte-1do05u2">Solved in</p> <p class="large-header">${escape(elapsedSeconds)}</p> <hr> <span class="small-header" data-svelte-h="svelte-eapto">Global Stats</span> <br> ${validate_component(Stats, "Stats").$$render($$result, { globalStats }, {}, {})} <hr> <span class="small-header" data-svelte-h="svelte-j8w724">Solutions</span> <p style="height:6px;margin:0;padding;0px;"></p> ${solutions && solutions.length > 2 ? `${each(solutions, (solution) => {
+            return `<!-- HTML_TAG_START -->${format_solution(solution)}<!-- HTML_TAG_END -->`;
+          })}` : `${solutions && solutions.length > 0 ? `<!-- HTML_TAG_START -->${format_solution(solutions[0])}<!-- HTML_TAG_END -->` : `Loading Solutions...`}`} <hr> ${`${`<div class="flex-container" data-svelte-h="svelte-1dnxwdz"><span style="font-size:30px;padding-right:5px;">🥉</span> <div><p class="small-modal-text">Oooof.</p> <p class="small-modal-text">You&#39;re over today&#39;s average - try for gold tomorrow</p></div></div>`}`} <hr> <div class="flex-container"><div class="spacer"></div> <button class="share-button" data-svelte-h="svelte-1urjot1">Share</button> <div class="spacer"></div></div>`;
         }
       }
     )} ${validate_component(Modal, "Modal").$$render(
@@ -284,16 +300,23 @@ const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) =>
   } while (!$$settled);
   return $$rendered;
 });
-const logo_src = "/_app/immutable/assets/logo.R4y_qj9s.png";
+const logo_src = "/_app/immutable/assets/logo.LqNMeCRN.png";
 const css = {
-  code: '.page.svelte-1fbxowr{display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh !important;margin:0;width:100vw}.content.svelte-1fbxowr{text-align:center;padding:20px;color:#D8CFD2\n  }.logo.svelte-1fbxowr{width:65px;height:65px}.menu-header.svelte-1fbxowr{font-size:32px;margin:3px;color:black;font-family:"Playfair Display", serif}.menu-sub-header.svelte-1fbxowr{font-size:20px;margin:3px;color:black;margin-bottom:10px}.menu-small-text.svelte-1fbxowr{font-size:12px;margin:3px;color:black}.menu-date.svelte-1fbxowr{font-size:15px;margin:3px;color:black;font-weight:800;margin-top:15px}.menu-btn.svelte-1fbxowr{padding:10px 20px;font-size:16px;background-color:#000000;border-radius:50px;color:#fff;border:none;cursor:pointer;width:130px;height:50px;margin-bottom:10px}.no-fill.svelte-1fbxowr{background-color:transparent !important;color:#000 !important;border:1px solid #000}',
+  code: '.page.svelte-165dwsd{display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh !important;margin:0;width:100vw;background-color:#DDC1C1}.content.svelte-165dwsd{text-align:center;padding:20px;color:#D8CFD2\n  }.logo.svelte-165dwsd{width:65px;height:65px}.menu-header.svelte-165dwsd{font-size:32px;margin:3px;color:black;font-weight:800;font-family:"Playfair Display", serif}.menu-sub-header.svelte-165dwsd{font-size:20px;margin:3px;color:black;margin-bottom:10px;padding-left:15px;padding-right:15px}.menu-small-text.svelte-165dwsd{font-size:12px;margin:3px;color:black}.menu-date.svelte-165dwsd{font-size:15px;color:black;font-weight:800;margin-top:15px;margin-bottom:0}.menu-number.svelte-165dwsd{font-size:15px;margin:0px;color:black;margin-bottom:5px}.menu-btn.svelte-165dwsd{padding:10px 20px;font-size:16px;background-color:#000000;border-radius:50px;color:#fff;border:none;cursor:pointer;width:150px;height:50px;margin-bottom:10px}.no-fill.svelte-165dwsd{background-color:transparent !important;color:#000 !important;border:1px solid #000}.terms.svelte-165dwsd{color:black;text-decoration:underline;font-size:12px}',
   map: null
 };
+function calculatePuzzleNumber() {
+  const today = /* @__PURE__ */ new Date();
+  const targetDate = /* @__PURE__ */ new Date("2024-02-10");
+  const differenceInMs = today - targetDate;
+  return Math.floor(differenceInMs / (1e3 * 60 * 60 * 24));
+}
 const Menu = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   let { gameHasStarted } = $$props;
   let showHelpModal = false;
   let showStatsModal = false;
   let today = (/* @__PURE__ */ new Date()).toLocaleDateString();
+  let puzzleNumber = calculatePuzzleNumber();
   if ($$props.gameHasStarted === void 0 && $$bindings.gameHasStarted && gameHasStarted !== void 0)
     $$bindings.gameHasStarted(gameHasStarted);
   $$result.css.add(css);
@@ -303,9 +326,7 @@ const Menu = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   do {
     $$settled = true;
     $$result.head = previous_head;
-    $$rendered = `<div class="page svelte-1fbxowr"> <div class="content svelte-1fbxowr"><img class="logo svelte-1fbxowr"${add_attribute("src", logo_src, 0)} alt="Our Little Loop Logo"> <p class="menu-header svelte-1fbxowr" data-svelte-h="svelte-1k2sjsl">The LetterLoop</p> <p class="menu-sub-header svelte-1fbxowr" data-svelte-h="svelte-j0rk1k">Two 5-letter words, two shared letters, one loop</p> <div><button class="menu-btn svelte-1fbxowr" data-svelte-h="svelte-1h0esab">Play</button></div> <div><button class="menu-btn no-fill svelte-1fbxowr" data-svelte-h="svelte-lan869">How to play</button></div> <div><button class="menu-btn no-fill svelte-1fbxowr" data-svelte-h="svelte-136ie3n">Stats</button></div> <p class="menu-date svelte-1fbxowr">${escape(today)}</p> <i class="menu-small-text svelte-1fbxowr" data-svelte-h="svelte-1ec062z">For those who love morning games</i> <div style="padding-top:10px;" data-svelte-h="svelte-zj8w2l"><a href="/Privacy-Policy">Privacy Policy</a>
-        |
-        <a href="/Terms">terms and conditions</a></div></div></div> ${validate_component(Modal, "Modal").$$render(
+    $$rendered = `<div class="page svelte-165dwsd"> <div class="content svelte-165dwsd"><img class="logo svelte-165dwsd"${add_attribute("src", logo_src, 0)} alt="Our Little Loop Logo"> <p class="menu-header svelte-165dwsd" data-svelte-h="svelte-1ha1u">LetterLoop</p> <p class="menu-sub-header svelte-165dwsd" data-svelte-h="svelte-j0rk1k">Two 5-letter words, two shared letters, one loop</p> <div><button class="menu-btn svelte-165dwsd" data-svelte-h="svelte-1h0esab">Play</button></div> <div><button class="menu-btn no-fill svelte-165dwsd" data-svelte-h="svelte-lan869">How to play</button></div> <div><button class="menu-btn no-fill svelte-165dwsd" data-svelte-h="svelte-136ie3n">Stats</button></div> <p class="menu-date svelte-165dwsd">${escape(today)}</p> <p class="menu-number svelte-165dwsd">Loop #${escape(puzzleNumber)}</p> <i class="menu-small-text svelte-165dwsd" data-svelte-h="svelte-1ec062z">For those who love morning games</i> <div style="padding-top:10px;" data-svelte-h="svelte-5k5zif"><a class="terms svelte-165dwsd" href="/Privacy-Policy">Privacy Policy</a> <br> <a class="terms svelte-165dwsd" href="/Terms">Terms and Conditions</a></div></div></div> ${validate_component(Modal, "Modal").$$render(
       $$result,
       {
         modalType: "help",
