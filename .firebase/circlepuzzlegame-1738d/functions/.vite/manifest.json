@@ -7,6 +7,20 @@
       "_internal.js"
     ]
   },
+  "_Stats.js": {
+    "file": "chunks/Stats.js",
+    "imports": [
+      "_ssr.js",
+      "_index.js"
+    ],
+    "css": [
+      "_app/immutable/assets/Stats.Bsj0LaHY.css"
+    ],
+    "assets": [
+      "_app/immutable/assets/ex-solution.Cz2E2Fv4.png",
+      "_app/immutable/assets/ex-letter-box.CI-HL_Lb.png"
+    ]
+  },
   "_exports.js": {
     "file": "chunks/exports.js"
   },
@@ -155,14 +169,12 @@
     "isEntry": true,
     "imports": [
       "_ssr.js",
-      "_index.js"
+      "_Stats.js"
     ],
     "css": [
-      "_app/immutable/assets/_page.DJq-y6mA.css"
+      "_app/immutable/assets/_page.BJTEgsTt.css"
     ],
     "assets": [
-      "_app/immutable/assets/ex-solution.Cz2E2Fv4.png",
-      "_app/immutable/assets/ex-letter-box.CI-HL_Lb.png",
       "_app/immutable/assets/logo.LqNMeCRN.png"
     ]
   },
@@ -196,6 +208,19 @@
     "isEntry": true,
     "imports": [
       "_ssr.js"
+    ]
+  },
+  "src/routes/gameboard/+page.svelte": {
+    "file": "entries/pages/gameboard/_page.svelte.js",
+    "src": "src/routes/gameboard/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_ssr.js",
+      "_Stats.js",
+      "_index.js"
+    ],
+    "css": [
+      "_app/immutable/assets/_page.Dpe1XHCl.css"
     ]
   }
 }

@@ -1,5 +1,7 @@
 <script>
   import logo_src from '$lib/images/logo.png';
+  import shirt_ad from '$lib/images/shirt-ad.png';
+  import shirt_ad_mobile from '$lib/images/shirt-ad-mobile.png';
   import Modal from './shared/Modal.svelte';
   import Help from './shared/Help.svelte';
   import Stats from './shared/Stats.svelte';
@@ -20,7 +22,6 @@
   function startButtonClick() {
     window.location.href = "/gameboard";
   }
-
 </script>
 
 <style>
@@ -30,10 +31,10 @@
     flex-direction: column; /* Stack items vertically */
     justify-content: center;
     align-items: center;
-    height: 100vh !important;
     margin: 0;
     width: 100vw;
     background-color: #DDC1C1;
+    padding-top: 8%;
   }
 
   .content {
@@ -114,6 +115,27 @@
     font-size: 12px;
   }
 
+  .shirt-ad {
+    display: none; 
+    margin: 0 auto;
+    padding-top: 1rem;
+  }
+
+  @media (min-width: 500px) {
+    .shirt-ad.large-screen {
+      display: block; /* Show the logo for large screens */
+      max-width: 550px;
+      width: 90%
+    }
+  }
+
+  @media (max-width: 500px) {
+    .shirt-ad.mobile-screen {
+      display: block; /* Show the logo for mobile screens */
+      width: 90%;
+    }
+  }
+
 </style>
 
 <div class="page">
@@ -121,23 +143,27 @@
   <div class="content">
     <img class="logo" src={logo_src} alt="Our Little Loop Logo" />
 
-      <p class="menu-header">LetterLoop</p>
-      <p class="menu-sub-header">Two 5-letter words, two shared letters, one loop</p>
-    
-      <div><button class="menu-btn" on:click={startButtonClick}>Play</button></div>
-      <div><button class="menu-btn no-fill" on:click={() => showHelpModal = true}>How to play</button></div>
-      <div><button class="menu-btn no-fill" on:click={() => showStatsModal = true}>Stats</button></div>
-    
-      <p class="menu-date">{today}</p>
-      <p class="menu-number">Loop #{puzzleNumber}</p>
-      <i class="menu-small-text">For those who love morning games</i>
+    <p class="menu-header">LetterLoop</p>
+    <p class="menu-sub-header">Two 5-letter words, two shared letters, one loop</p>
+  
+    <div><button class="menu-btn" on:click={startButtonClick}>Play</button></div>
+    <div><button class="menu-btn no-fill" on:click={() => showHelpModal = true}>How to play</button></div>
+    <div><button class="menu-btn no-fill" on:click={() => showStatsModal = true}>Stats</button></div>
+  
+    <p class="menu-date">{today}</p>
+    <p class="menu-number">Loop #{puzzleNumber}</p>
+    <i class="menu-small-text">For those who love morning games</i>
 
-      <div style="padding-top:10px;">
-        <a class="terms" href="/Privacy-Policy">Privacy Policy</a>
-        <br>
-        <a class="terms" href="/Terms">Terms and Conditions</a>
-      </div>
+    <div>
+      <a href="https://www.bonfire.com/store/letterloop-shop/" target="_blank"><img class="shirt-ad large-screen" src={shirt_ad} alt="LetterLoop Merch" /></a>
+      <a href="https://www.bonfire.com/store/letterloop-shop/" target="_blank"><img class="shirt-ad mobile-screen" src={shirt_ad_mobile} alt="LetterLoop Merch" /></a>
+    </div>
 
+    <div style="padding-top:15px;">
+      <a class="terms" href="/Privacy-Policy">Privacy Policy</a>
+      <br>
+      <a class="terms" href="/Terms">Terms and Conditions</a>
+    </div>
   </div>
 </div>
 
