@@ -1,7 +1,8 @@
 import { c as create_ssr_component, a as subscribe, d as each, e as escape, n as null_to_empty, b as add_attribute, v as validate_component } from "./ssr.js";
 import { d as derived, w as writable } from "./index.js";
 import "firebase/database";
-const shirt_ad = "/_app/immutable/assets/shirt-ad.CrdbWLEl.png";
+const shirt_ad = "/_app/immutable/assets/shirt-ad.C2BbiSdF.png";
+const shirt_ad_mobile = "/_app/immutable/assets/shirt-ad-mobile.bd_zAVAW.png";
 function createNotificationStore(timeout) {
   const _notifications = writable([]);
   function send(message, type = "default", timeout2) {
@@ -88,5 +89,6 @@ export {
   Modal as M,
   Stats as S,
   Toast as T,
+  shirt_ad_mobile as a,
   shirt_ad as s
 };

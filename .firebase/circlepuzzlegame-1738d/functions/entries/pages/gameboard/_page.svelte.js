@@ -1,5 +1,5 @@
 import { c as create_ssr_component, a as subscribe, e as escape, v as validate_component, d as each, b as add_attribute } from "../../../chunks/ssr.js";
-import { T as Toast, M as Modal, S as Stats, H as Help, s as shirt_ad } from "../../../chunks/Stats.js";
+import { T as Toast, M as Modal, S as Stats, H as Help, s as shirt_ad, a as shirt_ad_mobile } from "../../../chunks/Stats.js";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import "firebase/database";
@@ -16,7 +16,7 @@ const firebaseConfig = {
 };
 const firebaseApp = initializeApp(firebaseConfig);
 getAuth(firebaseApp);
-const css = {
+const css$1 = {
   code: "span.timer.svelte-1y1osaq{padding:0 0.2em}",
   map: null
 };
@@ -76,7 +76,7 @@ const Timer = create_ssr_component(($$result, $$props, $$bindings, slots) => {
     $$bindings.stop(stop);
   if ($$props.reset === void 0 && $$bindings.reset && reset !== void 0)
     $$bindings.reset(reset);
-  $$result.css.add(css);
+  $$result.css.add(css$1);
   hh = Math.floor($elapsedTime / 3600);
   mm = Math.floor(($elapsedTime - hh * 3600) / 60);
   ss = $elapsedTime - hh * 3600 - mm * 60;
@@ -86,6 +86,10 @@ const Timer = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   $$unsubscribe_elapsedTime();
   return `  <span class="timer svelte-1y1osaq"><span class="value">${escape(f(hh))}</span>:<span class="value">${escape(f(mm))}</span>:<span class="value">${escape(f(ss))}</span> </span>`;
 });
+const css = {
+  code: ".shirt-ad.svelte-1k9wl3u{display:none;margin:0 auto;padding-top:1rem}@media(min-width: 500px){.shirt-ad.large-screen.svelte-1k9wl3u{display:block;max-width:550px;width:90%\n      }}@media(max-width: 500px){.shirt-ad.mobile-screen.svelte-1k9wl3u{display:block;width:90%}}",
+  map: null
+};
 function format_solution(solution) {
   if (!solution) {
     return "Loading Solutions...";
@@ -116,6 +120,7 @@ const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) =>
   let elapsedSeconds = 0;
   let puzzle_author = "---";
   let globalStats;
+  $$result.css.add(css);
   let $$settled;
   let $$rendered;
   let previous_head = $$result.head;
@@ -172,7 +177,7 @@ const GameBoard = create_ssr_component(($$result, $$props, $$bindings, slots) =>
         default: () => {
           return `<p class="small-header" data-svelte-h="svelte-1do05u2">Solved in</p> <p class="large-header">${escape(elapsedSeconds)}</p> <hr> <span class="small-header" data-svelte-h="svelte-eapto">Global Stats</span> <br> ${validate_component(Stats, "Stats").$$render($$result, { globalStats }, {}, {})} <hr> <span class="small-header" data-svelte-h="svelte-j8w724">Solutions</span> <p style="height:6px;margin:0;padding;0px;"></p> ${solutions && solutions.length > 2 ? `${each(solutions, (solution) => {
             return `<!-- HTML_TAG_START -->${format_solution(solution)}<!-- HTML_TAG_END -->`;
-          })}` : `${solutions && solutions.length > 0 ? `<!-- HTML_TAG_START -->${format_solution(solutions[0])}<!-- HTML_TAG_END -->` : `Loading Solutions...`}`} <hr> ${`${`<div class="flex-container" data-svelte-h="svelte-1dnxwdz"><span style="font-size:30px;padding-right:5px;">🥉</span> <div><p class="small-modal-text">Oooof.</p> <p class="small-modal-text">You&#39;re over today&#39;s average - try for gold tomorrow</p></div></div>`}`} <hr> <div class="flex-container"><div class="spacer"></div> <button class="share-button" data-svelte-h="svelte-1urjot1">Share</button> <div class="spacer"></div></div> <hr> <a href="https://www.bonfire.com/store/letterloop-shop/" target="_blank" data-svelte-h="svelte-1ehreu5"><img style="width:100%;"${add_attribute("src", shirt_ad, 0)} alt="LetterLoop Merch"></a>`;
+          })}` : `${solutions && solutions.length > 0 ? `<!-- HTML_TAG_START -->${format_solution(solutions[0])}<!-- HTML_TAG_END -->` : `Loading Solutions...`}`} <hr> ${`${`<div class="flex-container" data-svelte-h="svelte-1dnxwdz"><span style="font-size:30px;padding-right:5px;">🥉</span> <div><p class="small-modal-text">Oooof.</p> <p class="small-modal-text">You&#39;re over today&#39;s average - try for gold tomorrow</p></div></div>`}`} <hr> <div class="flex-container"><div class="spacer"></div> <button class="share-button" data-svelte-h="svelte-1urjot1">Share</button> <div class="spacer"></div></div> <hr> <div data-svelte-h="svelte-1gramgw"><a href="https://ko-fi.com/letterloop" target="_blank"><img class="shirt-ad large-screen svelte-1k9wl3u"${add_attribute("src", shirt_ad, 0)} alt="LetterLoop Merch"></a> <a href="https://ko-fi.com/letterloop" target="_blank"><img class="shirt-ad mobile-screen svelte-1k9wl3u"${add_attribute("src", shirt_ad_mobile, 0)} alt="LetterLoop Merch"></a></div>`;
         }
       }
     )} ${validate_component(Modal, "Modal").$$render(

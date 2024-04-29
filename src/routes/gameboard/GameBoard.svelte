@@ -30,6 +30,7 @@
     let elapsedSeconds = 0;
     let puzzle_author = "---";
     let globalStats;
+    let gaveUp = false;
   
     onMount(async () => {
       
@@ -102,20 +103,30 @@
       const numSelected = selectedLetters.filter(letter => letter !== "").length;
 
       if (solutions.includes(selectedWord)) {
-        showCompleteModal = true
-        game_timer.stop();
-        logTime(elapsedSeconds)
-          .then((result) => {
-              globalStats = result;
-          })
-          .catch((error) => {
-              console.error('Error:', error);
-          });
+        gaveUp = false
+        endGame()
       } else if (numSelected != 8) {
         notifications.default('You Must fill in every letter', 1000)
       } else {
         notifications.default('Incorrect', 1000)
       }
+    }
+
+    function giveUp() {
+      gaveUp = true
+      endGame()
+    }
+
+    function endGame() {
+      showCompleteModal = true
+      game_timer.stop();
+      logTime(elapsedSeconds)
+        .then((result) => {
+            globalStats = result;
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
     }
 
   
@@ -141,6 +152,9 @@
 
     const share = async () => {
       let shareText = "I completed the LetterLoop in: \n" + "🔴" + elapsedSeconds + "🔴"
+      if (gaveUp) {
+        shareText = "I didnt complete the LetterLoop today, but I sure did try my best"
+      }
 
       if (navigator.share) {
         try {
@@ -222,8 +236,6 @@
     }
   </style>
   
-  
-  
   <main>
     <div class="nav-flex-container">
       <div class="title-container ">
@@ -231,6 +243,10 @@
         <small style="color: rgb(46, 46, 46);">(public beta) · Edited by {puzzle_author}</small>
       </div>
       <div class="spacer"></div>
+      <div class="help-container" on:click={giveUp}>
+        <i class="fa-regular fa-face-sad-tear"></i>
+        <p class="how-to-play">Give Up</p>
+      </div>
       <div class="help-container" on:click={() => showHelpModal = true}>
         <i class="fa-regular fa-circle-question"></i>
         <p class="how-to-play">How to play</p>
@@ -312,9 +328,13 @@
   <svelte:window on:keydown|preventDefault={handleKeyPress} />
   
   <Modal bind:showModal={showCompleteModal} modalType={"end"}>
-    <p class="small-header">Solved in</p>
-    <p class="large-header">{elapsedSeconds}</p>
+    {#if gaveUp}
+      <p class="large-header">🥺 Gave Up 🥺</p>
+    {:else}
+      <p class="small-header">Solved in</p>
+      <p class="large-header">{elapsedSeconds}</p>
     <hr>
+    {/if}
     <span class="small-header">Global Stats</span>
     <br>
 
@@ -336,34 +356,36 @@
       {/if}
     {/if}
     <hr>
-    {#if globalStats && globalStats["isHighScore"]}
-      <div class="flex-container">
-        <span style="font-size:30px;padding-right:5px;">🙀</span>
-        <div>
-          <p class="small-modal-text">New High Score!</p>
-          <p class="small-modal-text">You're officialy the fastest looper today!</p>
-        </div>
-      </div>
-    {:else}
-      {#if globalStats && globalStats["isUnderAverage"]}
+    {#if gaveUp == false}
+      {#if globalStats && globalStats["isHighScore"]}
         <div class="flex-container">
-          <span style="font-size:30px;padding-right:5px;">🥇</span>
+          <span style="font-size:30px;padding-right:5px;">🙀</span>
           <div>
-            <p class="small-modal-text">Congratulations speedster.</p>
-            <p class="small-modal-text">You're under today's average - very clever.</p>
+            <p class="small-modal-text">New High Score!</p>
+            <p class="small-modal-text">You're officialy the fastest looper today!</p>
           </div>
         </div>
       {:else}
-        <div class="flex-container">
-          <span style="font-size:30px;padding-right:5px;">🥉</span>
-          <div>
-            <p class="small-modal-text">Oooof.</p>
-            <p class="small-modal-text">You're over today's average - try for gold tomorrow</p>
+        {#if globalStats && globalStats["isUnderAverage"]}
+          <div class="flex-container">
+            <span style="font-size:30px;padding-right:5px;">🥇</span>
+            <div>
+              <p class="small-modal-text">Congratulations speedster.</p>
+              <p class="small-modal-text">You're under today's average - very clever.</p>
+            </div>
           </div>
-        </div>
+        {:else}
+          <div class="flex-container">
+            <span style="font-size:30px;padding-right:5px;">🥉</span>
+            <div>
+              <p class="small-modal-text">Oooof.</p>
+              <p class="small-modal-text">You're over today's average - try for gold tomorrow</p>
+            </div>
+          </div>
+        {/if}
       {/if}
+      <hr>
     {/if}
-    <hr>
     
     <div class="flex-container">
       <div class="spacer"></div>
@@ -383,7 +405,6 @@
       <span class="styled-header">How To Play</span>
     </h2>
     <hr />
-    
     <Help />
   </Modal>
   
