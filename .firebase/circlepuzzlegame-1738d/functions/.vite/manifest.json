@@ -17,6 +17,7 @@
       "_app/immutable/assets/Stats.Bsj0LaHY.css"
     ],
     "assets": [
+      "_app/immutable/assets/shirt-ad.CrdbWLEl.png",
       "_app/immutable/assets/ex-solution.Cz2E2Fv4.png",
       "_app/immutable/assets/ex-letter-box.CI-HL_Lb.png"
     ]
@@ -130,6 +131,14 @@
     "file": "_app/immutable/assets/logo.LqNMeCRN.png",
     "src": "src/lib/images/logo.png"
   },
+  "src/lib/images/shirt-ad-mobile.png": {
+    "file": "_app/immutable/assets/shirt-ad-mobile.BHwUKBeV.png",
+    "src": "src/lib/images/shirt-ad-mobile.png"
+  },
+  "src/lib/images/shirt-ad.png": {
+    "file": "_app/immutable/assets/shirt-ad.CrdbWLEl.png",
+    "src": "src/lib/images/shirt-ad.png"
+  },
   "src/routes/+layout.svelte": {
     "file": "entries/pages/_layout.svelte.js",
     "src": "src/routes/+layout.svelte",
@@ -172,10 +181,11 @@
       "_Stats.js"
     ],
     "css": [
-      "_app/immutable/assets/_page.BJTEgsTt.css"
+      "_app/immutable/assets/_page.OpFzpO4A.css"
     ],
     "assets": [
-      "_app/immutable/assets/logo.LqNMeCRN.png"
+      "_app/immutable/assets/logo.LqNMeCRN.png",
+      "_app/immutable/assets/shirt-ad-mobile.BHwUKBeV.png"
     ]
   },
   "src/routes/Privacy-Policy/+layout.svelte": {

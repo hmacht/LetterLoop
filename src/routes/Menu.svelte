@@ -155,8 +155,8 @@
     <i class="menu-small-text">For those who love morning games</i>
 
     <div>
-      <a href="https://www.bonfire.com/store/letterloop-shop/" target="_blank"><img class="shirt-ad large-screen" src={shirt_ad} alt="LetterLoop Merch" /></a>
-      <a href="https://www.bonfire.com/store/letterloop-shop/" target="_blank"><img class="shirt-ad mobile-screen" src={shirt_ad_mobile} alt="LetterLoop Merch" /></a>
+      <a href="https://ko-fi.com/letterloop" target="_blank"><img class="shirt-ad large-screen" src={shirt_ad} alt="LetterLoop Merch" /></a>
+      <a href="https://ko-fi.com/letterloop" target="_blank"><img class="shirt-ad mobile-screen" src={shirt_ad_mobile} alt="LetterLoop Merch" /></a>
     </div>
 
     <div style="padding-top:15px;">
@@ -165,6 +165,16 @@
       <a class="terms" href="/Terms">Terms and Conditions</a>
     </div>
   </div>
+
+  <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+		<script>
+			kofiWidgetOverlay.draw('letterloop', {
+				'type': 'floating-chat',
+				'floating-chat.donateButton.text': 'Support me',
+				'floating-chat.donateButton.background-color': '#00b9fe',
+				'floating-chat.donateButton.text-color': '#fff'
+			});
+		</script>
 </div>
 
 <Modal bind:showModal={showHelpModal} modalType={"help"}>

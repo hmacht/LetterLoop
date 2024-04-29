@@ -12,6 +12,8 @@
     import Timer from './Timer.svelte';
     import Help from '../shared/Help.svelte';
     import Stats from '../shared/Stats.svelte';
+    import shirt_ad from '$lib/images/shirt-ad.png';
+    import shirt_ad_mobile from '$lib/images/shirt-ad-mobile.png';
   
     let showCompleteModal = false;
     let showHelpModal = false;
@@ -196,6 +198,29 @@
       day: 'numeric'
     });
   </script>
+
+  <style>
+    .shirt-ad {
+      display: none; 
+      margin: 0 auto;
+      padding-top: 1rem;
+    }
+
+    @media (min-width: 500px) {
+      .shirt-ad.large-screen {
+        display: block; /* Show the logo for large screens */
+        max-width: 550px;
+        width: 90%
+      }
+    }
+
+    @media (max-width: 500px) {
+      .shirt-ad.mobile-screen {
+        display: block; /* Show the logo for mobile screens */
+        width: 90%;
+      }
+    }
+  </style>
   
   
   
@@ -340,11 +365,16 @@
     {/if}
     <hr>
     
-
     <div class="flex-container">
       <div class="spacer"></div>
       <button class="share-button" on:click={share}>Share</button>
       <div class="spacer"></div>
+    </div>
+    <hr>
+
+    <div>
+      <a href="https://ko-fi.com/letterloop" target="_blank"><img class="shirt-ad large-screen" src={shirt_ad} alt="LetterLoop Merch" /></a>
+      <a href="https://ko-fi.com/letterloop" target="_blank"><img class="shirt-ad mobile-screen" src={shirt_ad_mobile} alt="LetterLoop Merch" /></a>
     </div>
   </Modal>
   
