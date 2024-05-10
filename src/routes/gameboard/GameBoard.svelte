@@ -239,7 +239,7 @@
   <main>
     <div class="nav-flex-container">
       <div class="title-container ">
-        <p class="title">LetterLoop</p>	
+        <p class="title"><a class="title-link" href="/">LetterLoop</a></p>
         <small style="color: rgb(46, 46, 46);">(public beta) · Edited by {puzzle_author}</small>
       </div>
       <div class="spacer"></div>

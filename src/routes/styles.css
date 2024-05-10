@@ -208,6 +208,10 @@ main {
 	color: black;
 }
 
+.title-link {
+	color: black;
+}
+
 .date {
 	margin: 0;
 	font-optical-sizing: auto;
