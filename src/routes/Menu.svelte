@@ -136,6 +136,11 @@
     }
   }
 
+  .version-tag {
+    font-size: 9px;
+    color: black;
+  }
+
 </style>
 
 <div class="page">
@@ -164,6 +169,8 @@
       <br>
       <a class="terms" href="/Terms">Terms and Conditions</a>
     </div>
+
+    <p class="version-tag">version 1.8</p>
   </div>
 
   <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
