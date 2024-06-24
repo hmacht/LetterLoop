@@ -5,6 +5,8 @@
   import Modal from './shared/Modal.svelte';
   import Help from './shared/Help.svelte';
   import Stats from './shared/Stats.svelte';
+  import { notifications } from "./notifications.js";
+  import Toast from './shared/Toast.svelte';
 
   let showHelpModal = false;
   let showStatsModal = false;
@@ -22,6 +24,29 @@
   function startButtonClick() {
     window.location.href = "/gameboard";
   }
+
+  const share = async () => {
+      let shareText = "New morning game! theletterloop.com"
+      
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "",
+            text: shareText,
+            url: window.location.href
+          });
+        } catch (error) {
+          notifications.default('Error', 1000)
+        }
+      } else {
+        try {
+          await navigator.clipboard.writeText(shareText);
+          notifications.default('Copied Link!', 1000)
+        } catch (error) {
+          notifications.default('Error', 1000)
+        }
+      }
+    };
 </script>
 
 <style>
@@ -141,11 +166,31 @@
     color: black;
   }
 
+  .banner-ad {
+    margin: 0 auto;
+    margin-bottom: 15px;
+    margin-top: 4px;
+    position: fixed;
+    top: 0; 
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
 </style>
 
 <div class="page">
   <!-- Main Page Content -->
   <div class="content">
+    
+    <!-- Ad-->
+    <div id='theletterloop-com_300x600' class="banner-ad">
+      <script type='text/javascript'>
+        aiptag.cmd.display.push(function() { aipDisplayTag.display('XXXXX_placement'); });
+      </script>
+    </div>
+
+    <Toast />
+
     <img class="logo" src={logo_src} alt="Our Little Loop Logo" />
 
     <p class="menu-header">LetterLoop</p>
@@ -153,7 +198,7 @@
   
     <div><button class="menu-btn" on:click={startButtonClick}>Play</button></div>
     <div><button class="menu-btn no-fill" on:click={() => showHelpModal = true}>How to play</button></div>
-    <div><button class="menu-btn no-fill" on:click={() => showStatsModal = true}>Stats</button></div>
+    <div><button class="menu-btn no-fill" on:click={share}>Share</button></div>
   
     <p class="menu-date">{today}</p>
     <p class="menu-number">Loop #{puzzleNumber}</p>

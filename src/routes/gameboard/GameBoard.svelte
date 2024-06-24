@@ -234,6 +234,11 @@
         width: 90%;
       }
     }
+
+    .banner-ad {
+      margin: 0 auto;
+      margin-bottom: 15px;
+    }
   </style>
   
   <main>
@@ -328,6 +333,13 @@
   <svelte:window on:keydown|preventDefault={handleKeyPress} />
   
   <Modal bind:showModal={showCompleteModal} modalType={"end"}>
+    <!-- Ad-->
+    <div id='theletterloop-com_300x600' class="banner-ad">
+      <script type='text/javascript'>
+        aiptag.cmd.display.push(function() { aipDisplayTag.display('XXXXX_placement'); });
+      </script>
+    </div>
+
     {#if gaveUp}
       <p class="large-header">🥺 Gave Up 🥺</p>
     {:else}
