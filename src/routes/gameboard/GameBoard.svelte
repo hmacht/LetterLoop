@@ -1,19 +1,20 @@
 <script>
   // @ts-nocheck
   
-    import Modal from '../shared/Modal.svelte';
-    import { notifications } from "../notifications.js";
-    import Toast from '../shared/Toast.svelte';
+    import Modal from '../../components/modal/Modal.svelte';
+    import { notifications } from "../../js/notifications.js";
+    import Toast from '../../components/toast/Toast.svelte';
     import { onMount } from 'svelte';
-    import { firebaseApp, signIn } from '../firebaseConfig';
-    import { fetchFirebaseData } from '../firebaseFetchData.js';
-    import { logTime } from '../logCompletionTime.js';
+    import { firebaseApp, signIn } from '../../js/firebaseConfig';
+    import { fetchFirebaseData } from '../../js/firebaseFetchData';
+    import { logTime } from '../../js/logCompletionTime.js';
     import { getAnalytics, logEvent } from "firebase/analytics";
-    import Timer from './Timer.svelte';
-    import Help from '../shared/Help.svelte';
-    import Stats from '../shared/Stats.svelte';
+    import Timer from '../../components/timer/Timer.svelte';
+    import Help from '../../components/help/Help.svelte';
+    import Stats from '../../components/stats/Stats.svelte';
     import shirt_ad from '$lib/images/shirt-ad.png';
     import shirt_ad_mobile from '$lib/images/shirt-ad-mobile.png';
+    import navImage from '$lib/images/logo-black.png';
   
     let showCompleteModal = false;
     let showHelpModal = false;
@@ -239,12 +240,29 @@
       margin: 0 auto;
       margin-bottom: 15px;
     }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo-container:hover {
+      text-decoration: none;
+    }
+
+    .nav-image {
+      width: 25px;
+      height: 25px;
+    }
   </style>
   
   <main>
     <div class="nav-flex-container">
-      <div class="title-container ">
-        <p class="title"><a class="title-link" href="/">LetterLoop</a></p>
+      <div class="title-container">
+        <a class="logo-container" href="/">
+          <img class="nav-image" src={navImage}/>
+          <p class="title">LetterLoop</p>
+        </a>
         <small style="color: rgb(46, 46, 46);">(public beta) · Edited by {puzzle_author}</small>
       </div>
       <div class="spacer"></div>
@@ -336,7 +354,7 @@
     <!-- Ad-->
     <div id='theletterloop-com_300x600' class="banner-ad">
       <script type='text/javascript'>
-        aiptag.cmd.display.push(function() { aipDisplayTag.display('XXXXX_placement'); });
+        aiptag.cmd.display.push(function() { aipDisplayTag.display('theletterloop-com_300x600'); });
       </script>
     </div>
 

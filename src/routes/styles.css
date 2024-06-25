@@ -202,10 +202,12 @@ main {
 	margin: 0;
 	font-family: "Playfair Display", serif;
 	font-optical-sizing: auto;
-	font-size: 28px;;
-	font-weight: 700;
+	font-size: 22px;
+	font-weight: 500;
 	font-style: normal;
 	color: black;
+	padding-left: 10px;
+	padding-bottom: 3px;
 }
 
 .title-link {
