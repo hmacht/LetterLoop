@@ -1,8 +1,3 @@
-<script>
-
-</script>
-
-
 <main>
 	<h1>Terms and Conditions</h1>
     

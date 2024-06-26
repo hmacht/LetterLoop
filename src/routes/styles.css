@@ -224,22 +224,21 @@ main {
 	padding: 15px;
 }
 
-.share-button {
-	background-color: #ec2525;
-	color: white;
-	border-radius: 25px;
-	width: 150px;
-	height: 50px;
-	border: none;
-	margin: 10px;
-}
-
 .nav-flex-container {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	width: 100vw;
 	height: 80px;
+}
+
+.nav-flex-container-filled {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100vw;
+	height: 80px;
+	background-color: white;
 }
 .flex-container {
 	display: flex;
@@ -255,6 +254,17 @@ main {
 	margin: 10px;
 	margin-left: 20px;
 	margin-top: 0;
+}
+.logo-container {
+	display: flex;
+	align-items: center;
+}
+.logo-container:hover {
+	text-decoration: none;
+}
+.nav-image {
+	width: 25px;
+	height: 25px;
 }
 .styled-header {
 	font-family: "Playfair Display", serif;
@@ -275,7 +285,7 @@ main {
 	letter-spacing: 1px;
 }
 .large-header {
-	font-size: 30px;
+	font-size: 40px;
 	font-weight: 700;
 	margin: 0;
 }
@@ -288,4 +298,16 @@ main {
 	font-size: 15px;
 	font-weight: 300;
 	margin: 0;
+}
+
+.panel {
+	display: block;
+	border: 1px solid #D7D7D7;
+	background-color: #FFFBFB;
+	border-radius: 30px;
+	margin: 1.5rem auto 0 auto;
+}
+
+.panel-body {
+	padding: 25px;
 }

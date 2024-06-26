@@ -1,55 +1,44 @@
 <script>
 // @ts-nocheck
 
-  import { fetchFirebaseData } from '../../js/firebaseFetchData.js';
+  import { fetchTodaysStats } from '../../js/firebaseFetchData.js';
   import { onMount } from 'svelte';
 
   export let globalStats;
+  export let loadingStatus = "Loading Stats...";
 
   onMount(async () => {
-    // If we dont have the stats, retrieve and st
-    if (!globalStats) {
-      setStats()
-    }
+    await setGlobalStats()
   });
-  
 
-  function setStats() {
-    globalStats = getStats()
-      .then((result) => {
-          globalStats = result;
-      })
-      .catch((error) => {
-          console.error('Error:', error);
-      });
-  }
+  async function setGlobalStats() {
+    if (!globalStats) {
+      try {
+        globalStats = await fetchTodaysStats();
+      } catch (error) {
+        loadingStatus = "Stats could not be loaded."
+        return null;
+      }
+    }
 
-  function todaysDate() {
-    const currentDatetime = new Date();
-    const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-    const formattedDate = currentDatetime.toLocaleDateString('en-US', options).replace(/\//g, '-');
-
-    return formattedDate;
-  }
-  
-  async function getStats() {
-    try {
-      const dataFromFirebase = await fetchFirebaseData("Stats/" + todaysDate());
-      return dataFromFirebase;
-    } catch (error) {
-      return null;
+    if (globalStats == "NOREF") {
+      loadingStatus = "Stats could not be loaded."
     }
   }
 </script>
 
-{#if globalStats == "NOREF"}
-  <p>Stats not availible yet today</p>
-{:else}
+<style>
+  .result {
+    margin: 5px 0 0 0;
+    line-height: 1.2;
+  }
+</style>
+
+<p class="result">
   {#if globalStats}
-    <p class="large-modal-text" style="padding-top:10px;"><b>{globalStats.count}</b> people have looped today.</p>
-    <p class="large-modal-text" style="padding-top:10px;">Average Time: 🔴 {globalStats.averageTime} 🔴 </p>
-    <p class="large-modal-text">High Score: 🔴 {globalStats.minTime} 🔴 </p>
+      <b>{globalStats.count}</b> people have looped today with an average time of 
+      <b>{globalStats.averageTime}</b>
   {:else}
-    <p>Loading Stats...</p>
+    {loadingStatus}
   {/if}
-{/if}
+</p>

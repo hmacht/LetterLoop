@@ -1,6 +1,28 @@
 import { getDatabase, ref, onValue } from "firebase/database";
 
-// @ts-ignore
+
+export async function fetchTodaysSolutions() {
+  try {
+    return await fetchFirebaseData('solutions/' + todaysDateFormatted());
+  } catch (error) {
+    console.error('Error fetching today’s solutions:', error);
+    return null; 
+  }
+}
+
+export async function fetchTodaysStats() {
+  try {
+    return await fetchFirebaseData('Stats/' + todaysDateFormatted());
+  } catch (error) {
+    console.error('Error fetching today’s solutions:', error);
+    return null; 
+  }
+}
+
+
+/**
+ * @param {string} databasePath
+ */
 export async function fetchFirebaseData(databasePath) {
   const db = getDatabase();
   const db_ref = ref(db, databasePath);
@@ -21,3 +43,16 @@ export async function fetchFirebaseData(databasePath) {
     });
   });
 } 
+
+
+function todaysDateFormatted() {
+  const currentDatetime = new Date();
+  const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+  const formattedDate = currentDatetime.toLocaleDateString('en-US', options).replace(/\//g, '-');
+
+  return formattedDate;
+}
+
+
+
+

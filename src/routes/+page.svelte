@@ -223,15 +223,16 @@
 					backgroundColor="#FFE1E5"
 					borderColor="#FF4B62"
 					characterName="flower"
+					characterSize="80"
 					headerText="Support the Loop."
 					subtitle="Click here to donate."
 				/>
 			</a>
 	
 			<div style="padding-top:15px;">
-				<a class="terms" href="/Privacy-Policy">Privacy Policy</a>
+				<a class="terms" href="/privacy-policy">Privacy Policy</a>
 				<br>
-				<a class="terms" href="/Terms">Terms and Conditions</a>
+				<a class="terms" href="/terms">Terms and Conditions</a>
 			</div>
 	
 			<p class="version-tag">version 1.8</p>

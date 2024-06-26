@@ -6,17 +6,15 @@
     import Toast from '../../components/toast/Toast.svelte';
     import { onMount } from 'svelte';
     import { firebaseApp, signIn } from '../../js/firebaseConfig';
-    import { fetchFirebaseData } from '../../js/firebaseFetchData';
+    import * as firebaseFunctions from '../../js/firebaseFetchData';
     import { logTime } from '../../js/logCompletionTime.js';
     import { getAnalytics, logEvent } from "firebase/analytics";
     import Timer from '../../components/timer/Timer.svelte';
     import Help from '../../components/help/Help.svelte';
-    import Stats from '../../components/stats/Stats.svelte';
-    import shirt_ad from '$lib/images/shirt-ad.png';
-    import shirt_ad_mobile from '$lib/images/shirt-ad-mobile.png';
     import navImage from '$lib/images/logo-black.png';
-  
-    let showCompleteModal = false;
+    import { gameData } from '../../js/gameStore.js';
+    import { goto } from '$app/navigation';
+
     let showHelpModal = false;
     let showPauseModal = false;
     let solutions = [];
@@ -32,34 +30,40 @@
     let puzzle_author = "---";
     let globalStats;
     let gaveUp = false;
+    let loadStatus = "Loading Game..."
   
     onMount(async () => {
-      
-      const analytics = getAnalytics(firebaseApp);
-      logEvent(analytics, 'screen_view', {
-        firebase_screen: "game_board_view",
-        firebase_screen_class: "game_board_controller"
-      });
-  
-      // Format the date as a string in "MM-DD-YYYY" format
-      const currentDatetime = new Date();
-      const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-      const formattedDate = currentDatetime.toLocaleDateString('en-US', options).replace(/\//g, '-');
-  
+      fireUpGameBoard();
+    });
+
+    async function fireUpGameBoard() {
       try {
         if (await signIn()) {
-          const dataFromFirebase = await fetchFirebaseData('solutions/' + formattedDate);
-          const parsedData = Object.values(dataFromFirebase);
-          puzzle_author = parsedData[0]
-          solutions = parsedData[1]
-          letterBank = solutions[0]
-          scrambledLettersBank = scrambleLettersBank(letterBank)
+          await loadPuzzle() 
           game_timer.start();
         }
       } catch (error) {
+        loadStatus = "Error Loading Game :("
         console.error('Error fetching data from Firebase:', error);
       }
-    });
+    }
+
+    async function loadPuzzle() {
+      // Fetch Solutions
+      const data = await firebaseFunctions.fetchTodaysSolutions();
+
+      // Set Solutions
+      if (data && data.solutions && data.solutions.length > 0) {
+        puzzle_author = data.author;
+        solutions = data.solutions;
+      } else {
+        throw new Error("Invalid data");
+      }
+
+      // Create letter bank
+      letterBank = solutions[0]
+      scrambledLettersBank = scrambleLettersBank(letterBank)
+    }
     
     function findPressedKeyIndex(bank, letter) {
       for (let i = 0; i < bank.length; i++) {
@@ -88,7 +92,7 @@
       return scrambledArray.join('');
     }
   
-    function letterSelected(letter, index) {		
+    function letterSelected(letter, index) {    
        if (
         currentIndex < selectedLetters.length &&
         !isDisabled(index)
@@ -119,11 +123,11 @@
     }
 
     function endGame() {
-      showCompleteModal = true
       game_timer.stop();
       logTime(elapsedSeconds)
         .then((result) => {
             globalStats = result;
+            redirectToGameOver();
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -150,32 +154,6 @@
         disabledKeys = disabledKeys.slice(0, -1);
       }
     }
-
-    const share = async () => {
-      let shareText = "I completed the LetterLoop in: \n" + "🔴" + elapsedSeconds + "🔴"
-      if (gaveUp) {
-        shareText = "I didnt complete the LetterLoop today, but I sure did try my best"
-      }
-
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: "",
-            text: shareText,
-            url: window.location.href
-          });
-        } catch (error) {
-          notifications.default('Error', 1000)
-        }
-      } else {
-        try {
-          await navigator.clipboard.writeText(shareText);
-          notifications.default('Copied Text!', 1000)
-        } catch (error) {
-          notifications.default('Error', 1000)
-        }
-      }
-    };
     
     function pause_game() {
       game_timer.stop();
@@ -186,24 +164,18 @@
       game_timer.start();
       showPauseModal = false;
     }
-  
-    function format_solution(solution) {
-      if (!solution) {
-        return "Loading Solutions...";
-      }
-      
-      const firstPart = solution.substring(0, 5);
-      const lastPart = solution.substring(4, 8) + firstPart[0];
-    
-      const htmlString = `
-        <div>
-          <a href="https://www.merriam-webster.com/dictionary/${firstPart}" target="blank">${firstPart}</a> 
-          + 
-          <a href="https://www.merriam-webster.com/dictionary/${lastPart}" target="blank">${lastPart}</a>
-        </div>
-      `;
-    
-      return htmlString;
+
+    function redirectToGameOver() {
+      // Save and redirect
+      gameData.update(data => ({
+        ...data,
+        elapsedSeconds,
+        solutions,
+        gaveUp,
+        globalStats
+      }));
+
+      goto('/gameover');
     }
   
     $: isDisabled = (index) => disabledKeys.includes(index);
@@ -213,48 +185,6 @@
       day: 'numeric'
     });
   </script>
-
-  <style>
-    .shirt-ad {
-      display: none; 
-      margin: 0 auto;
-      padding-top: 1rem;
-    }
-
-    @media (min-width: 500px) {
-      .shirt-ad.large-screen {
-        display: block; /* Show the logo for large screens */
-        max-width: 550px;
-        width: 90%
-      }
-    }
-
-    @media (max-width: 500px) {
-      .shirt-ad.mobile-screen {
-        display: block; /* Show the logo for mobile screens */
-        width: 90%;
-      }
-    }
-
-    .banner-ad {
-      margin: 0 auto;
-      margin-bottom: 15px;
-    }
-
-    .logo-container {
-      display: flex;
-      align-items: center;
-    }
-
-    .logo-container:hover {
-      text-decoration: none;
-    }
-
-    .nav-image {
-      width: 25px;
-      height: 25px;
-    }
-  </style>
   
   <main>
     <div class="nav-flex-container">
@@ -277,7 +207,6 @@
     </div>
     <div class="divider"></div>
     
-  
     <Toast />
   
     <div class="flex-container">
@@ -342,93 +271,13 @@
         </div>
       </div>
     {:else}
-      <p>Loading Game...</p>
+      <p>{loadStatus}</p>
     {/if}
   
     
   </main>
   
   <svelte:window on:keydown|preventDefault={handleKeyPress} />
-  
-  <Modal bind:showModal={showCompleteModal} modalType={"end"}>
-    <!-- Ad-->
-    <div id='theletterloop-com_300x600' class="banner-ad">
-      <script type='text/javascript'>
-        aiptag.cmd.display.push(function() { aipDisplayTag.display('theletterloop-com_300x600'); });
-      </script>
-    </div>
-
-    {#if gaveUp}
-      <p class="large-header">🥺 Gave Up 🥺</p>
-    {:else}
-      <p class="small-header">Solved in</p>
-      <p class="large-header">{elapsedSeconds}</p>
-    <hr>
-    {/if}
-    <span class="small-header">Global Stats</span>
-    <br>
-
-    <Stats {globalStats}/>
-
-    <hr>
-
-    <span class="small-header">Solutions</span>
-    <p style="height:6px;margin:0;padding;0px;"></p>
-    {#if solutions && solutions.length > 2}
-      {#each solutions as solution}
-        {@html format_solution(solution)}
-      {/each}
-    {:else}
-      {#if solutions && solutions.length > 0}
-        {@html format_solution(solutions[0])}
-      {:else}
-        Loading Solutions...
-      {/if}
-    {/if}
-    <hr>
-    {#if gaveUp == false}
-      {#if globalStats && globalStats["isHighScore"]}
-        <div class="flex-container">
-          <span style="font-size:30px;padding-right:5px;">🙀</span>
-          <div>
-            <p class="small-modal-text">New High Score!</p>
-            <p class="small-modal-text">You're officialy the fastest looper today!</p>
-          </div>
-        </div>
-      {:else}
-        {#if globalStats && globalStats["isUnderAverage"]}
-          <div class="flex-container">
-            <span style="font-size:30px;padding-right:5px;">🥇</span>
-            <div>
-              <p class="small-modal-text">Congratulations speedster.</p>
-              <p class="small-modal-text">You're under today's average - very clever.</p>
-            </div>
-          </div>
-        {:else}
-          <div class="flex-container">
-            <span style="font-size:30px;padding-right:5px;">🥉</span>
-            <div>
-              <p class="small-modal-text">Oooof.</p>
-              <p class="small-modal-text">You're over today's average - try for gold tomorrow</p>
-            </div>
-          </div>
-        {/if}
-      {/if}
-      <hr>
-    {/if}
-    
-    <div class="flex-container">
-      <div class="spacer"></div>
-      <button class="share-button" on:click={share}>Share</button>
-      <div class="spacer"></div>
-    </div>
-    <hr>
-
-    <div>
-      <a href="https://ko-fi.com/letterloop" target="_blank"><img class="shirt-ad large-screen" src={shirt_ad} alt="LetterLoop Merch" /></a>
-      <a href="https://ko-fi.com/letterloop" target="_blank"><img class="shirt-ad mobile-screen" src={shirt_ad_mobile} alt="LetterLoop Merch" /></a>
-    </div>
-  </Modal>
   
   <Modal bind:showModal={showHelpModal} modalType={"help"}>
     <h2 slot="header">
