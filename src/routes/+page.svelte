@@ -223,7 +223,7 @@
 					backgroundColor="#FFE1E5"
 					borderColor="#FF4B62"
 					characterName="flower"
-					characterSize="80"
+					characterSize="90px"
 					headerText="Support the Loop."
 					subtitle="Click here to donate."
 				/>

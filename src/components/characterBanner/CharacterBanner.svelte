@@ -1,4 +1,10 @@
 <script>
+  import { onMount } from 'svelte';
+  import characterFlower from '$lib/images/character-flower.png';
+  import characterBattery from '$lib/images/character-battery.png';
+  import characterHourglass from '$lib/images/character-hourglass.png';
+  import characterStar from '$lib/images/character-star.png';
+
   export let backgroundColor = "#ffffff";
   export let borderColor = "#000000";
   export let characterName = "";
@@ -6,8 +12,31 @@
   export let headerText = "Header Text";
   export let subtitle = "Subtitle Text";
 
-  let characterImagePath = `src/lib/images/character-${characterName}.png`
-  const imageStyle = `width: ${characterSize}px`
+  let characterImagePath;
+
+  onMount(() => {
+    setImage() 
+  });
+
+
+  function setImage() {
+    switch (characterName) {
+    case 'flower':
+      characterImagePath = characterFlower;
+      break;
+    case 'battery':
+      characterImagePath = characterBattery;
+      break;
+    case 'hourglass':
+      characterImagePath = characterHourglass;
+      break;
+    case 'star':
+      characterImagePath = characterStar;
+      break;
+    default:
+      characterImagePath = characterStar;
+  }
+  }
 
 </script>
 
@@ -42,6 +71,7 @@
   }
   .characterImg {
     padding-left: 1rem;
+    width: var(--character-size);
   }
 </style>
 
@@ -51,8 +81,8 @@
 >
   {#if characterImagePath}
     <img 
-      class="characterImg" 
-      style="{imageStyle}" 
+      class="characterImg"
+      style="--character-size: {characterSize};" 
       src={characterImagePath} 
       alt="img" 
     />

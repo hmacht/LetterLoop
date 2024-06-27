@@ -143,7 +143,7 @@
             backgroundColor="#FFF9E3"
             borderColor="#FFAE5D"
             characterName="star"
-            characterSize="60"
+            characterSize="60px"
             headerText="Congratulations speedster."
             subtitle="You're under today's average!"
           />
@@ -152,7 +152,7 @@
             backgroundColor="#EEECEC"
             borderColor="#B4B4B4"
             characterName="hourglass"
-            characterSize="60"
+            characterSize="60px"
             headerText="Not your fastest."
             subtitle="You're over today's average."
           />
@@ -162,7 +162,7 @@
           backgroundColor="#FFD8DD"
           borderColor="#DF5468"
           characterName="battery"
-          characterSize="60"
+          characterSize="60px"
           headerText="Oh no, you gave up."
           subtitle="Try to get it tomorrow!"
         />
