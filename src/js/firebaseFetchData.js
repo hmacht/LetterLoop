@@ -1,9 +1,10 @@
 import { getDatabase, ref, onValue } from "firebase/database";
+import { today } from "./timeFormatter"
 
 
 export async function fetchTodaysSolutions() {
   try {
-    return await fetchFirebaseData('solutions/' + todaysDateFormatted());
+    return await fetchFirebaseData('solutions/' + today());
   } catch (error) {
     console.error('Error fetching today’s solutions:', error);
     return null; 
@@ -12,7 +13,7 @@ export async function fetchTodaysSolutions() {
 
 export async function fetchTodaysStats() {
   try {
-    return await fetchFirebaseData('Stats/' + todaysDateFormatted());
+    return await fetchFirebaseData('Stats/' + today());
   } catch (error) {
     console.error('Error fetching today’s solutions:', error);
     return null; 
@@ -42,15 +43,6 @@ export async function fetchFirebaseData(databasePath) {
       reject(error);
     });
   });
-} 
-
-
-function todaysDateFormatted() {
-  const currentDatetime = new Date();
-  const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-  const formattedDate = currentDatetime.toLocaleDateString('en-US', options).replace(/\//g, '-');
-
-  return formattedDate;
 }
 
 

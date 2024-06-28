@@ -1,19 +1,20 @@
 <script>
   // @ts-nocheck
   
-    import Modal from '../../components/modal/Modal.svelte';
+    import Modal from '../modal/Modal.svelte';
     import { notifications } from "../../js/notifications.js";
-    import Toast from '../../components/toast/Toast.svelte';
+    import Toast from '../toast/Toast.svelte';
     import { onMount } from 'svelte';
     import { firebaseApp, signIn } from '../../js/firebaseConfig';
     import * as firebaseFunctions from '../../js/firebaseFetchData';
     import { logTime } from '../../js/logCompletionTime.js';
     import { getAnalytics, logEvent } from "firebase/analytics";
-    import Timer from '../../components/timer/Timer.svelte';
-    import Help from '../../components/help/Help.svelte';
+    import Timer from '../timer/Timer.svelte';
+    import Help from '../help/Help.svelte';
     import navImage from '$lib/images/logo-black.png';
     import { gameData } from '../../js/gameStore.js';
-    import { goto } from '$app/navigation';
+
+    export let gameOver;
 
     let showHelpModal = false;
     let showPauseModal = false;
@@ -28,7 +29,6 @@
     let game_timer;
     let elapsedSeconds = 0;
     let puzzle_author = "---";
-    let globalStats;
     let gaveUp = false;
     let loadStatus = "Loading Game..."
   
@@ -125,9 +125,16 @@
     function endGame() {
       game_timer.stop();
       logTime(elapsedSeconds)
-        .then((result) => {
-            globalStats = result;
-            redirectToGameOver();
+        .then((globalStats) => {
+          gameData.update(data => ({
+            ...data,
+            elapsedSeconds,
+            solutions,
+            gaveUp,
+            globalStats
+          }));
+
+          gameOver = true;
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -165,17 +172,8 @@
       showPauseModal = false;
     }
 
-    function redirectToGameOver() {
-      // Save and redirect
-      gameData.update(data => ({
-        ...data,
-        elapsedSeconds,
-        solutions,
-        gaveUp,
-        globalStats
-      }));
-
-      goto('/gameover');
+    function refreshPage() {
+      location.reload();
     }
   
     $: isDisabled = (index) => disabledKeys.includes(index);
@@ -189,10 +187,10 @@
   <main>
     <div class="nav-flex-container">
       <div class="title-container">
-        <a class="logo-container" href="/">
+        <div class="logo-container" on:click={refreshPage}>
           <img class="nav-image" src={navImage}/>
           <p class="title">LetterLoop</p>
-        </a>
+        </div>
         <small style="color: rgb(46, 46, 46);">(public beta) · Edited by {puzzle_author}</small>
       </div>
       <div class="spacer"></div>

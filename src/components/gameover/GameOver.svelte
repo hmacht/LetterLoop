@@ -68,6 +68,10 @@
     
       return htmlString;
     }
+
+    function refreshPage() {
+      location.reload();
+    }
   </script>
     
   <style>
@@ -78,7 +82,7 @@
 
     .gameover-container {
       max-width: 400px;
-      width: 100%;
+      width: 85%;
     }
 
     .panel-section {
@@ -115,10 +119,10 @@
   <main>
     <div class="nav-flex-container-filled">
       <div class="title-container">
-        <a class="logo-container" href="/">
+        <div class="logo-container" on:click={refreshPage}>
           <img class="nav-image" src={navImage}/>
           <p class="title">LetterLoop</p>
-        </a>
+        </div>
       </div>
       <div class="spacer"></div>
       <a class="help-container" href="https://www.reddit.com/r/letterloop/" target="_blank">
@@ -200,6 +204,13 @@
 
           <button class="share-button" on:click={share}>SHARE YOUR TIME</button>
         </div>
+      </div>
+
+      <!-- Ad-->
+      <div id='theletterloop-com_300x600' class="banner-ad">
+        <script type='text/javascript'>
+          aiptag.cmd.display.push(function() { aipDisplayTag.display('theletterloop-com_300x600'); });
+        </script>
       </div>
     <div>
   </main>

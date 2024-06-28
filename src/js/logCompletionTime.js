@@ -1,11 +1,12 @@
 import { getDatabase, ref, push, set } from "firebase/database";
-import { fetchFirebaseData } from './firebaseFetchData.js';
+import { fetchTodaysStats } from './firebaseFetchData.js';
+import { today } from "./timeFormatter"
 
 // @ts-ignore
 export async function logTime(time) {
   const db = getDatabase();
-  const dbRef = ref(db, "Stats/" + todaysDate());
-  const currentStats = await getStats()
+  const dbRef = ref(db, "Stats/" + today());
+  const currentStats = await fetchTodaysStats();
 
   if (currentStats === "NOREF") {
     set(dbRef, {
@@ -43,23 +44,6 @@ export async function logTime(time) {
       isUnderAverage: isRecord(time, currAverageTime),
       isHighScore: isRecord(time, currMinTime)
     }
-  }
-}
-
-function todaysDate() {
-  const currentDatetime = new Date();
-  const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-  const formattedDate = currentDatetime.toLocaleDateString('en-US', options).replace(/\//g, '-');
-
-  return formattedDate;
-}
- 
-async function getStats() {
-  try {
-    const dataFromFirebase = await fetchFirebaseData("Stats/" + todaysDate());
-    return dataFromFirebase;
-  } catch (error) {
-    return null;
   }
 }
 

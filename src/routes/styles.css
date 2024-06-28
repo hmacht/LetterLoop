@@ -311,3 +311,7 @@ main {
 .panel-body {
 	padding: 25px;
 }
+
+.banner-ad {
+	margin: 2rem auto 0 auto;
+}
