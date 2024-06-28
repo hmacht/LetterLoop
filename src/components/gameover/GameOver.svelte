@@ -205,13 +205,6 @@
           <button class="share-button" on:click={share}>SHARE YOUR TIME</button>
         </div>
       </div>
-
-      <!-- Ad-->
-      <div id='theletterloop-com_300x600' class="banner-ad">
-        <script type='text/javascript'>
-          aiptag.cmd.display.push(function() { aipDisplayTag.display('theletterloop-com_300x600'); });
-        </script>
-      </div>
     <div>
   </main>
 
