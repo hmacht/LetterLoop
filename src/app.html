@@ -23,8 +23,19 @@
 				buttonText: "Privacy settings",
 				buttonPosition: "bottom-right" //bottom-left, bottom-right, top-left, top-right
 			}
-			</script>
-			<script async src="//api.adinplay.com/libs/aiptag/pub/TLL/theletterloop.com/tag.min.js"></script>
+		</script>
+
+		<!-- Google tag (gtag.js) -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-PTSXQY0CP2"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+
+			gtag('config', 'G-PTSXQY0CP2');
+		</script>
+		
+		<script async src="//api.adinplay.com/libs/aiptag/pub/TLL/theletterloop.com/tag.min.js"></script>
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>

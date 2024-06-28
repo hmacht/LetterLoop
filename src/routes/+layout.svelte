@@ -1,13 +1,13 @@
 <script>
 	import './styles.css';
 	import '@fortawesome/fontawesome-free/css/all.min.css'		
-	import { dev } from '$app/environment';
-	import { inject } from '@vercel/analytics';
-	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
-	
 
-	inject({ mode: dev ? 'development' : 'production' });
-	injectSpeedInsights();
+	// This is for Vercel analytics. Currently Using GA4
+	// import { dev } from '$app/environment';
+	// import { inject } from '@vercel/analytics';
+	// import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
+	// inject({ mode: dev ? 'development' : 'production' });
+	// injectSpeedInsights();
 </script>
 
 <div class="app">
