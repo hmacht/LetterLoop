@@ -4,6 +4,8 @@
   import characterBattery from '$lib/images/character-battery.png';
   import characterHourglass from '$lib/images/character-hourglass.png';
   import characterStar from '$lib/images/character-star.png';
+  import characterCoffee from '$lib/images/character-coffee.png';
+
 
   export let backgroundColor = "#ffffff";
   export let borderColor = "#000000";
@@ -32,6 +34,9 @@
       break;
     case 'star':
       characterImagePath = characterStar;
+      break;
+    case 'coffee':
+      characterImagePath = characterCoffee;
       break;
     default:
       characterImagePath = characterStar;

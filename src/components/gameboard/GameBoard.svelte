@@ -13,6 +13,7 @@
     import Help from '../help/Help.svelte';
     import navImage from '$lib/images/logo-black.png';
     import { gameData } from '../../js/gameStore.js';
+    import Device from 'svelte-device-info'
 
     export let gameOver;
 
@@ -33,7 +34,7 @@
     let loadStatus = "Loading Game..."
   
     onMount(async () => {
-      fireUpGameBoard();
+      await fireUpGameBoard();
     });
 
     async function fireUpGameBoard() {
@@ -188,19 +189,23 @@
     <div class="nav-flex-container">
       <div class="title-container">
         <div class="logo-container" on:click={refreshPage}>
-          <img class="nav-image" src={navImage}/>
           <p class="title">LetterLoop</p>
         </div>
-        <small style="color: rgb(46, 46, 46);">(public beta) · Edited by {puzzle_author}</small>
       </div>
       <div class="spacer"></div>
       <div class="help-container" on:click={giveUp}>
         <i class="fa-regular fa-face-sad-tear"></i>
-        <p class="how-to-play">Give Up</p>
+        {#if !Device.isMobile}
+          <p class="how-to-play">Give Up</p>
+        {/if}
       </div>
       <div class="help-container" on:click={() => showHelpModal = true}>
-        <i class="fa-regular fa-circle-question"></i>
-        <p class="how-to-play">How to play</p>
+        {#if !Device.isMobile}
+          <i class="fa-regular fa-circle-question"></i>
+          <p class="how-to-play">How to play</p>
+        {:else}
+          <i class="fa-regular fa-circle-question" style="padding-right: 1rem;"></i>
+        {/if}
       </div>
     </div>
     <div class="divider"></div>
@@ -271,8 +276,11 @@
     {:else}
       <p>{loadStatus}</p>
     {/if}
-  
-    
+
+    <br>
+    <small style="color: rgb(46, 46, 46);">Edited by {puzzle_author}</small>
+    <small style="color: rgb(46, 46, 46);">{todays_date}</small>
+      
   </main>
   
   <svelte:window on:keydown|preventDefault={handleKeyPress} />

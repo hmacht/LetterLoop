@@ -12,8 +12,14 @@
     var solutions = []
     var globalStats = "";
 
+    export let completedTodaysLoop = false;
+
     onMount(() => {
       retrieveGameDate()
+
+      if (!completedTodaysLoop) {
+        saveGameTime()
+      }
     });
 
     function retrieveGameDate() {
@@ -25,6 +31,15 @@
       });
     }
 
+    function saveGameTime() {
+      const today = new Date().toISOString().split('T')[0];
+      localStorage.setItem('gameTime', JSON.stringify({ 
+        elapsedSeconds: elapsedSeconds, 
+        date: today,
+        gaveUp: gaveUp,
+        solutions: solutions
+      }));
+    }
 
     const share = async () => {
       let shareText = "I completed the LetterLoop in: \n" + "🔴" + elapsedSeconds + "🔴"
@@ -119,8 +134,7 @@
   <main>
     <div class="nav-flex-container-filled">
       <div class="title-container">
-        <div class="logo-container" on:click={refreshPage}>
-          <img class="nav-image" src={navImage}/>
+        <div class="logo-container">
           <p class="title">LetterLoop</p>
         </div>
       </div>
@@ -131,45 +145,50 @@
       </a>
     </div>
     <div class="divider"></div>
-    
-    <div id='theletterloop-com_300x600' class="banner-ad">
-      <script type='text/javascript'>
-        aiptag.cmd.display.push(function() { aipDisplayTag.display('theletterloop-com_300x600'); });
-      </script>
-    </div>
 
     <Toast />
 
     <div class="gameover-container">
-      {#if gaveUp == false}
-        {#if globalStats && globalStats["isUnderAverage"]}
-          <CharacterBanner
-            backgroundColor="#FFF9E3"
-            borderColor="#FFAE5D"
-            characterName="star"
-            characterSize="60px"
-            headerText="Congratulations speedster."
-            subtitle="You're under today's average!"
-          />
+      {#if completedTodaysLoop}
+        <CharacterBanner
+          backgroundColor="#E4E5F2"
+          borderColor="#888AAF"
+          characterName="coffee"
+          characterSize="80px"
+          headerText="Welcome back looper!"
+          subtitle="Check out and share your time today."
+        />
+      {:else}
+        {#if gaveUp == false}
+          {#if globalStats && globalStats["isUnderAverage"]}
+            <CharacterBanner
+              backgroundColor="#FFF9E3"
+              borderColor="#FFAE5D"
+              characterName="star"
+              characterSize="60px"
+              headerText="Congratulations speedster."
+              subtitle="You're under today's average!"
+            />
+          {:else}
+            <CharacterBanner
+              backgroundColor="#EEECEC"
+              borderColor="#B4B4B4"
+              characterName="hourglass"
+              characterSize="60px"
+              headerText="Not your fastest."
+              subtitle="You're over today's average."
+            />
+          {/if}
         {:else}
           <CharacterBanner
-            backgroundColor="#EEECEC"
-            borderColor="#B4B4B4"
-            characterName="hourglass"
+            backgroundColor="#FFD8DD"
+            borderColor="#DF5468"
+            characterName="battery"
             characterSize="60px"
-            headerText="Not your fastest."
-            subtitle="You're over today's average."
+            headerText="Oh no, you gave up."
+            subtitle="Try to get it tomorrow!"
           />
         {/if}
-      {:else}
-        <CharacterBanner
-          backgroundColor="#FFD8DD"
-          borderColor="#DF5468"
-          characterName="battery"
-          characterSize="60px"
-          headerText="Oh no, you gave up."
-          subtitle="Try to get it tomorrow!"
-        />
       {/if}
 
       <div class="panel">

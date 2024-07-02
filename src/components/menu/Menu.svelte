@@ -12,7 +12,6 @@
   export let showGameBoard;
 
   let showHelpModal = false;
-  let showStatsModal = false;
   let today = new Date().toLocaleDateString();
   let puzzleNumber = calculatePuzzleNumber()
   
@@ -27,6 +26,14 @@
   function startButtonClick() {
     // window.location.href = "/gameboard";
     showGameBoard = true;
+    hideKofiButton();
+  }
+
+  function hideKofiButton() {
+    const kofiWidgets = document.querySelectorAll('[id^="kofi-widget-overlay-"]'); // select elements with ID starting with "kofi-widget-overlay-"
+    kofiWidgets.forEach(widget => {
+      widget.style.display = 'none';
+    });
   }
 
   const share = async () => {
@@ -66,7 +73,7 @@
     margin: 0;
     width: 100vw;
     background-color: #FFE9E9;
-    padding-top: 3rem;
+    padding-top: 2rem;
   }
 
   .content {
@@ -248,12 +255,4 @@
   </h2>
   <hr>
   <Help />
-</Modal>
-
-<Modal bind:showModal={showStatsModal} modalType={"stats"}>
-  <h2 slot="header">
-    <span class="styled-header">Today's Stats</span>
-  </h2>
-  <hr>
-  <Stats />
 </Modal>
