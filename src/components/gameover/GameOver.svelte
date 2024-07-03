@@ -16,10 +16,6 @@
 
     onMount(() => {
       retrieveGameDate()
-
-      if (!completedTodaysLoop) {
-        saveGameTime()
-      }
     });
 
     function retrieveGameDate() {
@@ -29,16 +25,6 @@
         gaveUp = value.gaveUp;
         globalStats = value.globalStats;
       });
-    }
-
-    function saveGameTime() {
-      const today = new Date().toISOString().split('T')[0];
-      localStorage.setItem('gameTime', JSON.stringify({ 
-        elapsedSeconds: elapsedSeconds, 
-        date: today,
-        gaveUp: gaveUp,
-        solutions: solutions
-      }));
     }
 
     const share = async () => {
@@ -154,9 +140,9 @@
           backgroundColor="#E4E5F2"
           borderColor="#888AAF"
           characterName="coffee"
-          characterSize="80px"
+          characterSize="68px"
           headerText="Welcome back looper!"
-          subtitle="Check out and share your time today."
+          subtitle="Dont forget to share your time."
         />
       {:else}
         {#if gaveUp == false}

@@ -16,12 +16,10 @@
 	});
 
 	function getSavedGameTime() {
-		const savedData = JSON.parse(localStorage.getItem('gameTime'));
+		const savedData = JSON.parse(localStorage.getItem('gameTimeV2'));
 		if (savedData) {
 				const today = new Date().toISOString().split('T')[0];
 				if (savedData.date === today) {
-					console.log("jnafsnjfsn")
-					console.log(savedData)
 					gameData.update(data => ({
 						...data,
 						elapsedSeconds: savedData.elapsedSeconds,

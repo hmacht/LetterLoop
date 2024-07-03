@@ -135,11 +135,23 @@
             globalStats
           }));
 
+          saveGameTime()
+
           gameOver = true;
         })
         .catch((error) => {
             console.error('Error:', error);
         });
+    }
+
+    function saveGameTime() {
+      const today = new Date().toISOString().split('T')[0];
+      localStorage.setItem('gameTimeV2', JSON.stringify({ 
+        elapsedSeconds: elapsedSeconds, 
+        date: today,
+        gaveUp: gaveUp,
+        solutions: solutions
+      }));
     }
 
   
