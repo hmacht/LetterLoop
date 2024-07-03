@@ -14,6 +14,7 @@
     import navImage from '$lib/images/logo-black.png';
     import { gameData } from '../../js/gameStore.js';
     import Device from 'svelte-device-info'
+    import { today } from "../../js/timeFormatter"
 
     export let gameOver;
 
@@ -145,10 +146,9 @@
     }
 
     function saveGameTime() {
-      const today = new Date().toISOString().split('T')[0];
       localStorage.setItem('gameTimeV2', JSON.stringify({ 
         elapsedSeconds: elapsedSeconds, 
-        date: today,
+        date: today(),
         gaveUp: gaveUp,
         solutions: solutions
       }));

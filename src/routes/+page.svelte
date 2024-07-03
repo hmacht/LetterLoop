@@ -3,6 +3,7 @@
 	import GameBoard from "../components/gameboard/GameBoard.svelte";
 	import GameOver from "../components/gameover/GameOver.svelte";
 	import PromoBanner from "../components/promoBanner/PromoBanner.svelte";
+	import { today } from "../js/timeFormatter"
 
 	import { gameData } from '../js/gameStore.js';
 	import { onMount } from "svelte";
@@ -18,17 +19,16 @@
 	function getSavedGameTime() {
 		const savedData = JSON.parse(localStorage.getItem('gameTimeV2'));
 		if (savedData) {
-				const today = new Date().toISOString().split('T')[0];
-				if (savedData.date === today) {
-					gameData.update(data => ({
-						...data,
-						elapsedSeconds: savedData.elapsedSeconds,
-						solutions: savedData.solutions,
-						gaveUp: savedData.gaveUp,
-					}));
+			if (savedData.date === today()) {
+				gameData.update(data => ({
+					...data,
+					elapsedSeconds: savedData.elapsedSeconds,
+					solutions: savedData.solutions,
+					gaveUp: savedData.gaveUp,
+				}));
 
-					completedTodaysLoop = true
-				}
+				completedTodaysLoop = true
+			}
 		}
 	}
 
