@@ -282,7 +282,7 @@
             {/if}
           </div>
 
-          <p class="disclaimer">*Stats is based on what device you are using. Login for multi-device stats is coming soon! Thank you for your support and patience.</p>
+          <p class="disclaimer">*Stats are stored locally on your device and will be lost if you clear your cookies 🍪. Login for multi-device stats is coming soon! Thank you for your support and patience.</p>
         </div>
       </div>
 
