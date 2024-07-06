@@ -6,16 +6,22 @@
     import Toast from '../toast/Toast.svelte';
     import { gameData } from '../../js/gameStore.js';
     import { onMount } from "svelte";
+    import { getUserStats } from "../../js/manageUserStats"
+    import { secondsFormatted } from "../../js/timeFormatter"
 
     var elapsedSeconds = "-----"
     var gaveUp = false
     var solutions = []
     var globalStats = "";
+    var userStats;
+    var streakEmoji = "";
 
     export let completedTodaysLoop = false;
 
     onMount(() => {
       retrieveGameDate()
+      setUserStatus()
+      setStreakEmoji()
     });
 
     function retrieveGameDate() {
@@ -25,6 +31,30 @@
         gaveUp = value.gaveUp;
         globalStats = value.globalStats;
       });
+    }
+
+    function setUserStatus() {
+      userStats = getUserStats();
+    }
+
+    function setStreakEmoji() {
+      let streak = Number(userStats.streak);
+      if (!streak) return;
+
+      const conditions = [
+        { threshold: 365, emoji: "🙀" },
+        { threshold: 30, emoji: "🕺" },
+        { threshold: 14, emoji: "❤️‍🔥" },
+        { threshold: 7, emoji: "🔥" },
+        { threshold: 3, emoji: "✨" }
+      ];
+
+      for (const condition of conditions) {
+        if (streak >= condition.threshold) {
+          streakEmoji = condition.emoji;
+          break;
+        }
+      }
     }
 
     const share = async () => {
@@ -62,9 +92,9 @@
       const lastPart = solution.substring(4, 8) + firstPart[0];
     
       const htmlString = `
-        <a href="https://www.merriam-webster.com/dictionary/${firstPart}" target="blank">${firstPart}</a> 
+        (<a href="https://www.merriam-webster.com/dictionary/${firstPart}" target="blank">${firstPart}</a> 
         + 
-        <a href="https://www.merriam-webster.com/dictionary/${lastPart}" target="blank">${lastPart}</a>
+        <a href="https://www.merriam-webster.com/dictionary/${lastPart}" target="blank">${lastPart}</a>)
       `;
     
       return htmlString;
@@ -73,12 +103,14 @@
     function refreshPage() {
       location.reload();
     }
+
   </script>
     
   <style>
     main {
       background-color: #FFE9E9!important;
       width: 100vw;
+      height: min-content;
     }
 
     .gameover-container {
@@ -99,6 +131,24 @@
       font-weight: 700;
       margin: 4px 0 0 0;
       text-align: left;
+    }
+
+    .stats-text {
+      font-size: 25px;
+      font-weight: 700;
+      margin: 4px 0 0 0;
+      text-align: left;
+    }
+
+    .stats-conatiner {
+      display: flex;
+      gap: 20px;
+    }
+
+    .disclaimer {
+      font-size: 10px;
+      color: #bbbbbb;
+      margin-bottom: 0;
     }
 
     .share-button {
@@ -210,6 +260,41 @@
           <button class="share-button" on:click={share}>SHARE YOUR TIME</button>
         </div>
       </div>
+
+      <div class="panel">
+        <div class="panel-body">
+          <div class="stats-conatiner">
+            {#if userStats}
+              <div>
+                <p class="small-header" >Current Streak</p>
+                <p class="stats-text">
+                  {streakEmoji}
+                  {userStats.streak}
+                </p>
+              </div>
+
+              <div>
+                <p class="small-header">Average Time</p>
+                <p class="stats-text">{secondsFormatted(userStats.average_time)}</p>
+              </div>
+            {:else}
+              Loading Your Stats...
+            {/if}
+          </div>
+
+          <p class="disclaimer">*Stats is based on what device you are using. Login for multi-device stats is coming soon! Thank you for your support and patience.</p>
+        </div>
+      </div>
+
+      <a href="https://ko-fi.com/letterloop" target="_blank">
+        <div class="panel">
+          <div class="panel-body">
+            <p class="small-header center-text">❤️ Support the loop ❤️</p>
+          </div>
+        </div>
+      </a>
+
+      <div class="block-spacer-100"></div>
     <div>
   </main>
 

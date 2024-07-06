@@ -15,6 +15,7 @@
     import { gameData } from '../../js/gameStore.js';
     import Device from 'svelte-device-info'
     import { today } from "../../js/timeFormatter"
+    import { updateUserStats } from "../../js/manageUserStats"
 
     export let gameOver;
 
@@ -137,6 +138,7 @@
           }));
 
           saveGameTime()
+          updateUserStats(elapsedSeconds, gaveUp)
 
           gameOver = true;
         })

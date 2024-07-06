@@ -303,7 +303,7 @@ main {
 	border: 1px solid #D7D7D7;
 	background-color: #FFFBFB;
 	border-radius: 30px;
-	margin: 1.5rem auto 0 auto;
+	margin: 1rem auto 0 auto;
 }
 
 .panel-body {
@@ -312,4 +312,13 @@ main {
 
 .banner-ad {
 	margin: 2rem auto 0 auto;
+}
+
+.block-spacer-100 {
+	height: 100px;
+	background-color: transparent;
+}
+
+.center-text {
+	text-align: center;
 }

@@ -1,6 +1,6 @@
 <style>
   .banner-container {
-    width: 100vw;
+    width: 100%;
     text-align: center;
     padding: 0.5rem;
     background-color: #8B9FD6;
