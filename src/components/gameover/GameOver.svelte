@@ -4,6 +4,7 @@
     import CharacterBanner from '../characterBanner/CharacterBanner.svelte';
     import navImage from '$lib/images/logo-black.png';
     import Toast from '../toast/Toast.svelte';
+    import OrbitsAd from '../OrbitsAd.svelte';
     import { gameData } from '../../js/gameStore.js';
     import { onMount } from "svelte";
     import { getUserStats } from "../../js/manageUserStats"
@@ -260,6 +261,8 @@
           <button class="share-button" on:click={share}>SHARE YOUR TIME</button>
         </div>
       </div>
+
+      <OrbitsAd />
 
       <div class="panel">
         <div class="panel-body">
