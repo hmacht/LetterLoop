@@ -8,6 +8,7 @@
   import { notifications } from "../../js/notifications.js";
   import Toast from '../toast/Toast.svelte';
   import CharacterBanner from '../characterBanner/CharacterBanner.svelte';
+  import KickstarterLink from '../KickstarterLink.svelte';
 
   export let showGameBoard;
 
@@ -209,8 +210,11 @@
         <p class="menu-number">Loop #{puzzleNumber}</p>
         <i class="menu-small-text">For those who love morning games</i>
       </div>
-  
-      <a href="https://ko-fi.com/letterloop" target="_blank">
+      
+      <KickstarterLink />
+
+      <!-- Add back when Kickstarter is Over -->
+      <!-- <a href="https://ko-fi.com/letterloop" target="_blank">
         <CharacterBanner
           backgroundColor="#FFE1E5"
           borderColor="#FF4B62"
@@ -219,7 +223,7 @@
           headerText="Support the Loop."
           subtitle="Click here to donate."
         />
-      </a>
+      </a> -->
   
       <div style="padding-top:15px;">
         <a class="terms" href="/privacy-policy">Privacy Policy</a>
@@ -228,24 +232,19 @@
       </div>
   
       <p class="version-tag">version 1.8</p>
-
-      <!-- Ad-->
-      <div id='theletterloop-com_300x600' class="banner-ad">
-        <script type='text/javascript'>
-          aiptag.cmd.display.push(function() { aipDisplayTag.display('theletterloop-com_300x600'); });
-        </script>
-      </div>
     </div>
   
-    <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
-      <script>
-        kofiWidgetOverlay.draw('letterloop', {
-          'type': 'floating-chat',
-          'floating-chat.donateButton.text': 'Support Us',
-          'floating-chat.donateButton.background-color': '#00b9fe',
-          'floating-chat.donateButton.text-color': '#fff'
-        });
-      </script>
+    <!-- Add back when Kickstarter is over -->
+    <!-- <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+    <script>
+      kofiWidgetOverlay.draw('letterloop', {
+        'type': 'floating-chat',
+        'floating-chat.donateButton.text': 'Support Us',
+        'floating-chat.donateButton.background-color': '#00b9fe',
+        'floating-chat.donateButton.text-color': '#fff'
+      });
+    </script> -->
+    
   </div>
 </main>
 

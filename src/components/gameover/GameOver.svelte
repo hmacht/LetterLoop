@@ -5,6 +5,7 @@
     import navImage from '$lib/images/logo-black.png';
     import Toast from '../toast/Toast.svelte';
     import OrbitsAd from '../OrbitsAd.svelte';
+    import KickstarterLink from '../KickstarterLink.svelte';
     import { gameData } from '../../js/gameStore.js';
     import { onMount } from "svelte";
     import { getUserStats } from "../../js/manageUserStats"
@@ -228,6 +229,8 @@
         {/if}
       {/if}
 
+      <OrbitsAd />
+
       <div class="panel">
         <div class="panel-body">
 
@@ -262,7 +265,7 @@
         </div>
       </div>
 
-      <OrbitsAd />
+      <KickstarterLink />
 
       <div class="panel">
         <div class="panel-body">
@@ -277,7 +280,7 @@
               </div>
 
               <div>
-                <p class="small-header">Average Time</p>
+                <p class="small-header">All Time Average</p>
                 <p class="stats-text">{secondsFormatted(userStats.average_time)}</p>
               </div>
             {:else}
@@ -289,13 +292,14 @@
         </div>
       </div>
 
-      <a href="https://ko-fi.com/letterloop" target="_blank">
+      <!-- This will be turned back on after Kickstarter Ends -->
+      <!-- <a href="https://ko-fi.com/letterloop" target="_blank">
         <div class="panel">
           <div class="panel-body">
             <p class="small-header center-text">❤️ Support the loop ❤️</p>
           </div>
         </div>
-      </a>
+      </a> -->
 
       <div class="block-spacer-100"></div>
     <div>

@@ -14,7 +14,7 @@
 </style>
 
 <div class="banner-container">
-  <a href="https://www.reddit.com/r/letterloop/" target="_blank">
-    <span>Join the conversation on <b>Reddit</b>. &nbsp <i class="fa-solid fa-arrow-right"></i></span>
+  <a href="http://kck.st/4cEN5N8" target="_blank">
+    <span>Help us reach our goal of $500 on <b>Kickstarter</b>. &nbsp <i class="fa-solid fa-arrow-right"></i></span>
   </a>
 </div>
