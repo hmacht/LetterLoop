@@ -3,6 +3,7 @@
 	import GameBoard from "../components/gameboard/GameBoard.svelte";
 	import GameOver from "../components/gameover/GameOver.svelte";
 	import PromoBanner from "../components/promoBanner/PromoBanner.svelte";
+	import FullPageAd from "../components/FullPageAd.svelte";
 	import { today } from "../js/timeFormatter"
 
 	import { gameData } from '../js/gameStore.js';
@@ -11,6 +12,7 @@
 	let showGameBoard = false;
 	let gameOver = false;
 	let completedTodaysLoop = false;
+	let showAd = false;
 
 	onMount(() => {
 		getSavedGameTime()
@@ -37,17 +39,21 @@
 
 <main>
 	<PromoBanner />
-	{#if completedTodaysLoop}
-		<GameOver {completedTodaysLoop}/>
+	{#if showAd}
+		<FullPageAd bind:showAd={showAd} />
 	{:else}
-		{#if showGameBoard}
-			{#if gameOver}
-				<GameOver />
-			{:else}
-				<GameBoard bind:gameOver={gameOver}/>
-			{/if}
+		{#if completedTodaysLoop}
+			<GameOver {completedTodaysLoop}/>
 		{:else}
-			<Menu bind:showGameBoard={showGameBoard} />
+			{#if showGameBoard}
+				{#if gameOver}
+					<GameOver />
+				{:else}
+					<GameBoard bind:gameOver={gameOver} bind:showAd={showAd}/>
+				{/if}
+			{:else}
+				<Menu bind:showGameBoard={showGameBoard} />
+			{/if}
 		{/if}
 	{/if}
 </main>

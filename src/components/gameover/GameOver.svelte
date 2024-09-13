@@ -5,7 +5,7 @@
     import navImage from '$lib/images/logo-black.png';
     import Toast from '../toast/Toast.svelte';
     import OrbitsAd from '../OrbitsAd.svelte';
-    import KickstarterLink from '../KickstarterLink.svelte';
+    import PromotionLink from '../PromotionLink.svelte';
     import { gameData } from '../../js/gameStore.js';
     import { onMount } from "svelte";
     import { getUserStats } from "../../js/manageUserStats"
@@ -229,8 +229,6 @@
         {/if}
       {/if}
 
-      <OrbitsAd />
-
       <div class="panel">
         <div class="panel-body">
 
@@ -265,7 +263,7 @@
         </div>
       </div>
 
-      <KickstarterLink />
+      <PromotionLink />
 
       <div class="panel">
         <div class="panel-body">

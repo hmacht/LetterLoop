@@ -18,6 +18,7 @@
     import { updateUserStats } from "../../js/manageUserStats"
 
     export let gameOver;
+    export let showAd;
 
     let showHelpModal = false;
     let showPauseModal = false;
@@ -140,6 +141,7 @@
           saveGameTime()
           updateUserStats(elapsedSeconds, gaveUp)
 
+          showAd = true;
           gameOver = true;
         })
         .catch((error) => {

@@ -8,7 +8,7 @@
   import { notifications } from "../../js/notifications.js";
   import Toast from '../toast/Toast.svelte';
   import CharacterBanner from '../characterBanner/CharacterBanner.svelte';
-  import KickstarterLink from '../KickstarterLink.svelte';
+  import PromotionLink from '../PromotionLink.svelte';
 
   export let showGameBoard;
 
@@ -211,19 +211,7 @@
         <i class="menu-small-text">For those who love morning games</i>
       </div>
       
-      <KickstarterLink />
-
-      <!-- Add back when Kickstarter is Over -->
-      <!-- <a href="https://ko-fi.com/letterloop" target="_blank">
-        <CharacterBanner
-          backgroundColor="#FFE1E5"
-          borderColor="#FF4B62"
-          characterName="flower"
-          characterSize="90px"
-          headerText="Support the Loop."
-          subtitle="Click here to donate."
-        />
-      </a> -->
+      <PromotionLink />
   
       <div style="padding-top:15px;">
         <a class="terms" href="/privacy-policy">Privacy Policy</a>
@@ -233,18 +221,6 @@
   
       <p class="version-tag">version 1.8</p>
     </div>
-  
-    <!-- Add back when Kickstarter is over -->
-    <!-- <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
-    <script>
-      kofiWidgetOverlay.draw('letterloop', {
-        'type': 'floating-chat',
-        'floating-chat.donateButton.text': 'Support Us',
-        'floating-chat.donateButton.background-color': '#00b9fe',
-        'floating-chat.donateButton.text-color': '#fff'
-      });
-    </script> -->
-    
   </div>
 </main>
 

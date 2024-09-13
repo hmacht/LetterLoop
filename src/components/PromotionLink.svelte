@@ -1,5 +1,5 @@
 <script lang="ts">
-  import kickstarterLogo from '$lib/images/kickstarter-k.svg';
+  import kickstarterLogo from '$lib/images/Ko-fi_HEART.gif';
 </script>
 
 <style>
@@ -57,13 +57,13 @@
   }
 </style>
 
-<a href="http://kck.st/4cEN5N8" target="_blank" class="kickstarter-link">
+<a href="https://ko-fi.com/letterloop" target="_blank" class="kickstarter-link">
   <div class="kickstarter-container">
     <img src={kickstarterLogo} class="kickstarter-logo"alt="Kickstarter Logo" />
 
     <div class="text-container">
-      <p class="header">Back our Kickstarter!</p>
-      <p class="subtitle">Donate $50 to receive a limited edition Letter Loop mug.</p>
+      <p class="header">Buy me a cup of coffee.</p>
+      <p class="subtitle">Click here to donate on ko-fi! $1 helps to keep us looping!</p>
     </div>
 
     <div style="flex: 1;"></div>
