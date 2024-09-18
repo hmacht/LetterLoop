@@ -69,6 +69,6 @@
   {/if}
 
   <!-- Container for the ad -->
-  <div id="ad-container"></div>
+  <div id="theletterloop-com_300x600"></div>
 </div>
 
