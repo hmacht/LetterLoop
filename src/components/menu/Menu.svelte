@@ -82,7 +82,6 @@
     margin: 0;
     width: 100vw;
     background-color: #FFE9E9;
-    padding-top: 2rem;
     height: min-content;
   }
 
