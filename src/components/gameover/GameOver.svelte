@@ -21,10 +21,15 @@
     export let completedTodaysLoop = false;
 
     onMount(() => {
-      retrieveGameDate()
-      setUserStatus()
-      setStreakEmoji()
+      loadAd();
+      retrieveGameDate();
+      setUserStatus();
+      setStreakEmoji();
     });
+
+    function loadAd() {
+      window.aiptag.cmd.display.push(function() { window.aipDisplayTag.display('theletterloop-com_300x50'); });
+    }
 
     function retrieveGameDate() {
       return gameData.subscribe(value => {
@@ -185,6 +190,10 @@
     <div class="divider"></div>
 
     <Toast />
+
+    <div id='theletterloop-com_300x50'>
+      <!-- JS Ad Injection -->
+    </div>
 
     <div class="gameover-container">
       {#if completedTodaysLoop}

@@ -1,5 +1,15 @@
 <script>
+  import { onMount } from 'svelte';
+
   export let showAd;
+
+  onMount(() => {
+    loadAd();
+  });
+
+  function loadAd() {
+    window.aiptag.cmd.display.push(function() { window.aipDisplayTag.display('theletterloop-com_300x600'); });
+  }
 
   function skipAd() {
     showAd = false;
@@ -35,9 +45,7 @@
 <div class="main-container">
   <div class="ad-container">
     <div id='theletterloop-com_300x600'>
-      <script type='text/javascript'>
-        aiptag.cmd.display.push(function() { aipDisplayTag.display('theletterloop-com_300x600'); });
-      </script>
+      <!-- JS Ad Injection -->
     </div>
     
     <button class="skip-btn" on:click={skipAd}>Skip & View Stats</button>

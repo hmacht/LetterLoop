@@ -1,6 +1,6 @@
 <script>
   // @ts-nocheck
-  
+  import { onMount } from 'svelte';
   import logo_src from '$lib/images/logo.png';
   import Modal from '../modal/Modal.svelte';
   import Help from '../help/Help.svelte';
@@ -22,6 +22,14 @@
     const differenceInMs = today - targetDate;
 
     return Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+  }
+
+  onMount(() => {
+    loadAd();
+  });
+
+  function loadAd() {
+    window.aiptag.cmd.display.push(function() { window.aipDisplayTag.display('theletterloop-com_300x50'); });
   }
 
   function startButtonClick() {
@@ -195,6 +203,10 @@
     <div class="content">
       
       <Toast />
+
+      <div id='theletterloop-com_300x50'>
+        <!-- JS Ad Injection -->
+      </div>
   
       <img class="logo" src={logo_src} alt="Our Little Loop Logo" />
   
