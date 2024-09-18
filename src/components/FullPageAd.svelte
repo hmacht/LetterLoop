@@ -72,3 +72,20 @@
   <div id="theletterloop-com_300x600"></div>
 </div>
 
+
+<div class="main-container">
+  <div class="ad-container">
+    {#if canSkip}
+      <button class="skip-btn" on:click={skipAd}>Skip & View Stats</button>
+    {/if}
+
+    {#if !canSkip}
+      <p>Skip available in {countdown} seconds...</p>
+    {/if}
+
+    <div id='theletterloop-com_300x600'>
+      <!-- JS Ad Injection -->
+    </div>
+  </div>
+</div>
+
