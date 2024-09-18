@@ -3,12 +3,28 @@
 
   export let showAd;
 
+  let canSkip = false;
+  let countdown = 5;
+
   onMount(() => {
     loadAd();
+    startCountdown();
   });
 
   function loadAd() {
-    window.aiptag.cmd.display.push(function() { window.aipDisplayTag.display('theletterloop-com_300x600'); });
+    window.aiptag.cmd.display.push(function() {
+      window.aipDisplayTag.display('theletterloop-com_300x600');
+    });
+  }
+
+  function startCountdown() {
+    const interval = setInterval(() => {
+      countdown--;
+      if (countdown === 0) {
+        clearInterval(interval);
+        canSkip = true;
+      }
+    }, 1000);
   }
 
   function skipAd() {
@@ -42,12 +58,17 @@
   }
 </style>
 
-<div class="main-container">
-  <div class="ad-container">
-    <div id='theletterloop-com_300x600'>
-      <!-- JS Ad Injection -->
-    </div>
-    
+
+<div class='main-container'> 
+  {#if canSkip}
     <button class="skip-btn" on:click={skipAd}>Skip & View Stats</button>
-  </div>
+  {/if}
+
+  {#if !canSkip}
+    <p>Skip available in {countdown} seconds...</p>
+  {/if}
+
+  <!-- Container for the ad -->
+  <div id="ad-container"></div>
 </div>
+

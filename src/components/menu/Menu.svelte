@@ -96,6 +96,7 @@
     width: 50px;
     height: 50px;
     padding-bottom: 1rem;
+    margin-top: 2rem;
   }
 
   .menu-header {
