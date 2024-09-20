@@ -14,6 +14,7 @@
     import navImage from '$lib/images/logo-black.png';
     import { gameData } from '../../js/gameStore.js';
     import Device from 'svelte-device-info'
+    import Typo from 'typo-js';
     import { today } from "../../js/timeFormatter"
     import { updateUserStats } from "../../js/manageUserStats"
 
@@ -35,8 +36,10 @@
     let puzzle_author = "---";
     let gaveUp = false;
     let loadStatus = "Loading Game..."
+    let dictionary;
   
     onMount(async () => {
+      loadDictionary()
       await fireUpGameBoard();
     });
 
@@ -50,6 +53,10 @@
         loadStatus = "Error Loading Game :("
         console.error('Error fetching data from Firebase:', error);
       }
+    }
+
+    function loadDictionary() {
+      dictionary = new Typo("en_US", false, false, { dictionaryPath: "/node_modules/typo-js/dictionaries" })
     }
 
     async function loadPuzzle() {
@@ -108,16 +115,30 @@
     }
   
     function checkSolution() {
-      const selectedWord = selectedLetters.join('');
-      const numSelected = selectedLetters.filter(letter => letter !== "").length;
+      const solution = selectedLetters.join('');
 
-      if (solutions.includes(selectedWord)) {
+      if (isCorrectSolution(solution)) {
         gaveUp = false
         endGame()
-      } else if (numSelected != 8) {
-        notifications.default('You Must fill in every letter', 1000)
       } else {
         notifications.default('Incorrect', 1000)
+      }
+    }
+
+    function isCorrectSolution(solution) {
+      if (solution.length != 8) {
+        notifications.default('You Must fill in every letter', 1000);
+        return false;
+      }
+
+      if (solutions.includes(solution)) {
+        return true;
+      } else {
+        // Spell Check Words
+        const word1 = solution.slice(0, 5);
+        const word2 = solution.slice(-4) + solution.slice(0, 1);
+
+        return dictionary.check(word1) && dictionary.check(word2);
       }
     }
 

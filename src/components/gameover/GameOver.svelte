@@ -252,7 +252,7 @@
           </div>
 
           <div class="panel-section">
-            <span class="small-header mt-small" style="margin-top: 5rem;">Solutions</span>
+            <span class="small-header mt-small" style="margin-top: 5rem;">Some Possible Solutions</span>
             <p>
               {#if solutions && solutions.length > 2}
                 {#each solutions as solution}
