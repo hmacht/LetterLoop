@@ -56,7 +56,7 @@
     }
 
     function loadDictionary() {
-      dictionary = new Typo("en_US", false, false, { dictionaryPath: "/node_modules/typo-js/dictionaries" })
+      dictionary = new Typo("en_US", false, false, { dictionaryPath: "/dictionaries" });
     }
 
     async function loadPuzzle() {
