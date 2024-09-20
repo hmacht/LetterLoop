@@ -131,12 +131,20 @@
         return false;
       }
 
+      console.log("Checking")
+
       if (solutions.includes(solution)) {
         return true;
       } else {
         // Spell Check Words
         const word1 = solution.slice(0, 5);
         const word2 = solution.slice(-4) + solution.slice(0, 1);
+
+        console.log(word1)
+        console.log(dictionary.check(word1))
+
+        console.log(word2)
+        console.log(dictionary.check(word2))
 
         return dictionary.check(word1) && dictionary.check(word2);
       }
