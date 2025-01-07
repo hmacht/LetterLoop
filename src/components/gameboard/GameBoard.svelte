@@ -5,7 +5,6 @@
     import { notifications } from "../../js/notifications.js";
     import Toast from '../toast/Toast.svelte';
     import { onMount } from 'svelte';
-    import { firebaseApp, signIn } from '../../js/firebaseConfig';
     import * as firebaseFunctions from '../../js/firebaseFetchData';
     import { logTime } from '../../js/logCompletionTime.js';
     import { getAnalytics, logEvent } from "firebase/analytics";
@@ -45,10 +44,8 @@
 
     async function fireUpGameBoard() {
       try {
-        if (await signIn()) {
-          await loadPuzzle() 
-          game_timer.start();
-        }
+        await loadPuzzle() 
+        game_timer.start();
       } catch (error) {
         loadStatus = "Error Loading Game :("
         console.error('Error fetching data from Firebase:', error);

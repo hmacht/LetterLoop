@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   // @ts-nocheck
   import { onMount } from 'svelte';
   import logo_src from '$lib/images/logo.png';
@@ -9,12 +9,23 @@
   import Toast from '../toast/Toast.svelte';
   import CharacterBanner from '../characterBanner/CharacterBanner.svelte';
   import PromotionLink from '../PromotionLink.svelte';
+  import { session } from '$lib/session';
 
   export let showGameBoard;
 
   let showHelpModal = false;
+  let showProfileModal = false;
   let today = new Date().toLocaleDateString();
   let puzzleNumber = calculatePuzzleNumber()
+  let loggedIn: boolean = false;
+  let loadingUser: boolean = true;
+  let user: User;
+ 
+	session.subscribe((cur: any) => {
+    user = cur.user;
+		loggedIn = cur?.loggedIn;
+    loadingUser = cur?.loading;
+	});
   
   function calculatePuzzleNumber() {
     const today = new Date();
@@ -37,7 +48,7 @@
     showGameBoard = true;
     hideKofiButton();
   }
-
+  
   function hideKofiButton() {
     const kofiWidgets = document.querySelectorAll('[id^="kofi-widget-overlay-"]'); // select elements with ID starting with "kofi-widget-overlay-"
     kofiWidgets.forEach(widget => {
@@ -196,6 +207,12 @@
     font-size: 9px;
     color: black;
   }
+
+  .login-header {
+    font-size: 15px;
+    color: black;
+    margin: 20px 0 5px 0;
+  }
 </style>
 
 <main>
@@ -216,6 +233,27 @@
       <div><button class="menu-btn" on:click={startButtonClick}>Play</button></div>
       <div><button class="menu-btn no-fill" on:click={() => showHelpModal = true}>How to play</button></div>
       <div><button class="menu-btn no-fill" on:click={share}>Share</button></div>
+      {#if loadingUser != undefined && !loadingUser}
+        {#if loggedIn}
+          <button 
+            class="menu-btn no-fill" 
+            on:click={() => showProfileModal = true}
+          >
+            Profile
+          </button>
+        {:else}
+          <div>
+            <p class="login-header">Want to save your stats?</p>
+            <button 
+              class="menu-btn no-fill" 
+              on:click={() => window.location.href = '/auth/login'}
+            >
+              Log In
+            </button>
+          </div>
+        {/if}
+      {/if}
+      
       
       <div class="details-container">
         <p class="menu-date">{today}</p>
@@ -243,4 +281,14 @@
   </h2>
   <hr>
   <Help />
+</Modal>
+
+<Modal bind:showModal={showProfileModal} modalType={"profile"}>
+  <h2 slot="header">
+    <span class="styled-header">Profile</span>
+  </h2>
+  <hr>
+  <p>Email: {user.email}</p>
+  <p>Uid: {user.uid}</p>
+
 </Modal>

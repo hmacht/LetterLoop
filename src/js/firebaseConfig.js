@@ -1,9 +1,5 @@
-// @ts-nocheck
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth, signInAnonymously } from "firebase/auth";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -21,7 +17,7 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 
-export async function signIn() {
+export async function anonymousSignIn() {
   return new Promise((resolve, reject) => {
     signInAnonymously(auth)
       .then(() => {
@@ -36,6 +32,7 @@ export async function signIn() {
       });
   });
 }
+
 
 // Initialize and export Firebase app
 export { firebaseApp };

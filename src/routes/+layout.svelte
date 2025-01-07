@@ -1,14 +1,35 @@
-<script>
+<script lang="ts">
 	import './styles.css';
 	import '@fortawesome/fontawesome-free/css/all.min.css'		
 
-	// This is for Vercel analytics. Currently Using GA4
-	// import { dev } from '$app/environment';
-	// import { inject } from '@vercel/analytics';
-	// import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
-	// inject({ mode: dev ? 'development' : 'production' });
-	// injectSpeedInsights();
-</script>
+	import { onMount } from 'svelte';
+	import { session } from '$lib/session';
+	import { anonymousSignIn } from '$lib/services/auth';
+	import { goto } from '$app/navigation';
+	import type { LayoutData } from './$types';
+
+	export let data: LayoutData;
+
+	onMount(async () => {
+		const user: any = await data.getAuthUser();
+		const loggedIn = !!user && !user.isAnonymous;
+
+		session.update((cur: any) => {
+			return {
+				...cur,
+				user,
+				loggedIn,
+				loading: false
+			};
+		});
+ 
+		if (loggedIn) {
+			goto('/');
+		} else {
+			anonymousSignIn();
+		}
+	});
+ </script>
 
 <div class="app">
 	<main>
