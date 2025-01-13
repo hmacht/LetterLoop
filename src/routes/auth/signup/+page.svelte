@@ -1,6 +1,6 @@
 <script lang="ts">
   import logo_src from '$lib/images/logo.png';
-  import { signUpWithMail } from '$lib/services/auth';
+  import { signUpWithMail } from '$lib/repos/authRepo';
   
   let name: string = '';
   let email: string = '';
@@ -9,7 +9,7 @@
  
   async function signUp() {
     try {
-      await signUpWithMail(email, password)
+      await signUpWithMail(name, email, password)
     } catch(e) {
       errorMessage = e;
     }

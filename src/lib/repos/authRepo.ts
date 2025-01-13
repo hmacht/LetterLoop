@@ -1,5 +1,7 @@
 import { session } from '$lib/session';
 import { auth } from '$lib/firebase.client';
+import { createProfile } from '$lib/repos/profileRepo'
+import type { Profile } from '$lib/models/profile';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -29,7 +31,7 @@ export async function loginWithMail(email: string, password: string) {
     });
 }
 
-export async function signUpWithMail(email: string, password: string) {
+export async function signUpWithMail(name: string, email: string, password: string) {
   await createUserWithEmailAndPassword(auth, email, password)
     .then((result) => {
       const { user } = result;
@@ -41,9 +43,13 @@ export async function signUpWithMail(email: string, password: string) {
         loading: false
         };
       });
+
+      initDbProfile(name, user.email, user.uid);
+
       goto('/');
     })
     .catch((error) => {
+      console.log(error);
       throw getHumanReadableError(error.code);
     });
 };
@@ -63,6 +69,21 @@ export async function anonymousSignIn() {
 }
 
 // Helpers
+
+function initDbProfile(name: string, email: string, uid: string) {
+  const profile: Profile = {
+    id: uid,
+    name: name,
+    email: email,
+    streak: 0,
+    gamesPlayed: 0,
+    averageTime: 0,
+    admin: false,
+  };
+
+  createProfile(profile);
+}
+
 function getHumanReadableError(errorCode: any) {
   const errorMessages = {
     'auth/email-already-in-use': 'This email is already in use. Please use a different one.',

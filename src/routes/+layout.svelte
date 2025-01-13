@@ -4,7 +4,7 @@
 
 	import { onMount } from 'svelte';
 	import { session } from '$lib/session';
-	import { anonymousSignIn } from '$lib/services/auth';
+	import { anonymousSignIn } from '$lib/repos/authRepo';
 	import { goto } from '$app/navigation';
 	import type { LayoutData } from './$types';
 
@@ -23,9 +23,7 @@
 			};
 		});
  
-		if (loggedIn) {
-			goto('/');
-		} else {
+		if (!loggedIn) {
 			anonymousSignIn();
 		}
 	});

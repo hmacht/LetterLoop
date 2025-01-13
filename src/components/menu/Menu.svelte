@@ -1,5 +1,4 @@
 <script lang="ts">
-  // @ts-nocheck
   import { onMount } from 'svelte';
   import logo_src from '$lib/images/logo.png';
   import Modal from '../modal/Modal.svelte';
@@ -9,7 +8,9 @@
   import Toast from '../toast/Toast.svelte';
   import CharacterBanner from '../characterBanner/CharacterBanner.svelte';
   import PromotionLink from '../PromotionLink.svelte';
-  import { session } from '$lib/session';
+  import { session, type User } from '$lib/session';
+  import Profile from '$lib/components/profile.svelte';
+  import { auth } from '$lib/firebase.client.ts'
 
   export let showGameBoard;
 
@@ -22,7 +23,7 @@
   let user: User;
  
 	session.subscribe((cur: any) => {
-    user = cur.user;
+    user = cur?.user;
 		loggedIn = cur?.loggedIn;
     loadingUser = cur?.loading;
 	});
@@ -287,8 +288,13 @@
   <h2 slot="header">
     <span class="styled-header">Profile</span>
   </h2>
+
   <hr>
-  <p>Email: {user.email}</p>
-  <p>Uid: {user.uid}</p>
+
+  
+
+  {#if user && user.uid}
+    <Profile bind:userId={user.uid} />
+  {/if}
 
 </Modal>

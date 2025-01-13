@@ -1,6 +1,6 @@
 <script lang="ts">
   import logo_src from '$lib/images/logo.png';
-  import { loginWithMail } from '$lib/services/auth';
+  import { loginWithMail } from '$lib/repos/authRepo';
 
   let email: string = '';
   let password: string = '';

@@ -1,6 +1,6 @@
 import { writable, type Writable } from 'svelte/store';
 
-type User = {
+export type User = {
  email?: string | null;
  displayName?: string | null;
  photoURL?: string | null;
