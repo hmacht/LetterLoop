@@ -1,5 +1,5 @@
 import { db } from '$lib/firebase.client';
-import { doc, setDoc, getDoc, serverTimestamp} from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import type { Profile } from '$lib/models/profile';
 import { session, type User } from '$lib/session';
 
@@ -14,6 +14,27 @@ export async function createProfile(profile: Profile): Promise<void> {
   } catch (error) {
     console.error('Error creating profile:', error);
     throw new Error('Could not create profile');
+  }
+}
+
+export async function updateProfile(profile: Profile): Promise<void> {
+  try {
+    const ref = doc(db, 'profiles', profile.id);
+    
+    const docSnap = await getDoc(ref);
+    if (!docSnap.exists()) {
+      throw new Error('Profile does not exist');
+    }
+    
+    const data = {
+      ...profile,
+      updatedAt: serverTimestamp(),
+    };
+    
+    await updateDoc(ref, data);
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    throw new Error('Could not update profile');
   }
 }
 

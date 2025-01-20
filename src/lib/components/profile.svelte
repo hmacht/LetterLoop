@@ -18,18 +18,30 @@
 
 <div>
   {#if profile}
-    <p>Hello {profile.name}</p>
+    <p class="text-xl font-semibold" style="font-family: 'Playfair Display', serif;">Hello {profile.name}</p>
 
+    <a href="admin/dashboard" class="text-red-600 hover:underline">Sign out</a>
     {#if profile.admin}
-      <a href="admin/dashboard">Go to Loop Protal</a>
+      | <a href="admin/dashboard" class="text-red-600 hover:underline">Admin Portal</a>
     {/if}
-    <p>Email: {profile.email}</p>
 
-    Stats
-    <p>Average Time: {profile.averageTime}</p>
-    <p>Streak: {profile.streak}</p>
-    <p>Total Loops Completed: {profile.gamesPlayed}</p>
+    <hr class="my-5">
+
+    <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="bg-gray-200 p-4 rounded-lg text-center">
+        <p class="text-2xl font-bold">{profile.averageTime}</p>
+        <p class="text-sm text-gray-600">Average Time</p>
+      </div>
+      <div class="bg-gray-200 p-4 rounded-lg text-center">
+        <p class="text-2xl font-bold">{profile.streak}</p>
+        <p class="text-sm text-gray-600">Streak</p>
+      </div>
+      <div class="bg-gray-200 p-4 rounded-lg text-center">
+        <p class="text-2xl font-bold">{profile.gamesPlayed}</p>
+        <p class="text-sm text-gray-600">Total Loops Completed</p>
+      </div>
+    </div>
   {:else}
-    <p> Error loading profile </p>
+    <p class="text-red-500">Error loading profile</p>
   {/if}
 </div>

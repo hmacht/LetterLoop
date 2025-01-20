@@ -6,4 +6,5 @@ export interface Profile {
   gamesPlayed: number;
   averageTime: number;
   admin: boolean;
+  lastPlayedDate: string | null;
 }

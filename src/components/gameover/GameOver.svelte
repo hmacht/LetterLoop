@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import Stats from '../stats/Stats.svelte';
     import { notifications } from "../../js/notifications.js";
     import CharacterBanner from '../characterBanner/CharacterBanner.svelte';
@@ -8,22 +8,30 @@
     import PromotionLink from '../PromotionLink.svelte';
     import { gameData } from '../../js/gameStore.js';
     import { onMount } from "svelte";
-    import { getUserStats } from "../../js/manageUserStats"
     import { secondsFormatted } from "../../js/timeFormatter"
+    import { getCurrentUserProfile } from "$lib/repos/profileRepo"
+    import type { Profile } from "$lib/models/profile"
+    import Modal from '../modal/Modal.svelte';
+    import Profile from '$lib/components/profile.svelte';
 
     var elapsedSeconds = "-----"
     var gaveUp = false
     var solutions = []
     var globalStats = "";
-    var userStats;
     var streakEmoji = "";
+    var loadingProfile: boolean = true;
+    var showProfileModal: boolean = false;
+
+    let profile: Profile;
 
     export let completedTodaysLoop = false;
 
-    onMount(() => {
+    onMount(async () => {
       loadAd();
       retrieveGameDate();
-      setUserStatus();
+      profile = await getCurrentUserProfile();
+      console.log(profile.id)
+      loadingProfile = false;
       setStreakEmoji();
     });
 
@@ -40,12 +48,8 @@
       });
     }
 
-    function setUserStatus() {
-      userStats = getUserStats();
-    }
-
     function setStreakEmoji() {
-      let streak = Number(userStats.streak);
+      let streak = Number(profile.streak);
       if (!streak) return;
 
       const conditions = [
@@ -182,6 +186,13 @@
         </div>
       </div>
       <div class="spacer"></div>
+      <button 
+        class="menu-btn no-fill" 
+        on:click={() => showProfileModal = true}
+      >
+        <i class="fa-regular fa-user"></i>
+        <p class="how-to-play">Profile</p>
+      </button>
       <a class="help-container" href="https://www.reddit.com/r/letterloop/" target="_blank">
         <i class="fa-brands fa-reddit"></i>
         <p class="how-to-play">Join The Converation</p>
@@ -277,39 +288,40 @@
       <div class="panel">
         <div class="panel-body">
           <div class="stats-conatiner">
-            {#if userStats}
-              <div>
-                <p class="small-header" >Current Streak</p>
-                <p class="stats-text">
-                  {streakEmoji}
-                  {userStats.streak}
-                </p>
-              </div>
-
-              <div>
-                <p class="small-header">All Time Average</p>
-                <p class="stats-text">{secondsFormatted(userStats.average_time)}</p>
-              </div>
+            {#if loadingProfile}
+              Loading your stats...
             {:else}
-              Loading Your Stats...
+              {#if profile}
+                <div>
+                  <p class="small-header" >Current Streak</p>
+                  <p class="stats-text">
+                    {streakEmoji}
+                    {profile.streak}
+                  </p>
+                </div>
+
+                <div>
+                  <p class="small-header">All Time Average</p>
+                  <p class="stats-text">{secondsFormatted(profile.averageTime)}</p>
+                </div>
+              {:else}
+                <span>Sign up for an account to see your stats! <a href="/auth/signup">Sign up</a></span>
+              {/if}
             {/if}
           </div>
 
-          <p class="disclaimer">*Stats are stored locally on your device and will be lost if you clear your cookies 🍪. Login for multi-device stats is coming soon! Thank you for your support and patience.</p>
+          <p class="disclaimer">*Hey, stats not what they should be? Report the issue on Redit and we will fix right away! Thanks for playing.</p>
         </div>
       </div>
-
-      <!-- This will be turned back on after Kickstarter Ends -->
-      <!-- <a href="https://ko-fi.com/letterloop" target="_blank">
-        <div class="panel">
-          <div class="panel-body">
-            <p class="small-header center-text">❤️ Support the loop ❤️</p>
-          </div>
-        </div>
-      </a> -->
 
       <div class="block-spacer-100"></div>
     <div>
   </main>
+
+  <Modal bind:showModal={showProfileModal} modalType={"profile"}>
+    {#if profile && profile.id}
+      <Profile bind:userId={profile.id} />
+    {/if}
+  </Modal>
 
   

@@ -92,11 +92,8 @@ export function formatLoop(word1: string, word2: string): string {
 //
 // EX: musichar = music & charm
 export function parseLoop(loop: string, length: number = 5): [string, string] {
-  // Ensure the first word is at least 'length' characters
   const firstWord = loop.slice(0, length);
-  
-  // The second word starts from the 'length' position to the end of the string
-  const secondWord = loop.slice(length - 1) + firstWord[0]; // Account for the omitted first character
+  const secondWord = loop.slice(length - 1) + firstWord[0];
   
   return [firstWord, secondWord];
 }

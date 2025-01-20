@@ -9,9 +9,15 @@
   let lastSolutionDate: string;
 
   onMount(async () => {
-    solutions = await getSolutions(new Date());
+    solutions = await getSolutions(getYesterday());
     lastSolutionDate = formatDate(solutions[solutions.length - 1].date)
   });
+
+  function getYesterday(): Date {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    return yesterday;
+  }
 
   function formatDate(dateStr: string) {
     const date = new Date(dateStr);
@@ -24,7 +30,6 @@
 
     return formattedDate;
   }
-
 </script>
 
 <div class="container">
@@ -38,27 +43,29 @@
   <br>
 
   {#if solutions.length > 0}
-    <Table class="border border-slate-600 rounded-lg overflow-hidden">
-      <caption class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800">
-        Upcoming Loops
-        <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">There are currently {solutions.length} loops set for the future.</p>
-      </caption>
-      <TableHead>
-        <TableHeadCell>Date</TableHeadCell>
-        <TableHeadCell>Word 1</TableHeadCell>
-        <TableHeadCell>Word 2</TableHeadCell>
-      </TableHead>
-      <TableBody tableBodyClass="divide-y">
-        {#each solutions as solution}
-          {@const [word1, word2] = parseLoop(solution.solutions[0])}
-          <TableBodyRow>
-            <TableBodyCell>{new Date(solution.date).toLocaleDateString()}</TableBodyCell>
-            <TableBodyCell>{word1}</TableBodyCell>
-            <TableBodyCell>{word2}</TableBodyCell>
-          </TableBodyRow>
-        {/each}
-      </TableBody>
-    </Table>
+    <div class="border border-slate-300 rounded-lg overflow-hidden">
+      <Table class="w-full">
+        <caption class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800">
+          Upcoming Loops
+          <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">There are currently {solutions.length} loops set for the future.</p>
+        </caption>
+        <TableHead>
+          <TableHeadCell>Date</TableHeadCell>
+          <TableHeadCell>Word 1</TableHeadCell>
+          <TableHeadCell>Word 2</TableHeadCell>
+        </TableHead>
+        <TableBody tableBodyClass="divide-y">
+          {#each solutions as solution}
+            {@const [word1, word2] = parseLoop(solution.solutions[0])}
+            <TableBodyRow>
+              <TableBodyCell>{new Date(solution.date).toLocaleDateString()}</TableBodyCell>
+              <TableBodyCell>{word1}</TableBodyCell>
+              <TableBodyCell>{word2}</TableBodyCell>
+            </TableBodyRow>
+          {/each}
+        </TableBody>
+      </Table>
+    </div>
   {:else}
     <p>No upcoming loops available.</p>
   {/if}

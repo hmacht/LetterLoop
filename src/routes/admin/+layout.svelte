@@ -17,33 +17,37 @@
 </script>
 
 {#if loadingUser}
-  <p> Loading... </p>
-{:else if profile && profile.admin}    
-  <div class="dashboard-layout">
-    <nav class="sidebar">
-      <div class="logo-section">
-        <img class="logo" src={logo_src} alt="Our Little Loop Logo" />
-        <b>Admin Looper</b>
+  <div class="flex items-center justify-center h-screen">
+    <p class="text-lg font-semibold text-gray-700 dark:text-gray-300">Loading...</p>
+  </div>
+{:else if profile && profile.admin}
+  <div class="flex h-screen w-screen">
+    <!-- Sidebar -->
+    <nav class="w-64 bg-gray-900 text-white flex flex-col">
+      <!-- Logo Section -->
+      <div class="flex items-center gap-3 p-4">
+        <img src={logo_src} alt="Our Little Loop Logo" class="w-8 h-8" />
+        <span class="text-xl font-bold">Admin Looper</span>
       </div>
-      
-      
-      <div class="menu-sections">
+
+      <!-- Menu Sections -->
+      <div class="flex-grow px-4">
         <!-- Generate Loop Section -->
-        <div class="menu-section">
-          <a href="/admin/loops/new" class="menu-item">
+        <div class="mb-6">
+          <a href="/admin/loops/new" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white no-underline">
             <i class="fas fa-plus-circle"></i>
             <span>New Loop</span>
           </a>
-          <a href="/admin/loops" class="menu-item">
+          <a href="/admin/loops" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white">
             <i class="fas fa-calendar-alt"></i>
             <span>Upcoming Loops</span>
           </a>
         </div>
       </div>
 
-      <!-- Home Section at Bottom -->
-      <div class="home-section">
-        <a href="/" class="menu-item">
+      <!-- Home Section -->
+      <div class="mt-auto border-t border-gray-700 px-4 pt-4 mb-3">
+        <a href="/" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white">
           <i class="fas fa-home"></i>
           <span>Home</span>
         </a>
@@ -51,88 +55,12 @@
     </nav>
 
     <!-- Main Content Area -->
-    <main>
+    <main class="flex-grow bg-gray-100 dark:bg-gray-800 p-6">
       <slot />
     </main>
   </div>
 {:else}
-  <p> 401 Permission Denied </p>
+  <div class="flex items-center justify-center h-screen">
+    <p class="text-lg font-semibold text-red-600 dark:text-red-400">401 Permission Denied</p>
+  </div>
 {/if}
-
-<style>
-  .dashboard-layout {
-    display: flex;
-    max-height: 100vh;
-    width: 100vw;
-  }
-
-  .sidebar {
-    width: 250px;
-    background-color: #1a1a1a;
-    color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    padding: 1rem;
-  }
-
-  .logo-section {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding-bottom: 1rem;
-    text-align: left;
-  }
-
-  .logo {
-    width: 30px;
-    height: 30px;
-  }
-
-  .menu-sections {
-    flex-grow: 1;
-  }
-
-  .menu-section {
-    margin-bottom: 2rem;
-  }
-
-  .menu-section h3 {
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    color: #666;
-    margin-bottom: 1rem;
-    padding-left: 0.5rem;
-  }
-
-  .menu-item {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    color: #ffffff;
-    text-decoration: none;
-    border-radius: 0.5rem;
-    margin-bottom: 0.5rem;
-    transition: background-color 0.2s;
-  }
-
-  .menu-item:hover {
-    background-color: #333;
-  }
-
-  .menu-item i {
-    margin-right: 0.75rem;
-    width: 1.25rem;
-    text-align: center;
-  }
-
-  .home-section {
-    padding-top: 1rem;
-    border-top: 1px solid #333;
-  }
-
-  main {
-    flex-grow: 1;
-    padding: 2rem;
-    background-color: #f5f5f5;
-  }
-</style>

@@ -79,6 +79,7 @@ function initDbProfile(name: string, email: string, uid: string) {
     gamesPlayed: 0,
     averageTime: 0,
     admin: false,
+    lastPlayedDate: null
   };
 
   createProfile(profile);

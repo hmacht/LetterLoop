@@ -3,14 +3,11 @@
   import logo_src from '$lib/images/logo.png';
   import Modal from '../modal/Modal.svelte';
   import Help from '../help/Help.svelte';
-  import Stats from '../stats/Stats.svelte';
   import { notifications } from "../../js/notifications.js";
   import Toast from '../toast/Toast.svelte';
-  import CharacterBanner from '../characterBanner/CharacterBanner.svelte';
   import PromotionLink from '../PromotionLink.svelte';
   import { session, type User } from '$lib/session';
   import Profile from '$lib/components/profile.svelte';
-  import { auth } from '$lib/firebase.client.ts'
 
   export let showGameBoard;
 
@@ -101,13 +98,6 @@
     text-align: center;
     padding: 20px;
     color: #D8CFD2
-  }
-
-  .logo {
-    width: 50px;
-    height: 50px;
-    padding-bottom: 1rem;
-    margin-top: 2rem;
   }
 
   .menu-header {
@@ -226,7 +216,7 @@
         <!-- JS Ad Injection -->
       </div>
   
-      <img class="logo" src={logo_src} alt="Our Little Loop Logo" />
+      <img class="w-12 h-12 mx-auto my-5 object-contain" src={logo_src} alt="Our Little Loop Logo" />
   
       <p class="menu-header">LetterLoop</p>
       <p class="menu-sub-header">Two 5-letter words, two shared letters, one loop</p>
@@ -270,7 +260,7 @@
         <a class="terms" href="/terms">Terms and Conditions</a>
       </div>
   
-      <p class="version-tag">version 1.8</p>
+      <p class="version-tag">version 2.0</p>
     </div>
   </div>
 </main>
@@ -285,12 +275,6 @@
 </Modal>
 
 <Modal bind:showModal={showProfileModal} modalType={"profile"}>
-  <h2 slot="header">
-    <span class="styled-header">Profile</span>
-  </h2>
-
-  <hr>
-
   {#if user && user.uid}
     <Profile bind:userId={user.uid} />
   {/if}
