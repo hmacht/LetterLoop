@@ -6,11 +6,15 @@
   let email: string = '';
   let password: string = '';
   let errorMessage;
+
+  var signUpLoading: boolean = false;
  
   async function signUp() {
     try {
+      signUpLoading = true;
       await signUpWithMail(name, email, password)
     } catch(e) {
+      signUpLoading = false;
       errorMessage = e;
     }
   };
@@ -40,7 +44,7 @@
 
   .btn {
     width: 78%;
-    max-width: 330px;
+    max-width: 300px;
     padding: 15px;
     background-image: -webkit-linear-gradient(top, #FF4F87, #FC2F4F);
     background-image: linear-gradient(to bottom, #FF4F87, #FC2F4F);
@@ -66,18 +70,11 @@
   .small-text {
     font-size: 14px;
   }
-
-  .logo {
-    width: 50px;
-    height: 50px;
-    padding-bottom: 15%;
-    margin-top: 2rem;
-  }
 </style>
 
 <main>
   <div class="login-form">
-    <img class="logo" src={logo_src} alt="Our Little Loop Logo" />
+    <img class="w-12 h-12 mx-auto object-contain mb-[15%] mt-5" src={logo_src} alt="Our Little Loop Logo" />
 
     <p class="menu-header">Lets Get Started</p>
 
@@ -86,12 +83,12 @@
     <input class="input-field" type="text" bind:value={name} placeholder="Name" />
     <input class="input-field" type="text" bind:value={email} placeholder="Email" />
     <input class="input-field" type="password" bind:value={password} placeholder="password" />
-    <button class="btn" on:click={signUp}>Sign Up</button>
+    <button class="btn" on:click={signUp}>{signUpLoading ? "Loading..." : "Sign Up"}</button>
 
     {#if errorMessage}
       <div class="error">{errorMessage}</div>
     {/if}
     
-    <p class="small-text">Already have an account? <a href="/auth/login"><u>Log In</u></a></p>
+    <p class="small-text mt-3">Already have an account? <a href="/auth/login"><u>Log In</u></a></p>
   </div>
 </main>

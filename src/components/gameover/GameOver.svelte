@@ -30,7 +30,6 @@
       loadAd();
       retrieveGameDate();
       profile = await getCurrentUserProfile();
-      console.log(profile.id)
       loadingProfile = false;
       setStreakEmoji();
     });
@@ -49,6 +48,8 @@
     }
 
     function setStreakEmoji() {
+      if (!profile) return;
+
       let streak = Number(profile.streak);
       if (!streak) return;
 
@@ -186,13 +187,17 @@
         </div>
       </div>
       <div class="spacer"></div>
-      <button 
-        class="menu-btn no-fill" 
-        on:click={() => showProfileModal = true}
-      >
-        <i class="fa-regular fa-user"></i>
-        <p class="how-to-play">Profile</p>
-      </button>
+      {#if profile}
+        <button 
+          class="menu-btn no-fill" 
+          on:click={() => showProfileModal = true}
+        >
+          <div class="flex gap-1 items-center">
+            <i class="fa-regular fa-user mb-0.5"></i>
+            <p class="how-to-play">Profile</p>
+          </div>
+        </button>
+      {/if}
       <a class="help-container" href="https://www.reddit.com/r/letterloop/" target="_blank">
         <i class="fa-brands fa-reddit"></i>
         <p class="how-to-play">Join The Converation</p>

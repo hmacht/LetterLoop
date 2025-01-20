@@ -38,7 +38,7 @@
 
   .btn {
     width: 78%;
-    max-width: 330px;
+    max-width: 300px;
     padding: 15px;
     background-image: -webkit-linear-gradient(top, #FF4F87, #FC2F4F);
     background-image: linear-gradient(to bottom, #FF4F87, #FC2F4F);
@@ -75,7 +75,7 @@
 
 <main>
   <div class="login-form">
-    <img class="logo" src={logo_src} alt="Our Little Loop Logo" />
+    <img class="w-12 h-12 mx-auto object-contain mb-[15%] mt-5" src={logo_src} alt="Our Little Loop Logo" />
 
     <p class="menu-header">Welcome Back</p>
 
@@ -89,6 +89,6 @@
       <div class="error">{errorMessage}</div>
     {/if}
     
-    <p class="small-text">Don't have an account? <a href="/auth/signup"><u>Sign Up</u></a></p>
+    <p class="small-text mt-3">Don't have an account? <a href="/auth/signup"><u>Sign Up</u></a></p>
   </div>
 </main>

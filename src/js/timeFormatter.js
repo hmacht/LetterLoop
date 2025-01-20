@@ -17,7 +17,7 @@ export function yesterday() {
 }
 
 export function secondsFormatted(seconds) {
-  if (!seconds) { return "" }
+  if (!seconds) { return "N/A" }
   
   // Calculate hours, minutes, and seconds
   const hours = Math.floor(seconds / 3600);

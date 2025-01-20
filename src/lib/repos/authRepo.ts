@@ -6,6 +6,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInAnonymously,
+  getAuth, 
+  signOut,
   type UserCredential
 } from 'firebase/auth';
 import { goto } from '$app/navigation';
@@ -23,7 +25,7 @@ export async function loginWithMail(email: string, password: string) {
         uid: user?.uid
         }
       });
-      goto('/');
+      window.location.href = '/';
     })
     .catch((error) => {
       console.log(error.code)
@@ -32,26 +34,25 @@ export async function loginWithMail(email: string, password: string) {
 }
 
 export async function signUpWithMail(name: string, email: string, password: string) {
-  await createUserWithEmailAndPassword(auth, email, password)
-    .then((result) => {
-      const { user } = result;
-      session.update((cur: any) => {
-        return {
-        ...cur,
-        user,
-        loggedIn: true,
-        loading: false
-        };
-      });
 
-      initDbProfile(name, user.email, user.uid);
+  try {
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    const { user } = result;
 
-      goto('/');
-    })
-    .catch((error) => {
-      console.log(error);
-      throw getHumanReadableError(error.code);
-    });
+    session.update((cur: any) => ({
+      ...cur,
+      user,
+      loggedIn: true,
+      loading: false,
+    }));
+
+    await initDbProfile(name, user.email, user.uid);
+
+    window.location.href = '/';
+  } catch (error) {
+    console.error(error);
+    throw getHumanReadableError(error.code);
+  }
 };
 
 export async function anonymousSignIn() {
@@ -68,9 +69,22 @@ export async function anonymousSignIn() {
   });
 }
 
+export async function signOutUser(): Promise<void> {
+  const auth = getAuth();
+  
+  try {
+    await signOut(auth);
+    console.log('User signed out successfully');
+    window.location.href = '/';
+  } catch (error) {
+    console.error('Error signing out:', error);
+    throw new Error('Could not sign out');
+  }
+}
+
 // Helpers
 
-function initDbProfile(name: string, email: string, uid: string) {
+async function initDbProfile(name: string, email: string, uid: string) {
   const profile: Profile = {
     id: uid,
     name: name,
@@ -82,7 +96,7 @@ function initDbProfile(name: string, email: string, uid: string) {
     lastPlayedDate: null
   };
 
-  createProfile(profile);
+  await createProfile(profile);
 }
 
 function getHumanReadableError(errorCode: any) {
