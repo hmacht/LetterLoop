@@ -1,7 +1,7 @@
-import { db} from '$lib/firebase.client';
+import { db } from '$lib/firebase.client';
 import { doc, setDoc, getDoc, serverTimestamp} from 'firebase/firestore';
 import type { Profile } from '$lib/models/profile';
-
+import { session, type User } from '$lib/session';
 
 export async function createProfile(profile: Profile): Promise<void> {
   try {
@@ -33,3 +33,16 @@ export async function getProfile(userId: string): Promise<Profile | null> {
     throw new Error('Could not retrieve profile');
   }
 }
+
+export async function getCurrentUserProfile(): Promise<Profile | null> {
+  return new Promise<Profile | null>((resolve) => { 
+    const unsubscribe = session.subscribe(async (cur: any) => {
+      const user = cur?.user;
+      if (user && user.uid) {
+        const fetchedProfile = await getProfile(user.uid);
+        unsubscribe();
+        resolve(fetchedProfile);
+      }
+    });
+  });
+};

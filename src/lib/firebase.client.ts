@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { type Database, getDatabase } from 'firebase/database';
 import { browser } from '$app/environment';
 
 import type { FirebaseApp } from 'firebase/app';
@@ -10,6 +11,7 @@ import type { Auth } from 'firebase/auth';
 export let db: Firestore;
 export let app: FirebaseApp;
 export let auth: Auth;
+export let realtimeDb: Database;
 
 const firebaseConfig = {
   apiKey: "AIzaSyD4qZNCNnlVihIZbdgtBB82R48AIC0bqG4",
@@ -29,5 +31,6 @@ export const initializeFirebase = () => {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
+  realtimeDb = getDatabase(app);
  }
 };

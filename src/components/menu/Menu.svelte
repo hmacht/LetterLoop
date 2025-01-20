@@ -291,10 +291,7 @@
 
   <hr>
 
-  
-
   {#if user && user.uid}
     <Profile bind:userId={user.uid} />
   {/if}
-
 </Modal>

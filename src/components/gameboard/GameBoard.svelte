@@ -1,6 +1,4 @@
 <script>
-  // @ts-nocheck
-  
     import Modal from '../modal/Modal.svelte';
     import { notifications } from "../../js/notifications.js";
     import Toast from '../toast/Toast.svelte';
