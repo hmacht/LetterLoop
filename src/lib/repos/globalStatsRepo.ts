@@ -1,5 +1,5 @@
 import { realtimeDb } from '$lib/firebase.client';
-import { getDatabase, ref, push, set, get } from "firebase/database";
+import { ref, set, get } from "firebase/database";
 import { today } from "$lib/utils/timeFormatter"
 import type { GlobalStats } from '$lib/models/globalStats';
 

@@ -43,7 +43,7 @@
   <br>
 
   {#if solutions.length > 0}
-    <div class="border border-slate-300 rounded-lg overflow-hidden">
+    <div class="border border-slate-300 rounded-lg overflow-hidden mb-5">
       <Table class="w-full">
         <caption class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800">
           Upcoming Loops

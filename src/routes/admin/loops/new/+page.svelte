@@ -6,10 +6,15 @@
   import { Alert } from 'flowbite-svelte';
   import { Button } from 'flowbite-svelte';
 
+  import DictionaryLink from '$lib/components/DictionaryLink.svelte'
+
   let selectedPrimary: string | null = null;
   let selectedSecondary: string | null = null;
-  let primaryWords: string[] = []
-  let secondaryWords: string[] = []
+  let primaryWords: string[] = [];
+  let secondaryWords: string[] = [];
+
+  let showAlert = false;
+  let submittedWords = { primary: '', secondary: '' };
 
   onMount(async () => {
     primaryWords = await getPrimaryOptions();
@@ -17,13 +22,21 @@
 
   async function handleSubmit() {
     if (selectedPrimary && selectedSecondary) {
-      console.log('Submitted:', { selectedPrimary, selectedSecondary });
       let valid = await validLoop(selectedPrimary, selectedSecondary);
-      console.log(valid);
+
       if (valid) {
         const solution = formatLoop(selectedPrimary, selectedSecondary);
-        console.log(solution);
-        addSolution(solution, $profileStore?.name ?? 'mystery');
+        await addSolution(solution, $profileStore?.name ?? 'mystery');
+
+        submittedWords = {
+          primary: selectedPrimary,
+          secondary: selectedSecondary
+        };
+
+        showAlert = true;
+        setTimeout(() => {
+          showAlert = false;
+        }, 3000);
       }
       selectedPrimary = null;
       selectedSecondary = null;
@@ -41,7 +54,14 @@
   }
 </script>
 
-<div class="container">  
+<div class="container">
+  {#if showAlert}
+    <Alert color="green" class="mb-5">
+      <i class="fa-solid fa-circle-check"></i>
+      Added: <b>{submittedWords.primary}</b> + <b>{submittedWords.secondary}</b>
+    </Alert>
+  {/if}
+
   <div class="bg-white p-8 border border-slate-300 rounded-lg overflow-hidden">
     <p class="text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800 mb-3">The Loop Generator</p>
     
@@ -92,9 +112,9 @@
       <i class="fa-solid fa-puzzle-piece"></i>
       Current selection: 
       {#if selectedPrimary && selectedSecondary}
-        <strong>{selectedPrimary} - {selectedSecondary}</strong>
+        <strong><DictionaryLink word={selectedPrimary} /> - <DictionaryLink word={selectedSecondary} /></strong>
       {:else if selectedPrimary}
-        <strong>{selectedPrimary}</strong> (please select second word)
+        <strong><DictionaryLink word={selectedPrimary} /></strong> (please select second word)
       {:else}
         Please make your selections
       {/if}

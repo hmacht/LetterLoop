@@ -23,7 +23,7 @@
 {:else if profile && profile.admin}
   <div class="flex h-screen w-screen">
     <!-- Sidebar -->
-    <nav class="w-64 bg-gray-900 text-white flex flex-col">
+    <nav class="fixed h-screen w-64 bg-gray-900 text-white flex flex-col">
       <!-- Logo Section -->
       <div class="flex items-center gap-3 p-4">
         <img src={logo_src} alt="Our Little Loop Logo" class="w-8 h-8" />
@@ -55,7 +55,7 @@
     </nav>
 
     <!-- Main Content Area -->
-    <main class="flex-grow bg-gray-100 dark:bg-gray-800 p-6">
+    <main class="ml-64 flex-grow bg-gray-100 dark:bg-gray-800 p-6 min-h-screen">
       <slot />
     </main>
   </div>
