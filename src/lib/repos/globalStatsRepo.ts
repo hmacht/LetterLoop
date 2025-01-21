@@ -1,14 +1,14 @@
-import { getDatabase, ref, push, set } from "firebase/database";
-import { fetchTodaysStats } from './firebaseFetchData.js';
-import { today } from "./timeFormatter"
+import { realtimeDb } from '$lib/firebase.client';
+import { getDatabase, ref, push, set, get } from "firebase/database";
+import { today } from "$lib/utils/timeFormatter"
+import type { GlobalStats } from '$lib/models/globalStats';
 
 // @ts-ignore
 export async function logTime(time) {
-  const db = getDatabase();
-  const dbRef = ref(db, "Stats/" + today());
-  const currentStats = await fetchTodaysStats();
+  const dbRef = ref(realtimeDb, "Stats/" + today());
+  const currentStats = await getTodaysStats();
 
-  if (currentStats === "NOREF") {
+  if (!currentStats) {
     set(dbRef, {
       averageTime: time,
       minTime: time,
@@ -44,6 +44,23 @@ export async function logTime(time) {
       isUnderAverage: isRecord(time, currAverageTime),
       isHighScore: isRecord(time, currMinTime)
     }
+  }
+}
+
+export async function getTodaysStats(): Promise<GlobalStats | null> {
+  try {
+    const dbRef = ref(realtimeDb, `Stats/${today()}`);
+    const snapshot = await get(dbRef);
+
+    if (snapshot.exists()) {
+      return snapshot.val() as GlobalStats;
+    } else {
+      console.warn('No solutions found for today.');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching today\'s solutions:', error);
+    return null;
   }
 }
 

@@ -1,19 +1,23 @@
 <script lang="ts">
-    import Stats from '../stats/Stats.svelte';
-    import { notifications } from "../../js/notifications.js";
-    import CharacterBanner from '../characterBanner/CharacterBanner.svelte';
-    import navImage from '$lib/images/logo-black.png';
-    import Toast from '../toast/Toast.svelte';
-    import OrbitsAd from '../OrbitsAd.svelte';
-    import PromotionLink from '../PromotionLink.svelte';
-    import { gameData } from '../../js/gameStore.js';
     import { onMount } from "svelte";
-    import { secondsFormatted } from "../../js/timeFormatter"
-    import { getCurrentUserProfile } from "$lib/repos/profileRepo"
-    import type { Profile } from "$lib/models/profile"
-    import Modal from '../modal/Modal.svelte';
-    import Profile from '$lib/components/profile.svelte';
 
+    import Stats from '$lib/components/Stats.svelte';
+    import CharacterBanner from '$lib/components/CharacterBanner.svelte';
+    import Toast from '$lib/components/Toast.svelte';
+    import OrbitsAd from '$lib/components/OrbitsAd.svelte';
+    import PromotionLink from '$lib/components/PromotionLink.svelte';
+    import Modal from '$lib/components/Modal.svelte';
+    import Profile from '$lib/components/Profile.svelte';
+
+    import { notifications } from "$lib/utils/notifications.js";
+    import { gameData } from '$lib/stores/gameStore.js';
+    import { secondsFormatted } from "$lib/utils/timeFormatter"
+    import { getCurrentUserProfile } from "$lib/repos/profileRepo"
+
+    import type { Profile } from "$lib/models/profile"
+    
+    import navImage from '$lib/images/logo-black.png';
+    
     var elapsedSeconds = "-----"
     var gaveUp = false
     var solutions = []

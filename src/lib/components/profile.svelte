@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+
   import { getProfile } from '$lib/repos/profileRepo'
   import type { Profile } from '$lib/models/profile';
   import { signOutUser } from '$lib/repos/authRepo';
-  import { secondsFormatted } from '../../js/timeFormatter';
+  
+  import { secondsFormatted } from '$lib/utils/timeFormatter';
 
   export let userId: string;
 

@@ -1,7 +1,7 @@
 <script>
   import { flip } from "svelte/animate";
   import { fly } from "svelte/transition";
-  import { notifications } from "../../js/notifications.js";
+  import { notifications } from "$lib/utils/notifications";
 </script>
 
 <div class="notifications">

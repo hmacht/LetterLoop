@@ -1,13 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import logo_src from '$lib/images/logo.png';
-  import Modal from '../modal/Modal.svelte';
-  import Help from '../help/Help.svelte';
-  import { notifications } from "../../js/notifications.js";
-  import Toast from '../toast/Toast.svelte';
-  import PromotionLink from '../PromotionLink.svelte';
+
+  import Profile from '$lib/components/Profile.svelte';
+  import Modal from '$lib/components/Modal.svelte';
+  import Help from '$lib/components/Help.svelte';
+  import Toast from '$lib/components/Toast.svelte';
+  import PromotionLink from '$lib/components/PromotionLink.svelte';
+
+  import { notifications } from "$lib/utils/notifications";
   import { session, type User } from '$lib/session';
-  import Profile from '$lib/components/profile.svelte';
+
+  import logo_src from '$lib/images/logo.png';
 
   export let showGameBoard;
 

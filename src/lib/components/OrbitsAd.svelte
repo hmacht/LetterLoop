@@ -1,6 +1,3 @@
-<script>
-</script>
-
 <style>
   .orbits-container {
     position: relative;

@@ -1,10 +1,9 @@
-<script>
-// @ts-nocheck
-
-  import { fetchTodaysStats } from '../../js/firebaseFetchData.js';
+<script lang="ts">
   import { onMount } from 'svelte';
+  import { getTodaysStats } from '$lib/repos/globalStatsRepo';
+  import type { GlobalStats } from '$lib/models/globalStats';
 
-  export let globalStats;
+  export let globalStats: GlobalStats | null;
   export let loadingStatus = "Loading Stats...";
 
   onMount(async () => {
@@ -14,14 +13,14 @@
   async function setGlobalStats() {
     if (!globalStats) {
       try {
-        globalStats = await fetchTodaysStats();
+        globalStats = await getTodaysStats();
       } catch (error) {
         loadingStatus = "Stats could not be loaded."
         return null;
       }
     }
 
-    if (globalStats == "NOREF") {
+    if (!globalStats) {
       loadingStatus = "Stats could not be loaded."
     }
   }

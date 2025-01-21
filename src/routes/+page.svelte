@@ -1,13 +1,14 @@
 <script>
-	import Menu from '../components/menu/Menu.svelte';
-	import GameBoard from "../components/gameboard/GameBoard.svelte";
-	import GameOver from "../components/gameover/GameOver.svelte";
-	import PromoBanner from "../components/promoBanner/PromoBanner.svelte";
-	import FullPageAd from "../components/FullPageAd.svelte";
-	import { today } from "../js/timeFormatter"
-
-	import { gameData } from '../js/gameStore.js';
 	import { onMount } from "svelte";
+
+	import Menu from '$lib/components/Menu.svelte';
+	import GameBoard from "$lib/components/GameBoard.svelte";
+	import GameOver from "$lib/components/GameOver.svelte";
+	import PromoBanner from "$lib/components/PromoBanner.svelte";
+	import FullPageAd from "$lib/components/FullPageAd.svelte";
+
+	import { today } from "$lib/utils/timeFormatter"
+	import { gameData } from '$lib/stores/gameStore.js';
 
 	let showGameBoard = false;
 	let gameOver = false;

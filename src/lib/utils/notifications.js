@@ -32,7 +32,7 @@ function createNotificationStore (timeout) {
     return {
         subscribe,
         send,
-				default: (msg, timeout) => send(msg, "default", timeout),
+		default: (msg, timeout) => send(msg, "default", timeout),
         danger: (msg, timeout) => send(msg, "danger", timeout),
         warning: (msg, timeout) => send(msg, "warning", timeout),
         info: (msg, timeout) => send(msg, "info", timeout),

@@ -1,5 +1,8 @@
 import { realtimeDb } from '$lib/firebase.client';
 import { ref, get, set, query, orderByChild, startAt, update, limitToLast } from 'firebase/database';
+import { today } from "$lib/utils/timeFormatter"
+import type { Solution } from '$lib/models/solution';
+import type { DatabaseReference, DataSnapshot } from 'firebase/database';
 
 export async function addSolution(solution: string, author: string): Promise<void> {
   const rootRef = ref(realtimeDb, 'solutions');
@@ -36,8 +39,6 @@ export async function addSolution(solution: string, author: string): Promise<voi
     };
 
     await set(ref(realtimeDb, `solutions/${newDateStr}`), data);
-    console.log(`!!! ADDED ${solution} on ${newDateStr} `);
-    return;
   } catch (error) {
     console.error('Error adding data:', error);
     throw error;
@@ -72,6 +73,23 @@ export async function getSolutions(goingBackTo: Date): Promise<any[]> {
   } catch (error) {
     console.error('Error fetching solutions:', error);
     throw error;
+  }
+}
+
+export async function getTodaysSolution(): Promise<Solution | null> {
+  try {
+    const dbRef: DatabaseReference = ref(realtimeDb, `solutions/${today()}`);
+    const snapshot: DataSnapshot = await get(dbRef);
+
+    if (snapshot.exists()) {
+      return snapshot.val() as Solution;
+    } else {
+      console.warn('No solutions found for today.');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching today\'s solutions:', error);
+    return null;
   }
 }
 
