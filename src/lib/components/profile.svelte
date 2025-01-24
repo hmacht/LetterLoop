@@ -6,18 +6,27 @@
   import { signOutUser } from '$lib/repos/authRepo';
   
   import { secondsFormatted } from '$lib/utils/timeFormatter';
+  import { calculateEmoji } from "$lib/utils/emojiStreak";
 
   export let userId: string;
 
   let profile: Profile | null
+  var streakEmoji: string = ""
 
-  onMount(() => {
-    fetchProfile();
+  onMount(async () => {
+    await setProfile();
+    setStreakEmoji();
   });
 
-  const fetchProfile = async () => {
+  async function setProfile() {
     profile = await getProfile(userId);
   };
+
+  function setStreakEmoji() {
+    if (!profile) return;
+    let streak = profile.streak
+    streakEmoji = calculateEmoji(streak)
+  }
 
   async function handleSignOut() {
     try {
@@ -44,20 +53,20 @@
     </div>
     
 
-    <hr class="my-5">
+    <hr class="my-3 border-red-200">
 
     <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div class="bg-gray-200 p-4 rounded-lg text-center">
+      <div class="bg-gray-100 p-4 rounded-2xl text-center border border-gray-300">
         <p class="text-2xl font-bold">{secondsFormatted(profile.averageTime)}</p>
-        <p class="text-sm text-gray-600">Average Time</p>
+        <p class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Average Time</p>
       </div>
-      <div class="bg-gray-200 p-4 rounded-lg text-center">
-        <p class="text-2xl font-bold">{profile.streak}</p>
-        <p class="text-sm text-gray-600">Streak</p>
+      <div class="bg-gray-100 p-4 rounded-2xl text-center border border-gray-300">
+        <p class="text-2xl font-bold">{streakEmoji} {profile.streak}</p>
+        <p class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Streak</p>
       </div>
-      <div class="bg-gray-200 p-4 rounded-lg text-center">
+      <div class="bg-gray-100 p-4 rounded-2xl text-center border border-gray-300">
         <p class="text-2xl font-bold">{profile.gamesPlayed}</p>
-        <p class="text-sm text-gray-600">Total Loops Completed</p>
+        <p class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Played</p>
       </div>
     </div>
   {:else}

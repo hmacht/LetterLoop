@@ -1,16 +1,20 @@
 <script lang="ts">
   import logo_src from '$lib/images/logo.png';
-  import { loginWithMail } from '$lib/repos/authRepo';
+  import { resetPassword } from '$lib/repos/authRepo';
+  import { Alert } from 'flowbite-svelte';
 
   let email: string = '';
-  let password: string = '';
-  let errorMessage;
+  let errorMessage: string;
+  let successMessage: string;
 
-  async function login() {
-    try {
-      await loginWithMail(email, password);
-    } catch(e) {
-      errorMessage = e;
+  async function sendReset() {
+    const result = await resetPassword(email);
+
+    if (result.success) {
+      successMessage = "Email sent!"
+      errorMessage = ""
+    } else {
+      errorMessage = result.errorMessage;
     }
   }
 </script>
@@ -77,18 +81,22 @@
   <div class="login-form">
     <img class="w-12 h-12 mx-auto object-contain mb-[15%] mt-5" src={logo_src} alt="Our Little Loop Logo" />
 
-    <p class="menu-header">Welcome Back</p>
+    <p class="menu-header">Send Reset Email</p>
 
     <br><br>
 
     <input class="input-field" type="text" bind:value={email} placeholder="Email" />
-    <input class="input-field" type="password" bind:value={password} placeholder="password" />
-    <button class="btn" on:click={login}>Log In</button>
+    <button class="btn" on:click={sendReset}>Send</button>
 
     {#if errorMessage}
       <div class="error">{errorMessage}</div>
     {/if}
-    
-    <p class="small-text mt-3">Don't have an account? <a href="/auth/signup"><u>Sign Up</u></a></p>
-    <p class="small-text mt-3"><a href="/auth/passwordReset"><u>Forgot password?</u></a></p>
+
+    {#if successMessage}
+      <Alert color="green" class="mb-5 mt-3">
+        <i class="fa-regular fa-envelope"></i>
+        {successMessage}
+      </Alert>
+    {/if}
+  </div>
 </main>

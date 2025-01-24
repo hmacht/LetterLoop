@@ -45,7 +45,6 @@
   }
 
   function startButtonClick() {
-    // window.location.href = "/gameboard";
     showGameBoard = true;
     hideKofiButton();
   }
@@ -273,7 +272,7 @@
   <h2 slot="header">
     <span class="styled-header">How To Play</span>
   </h2>
-  <hr>
+  <hr class="my-3 border-red-200">
   <Help />
 </Modal>
 

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount } from "svelte";
 
 	import Menu from '$lib/components/Menu.svelte';
@@ -9,32 +9,35 @@
 
 	import { today } from "$lib/utils/timeFormatter"
 	import { gameData } from '$lib/stores/gameStore.js';
+	import { getTodaysGameData } from "$lib/repos/profileRepo";
+	import type { GameData } from "$lib/models/gameData";
 
 	let showGameBoard = false;
 	let gameOver = false;
 	let completedTodaysLoop = false;
 	let showAd = false;
 
-	onMount(() => {
-		getSavedGameTime()
+	onMount(async () => {
+		await getSavedGameDate()
 	});
 
-	function getSavedGameTime() {
-		const savedData = JSON.parse(localStorage.getItem('gameTimeV2'));
-		if (savedData) {
-			if (savedData.date === today()) {
-				gameData.update(data => ({
-					...data,
-					elapsedSeconds: savedData.elapsedSeconds,
-					solutions: savedData.solutions,
-					gaveUp: savedData.gaveUp,
-				}));
+	async function getSavedGameDate() {
+    const userSavedData = await getTodaysGameData();
+    const sessionSavedData = JSON.parse(localStorage.getItem('gameTimeV2'));
 
-				completedTodaysLoop = true
-			}
-		}
+    const updateData = userSavedData || (sessionSavedData?.date === today() ? sessionSavedData : null);
+
+    if (updateData) {
+        gameData.update(data => ({
+            ...data,
+            elapsedSeconds: updateData.elapsedSeconds,
+            solutions: updateData.solutions,
+            gaveUp: updateData.gaveUp,
+        }));
+
+        completedTodaysLoop = true;
+    }
 	}
-
 </script>
 
 

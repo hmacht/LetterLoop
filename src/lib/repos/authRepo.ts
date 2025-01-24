@@ -8,9 +8,9 @@ import {
   signInAnonymously,
   getAuth, 
   signOut,
+  sendPasswordResetEmail,
   type UserCredential
 } from 'firebase/auth';
-import { goto } from '$app/navigation';
 
 export async function loginWithMail(email: string, password: string) {
   await signInWithEmailAndPassword(auth, email, password)
@@ -34,7 +34,6 @@ export async function loginWithMail(email: string, password: string) {
 }
 
 export async function signUpWithMail(name: string, email: string, password: string) {
-
   try {
     const result = await createUserWithEmailAndPassword(auth, email, password);
     const { user } = result;
@@ -82,6 +81,30 @@ export async function signOutUser(): Promise<void> {
   }
 }
 
+export async function currentUserId(): Promise<number | null> {
+  return new Promise<number | null>((resolve) => { 
+    session.subscribe(async (cur: any) => {
+      const user = cur?.user;
+      if (user && user.uid) {
+        resolve(user.uid);
+      }
+    });
+  });
+};
+
+export async function resetPassword(email: string) {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    return { success: true };
+  } catch (error: any) {
+    console.error('Password reset error:', error);
+    return { 
+      success: false, 
+      errorMessage: getHumanReadableError(error.code) || 'Password reset failed' 
+    };
+  }
+}
+
 // Helpers
 
 async function initDbProfile(name: string, email: string, uid: string) {
@@ -97,6 +120,18 @@ async function initDbProfile(name: string, email: string, uid: string) {
   };
 
   await createProfile(profile);
+}
+
+export async function withCurrentUser<T>(callback: (userId: string) => Promise<T>): Promise<T | null> {
+  return new Promise<T | null>((resolve) => {
+    const unsubscribe = session.subscribe((cur: any) => {
+      const user = cur?.user;
+      if (user && user.uid) {
+        callback(user.uid).then(resolve).catch(() => resolve(null));
+        // unsubscribe();
+      }
+    });
+  });
 }
 
 function getHumanReadableError(errorCode: any) {

@@ -1,8 +1,11 @@
 import { db } from '$lib/firebase.client';
-import { doc, setDoc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
-import type { Profile } from '$lib/models/profile';
+import { doc, setDoc, getDoc, serverTimestamp, updateDoc, collection } from 'firebase/firestore';
 import { session, type User } from '$lib/session';
 import { today, yesterday } from "$lib/utils/timeFormatter"
+import { currentUserId } from '$lib/repos/authRepo';
+
+import type { Profile } from '$lib/models/profile';
+import type { GameData } from '$lib/models/gameData';
 
 export async function createProfile(profile: Profile): Promise<void> {
   try {
@@ -103,6 +106,39 @@ export async function updateProfileStats(time: string, gaveUp: boolean) {
 
     updateProfile(updatedProfile);
   }
+}
+
+export async function createTodaysGameData(gameData: GameData) {
+  try {
+    const userId = await currentUserId();
+    if (!userId) return;
+
+    const profileRef = doc(db, 'profiles', `${userId}`);
+    const gameDataDocRef = doc(collection(profileRef, "gameData"), today());
+    await setDoc(gameDataDocRef, gameData);
+  } catch (error) {
+    console.error('Error creating profile:', error);
+    throw new Error('Could not create profile');
+  }
+}
+
+export async function getTodaysGameData(): Promise<GameData | null> {
+  try {
+    const userId = await currentUserId();
+    if (!userId) return null;
+
+    const profileRef = doc(db, 'profiles', `${userId}`);
+    const gameDataDocRef = doc(collection(profileRef, "gameData"), today());
+    const gameDataDoc = await getDoc(gameDataDocRef);
+
+    if (gameDataDoc.exists()) {
+      return gameDataDoc.data() as GameData;
+    }
+  } catch (error) {
+    throw error;
+  }
+
+  return null;
 }
 
 // Private Helpers

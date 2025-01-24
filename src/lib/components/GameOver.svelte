@@ -12,6 +12,7 @@
     import { notifications } from "$lib/utils/notifications.js";
     import { gameData } from '$lib/stores/gameStore.js';
     import { secondsFormatted } from "$lib/utils/timeFormatter"
+    import { calculateEmoji } from "$lib/utils/emojiStreak";
     import { getCurrentUserProfile } from "$lib/repos/profileRepo"
 
     import type { Profile } from "$lib/models/profile"
@@ -56,21 +57,8 @@
 
       let streak = Number(profile.streak);
       if (!streak) return;
-
-      const conditions = [
-        { threshold: 365, emoji: "🙀" },
-        { threshold: 30, emoji: "🕺" },
-        { threshold: 14, emoji: "❤️‍🔥" },
-        { threshold: 7, emoji: "🔥" },
-        { threshold: 3, emoji: "✨" }
-      ];
-
-      for (const condition of conditions) {
-        if (streak >= condition.threshold) {
-          streakEmoji = condition.emoji;
-          break;
-        }
-      }
+      
+      streakEmoji = calculateEmoji(streak);
     }
 
     const share = async () => {
@@ -108,9 +96,9 @@
       const lastPart = solution.substring(4, 8) + firstPart[0];
     
       const htmlString = `
-        (<a href="https://www.merriam-webster.com/dictionary/${firstPart}" target="blank">${firstPart}</a> 
+        <a href="https://www.merriam-webster.com/dictionary/${firstPart}" target="blank">${firstPart}</a> 
         + 
-        <a href="https://www.merriam-webster.com/dictionary/${lastPart}" target="blank">${lastPart}</a>)
+        <a href="https://www.merriam-webster.com/dictionary/${lastPart}" target="blank">${lastPart}</a>
       `;
     
       return htmlString;
@@ -272,7 +260,7 @@
           </div>
 
           <div class="panel-section">
-            <span class="small-header mt-small" style="margin-top: 5rem;">Some Possible Solutions</span>
+            <span class="small-header mt-small" style="margin-top: 5rem;">Today's Primary Solution:</span>
             <p>
               {#if solutions && solutions.length > 2}
                 {#each solutions as solution}

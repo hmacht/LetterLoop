@@ -7,6 +7,11 @@ export function today() {
   return formattedDate;
 }
 
+export function todayTimeStamp() {
+  const currentDatetime = new Date();
+  return currentDatetime.toISOString();
+}
+
 export function yesterday() {
   const currentDatetime = new Date();
   currentDatetime.setDate(currentDatetime.getDate() - 1);
