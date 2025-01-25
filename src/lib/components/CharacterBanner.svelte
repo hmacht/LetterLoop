@@ -47,9 +47,6 @@
 
 <style>
   .banner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     padding: 1em;
     border: 1px solid var(--border-color);
     background-color: var(--background-color);
@@ -60,7 +57,6 @@
   }
   .text-container {
     text-align: left;
-    padding-left: 2rem;
   }
   .header {
     font-size: 18px;
@@ -75,13 +71,12 @@
     color: black;
   }
   .characterImg {
-    padding-left: 1rem;
     width: var(--character-size);
   }
 </style>
 
 <div
-  class="banner"
+  class="banner flex justify-around items-center"
   style="--background-color: {backgroundColor}; --border-color: {borderColor};"
 >
   {#if characterImagePath}
@@ -97,6 +92,4 @@
     <p class="header">{headerText}</p>
     <p class="subtitle">{subtitle}</p>
   </div>
-
-  <div style="flex: 1;"></div>
 </div>

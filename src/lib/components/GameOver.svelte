@@ -192,7 +192,7 @@
       {/if}
       <a class="help-container" href="https://www.reddit.com/r/letterloop/" target="_blank">
         <i class="fa-brands fa-reddit"></i>
-        <p class="how-to-play">Join The Converation</p>
+        <p class="how-to-play">Comments</p>
       </a>
     </div>
     <div class="divider"></div>

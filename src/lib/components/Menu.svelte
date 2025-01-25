@@ -251,7 +251,7 @@
       <div class="details-container">
         <p class="menu-date">{today}</p>
         <p class="menu-number">Loop #{puzzleNumber}</p>
-        <i class="menu-small-text">For those who love morning games</i>
+        <i class="menu-small-text">For the love of morning games</i>
       </div>
       
       <PromotionLink />

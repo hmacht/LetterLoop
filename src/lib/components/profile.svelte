@@ -56,15 +56,15 @@
     <hr class="my-3 border-red-200">
 
     <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div class="bg-gray-100 p-4 rounded-2xl text-center border border-gray-300">
+      <div class="bg-[#FEFAFA] p-4 rounded-2xl text-center border border-gray-300">
         <p class="text-2xl font-bold">{secondsFormatted(profile.averageTime)}</p>
         <p class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Average Time</p>
       </div>
-      <div class="bg-gray-100 p-4 rounded-2xl text-center border border-gray-300">
+      <div class="bg-[#FEFAFA] p-4 rounded-2xl text-center border border-gray-300">
         <p class="text-2xl font-bold">{streakEmoji} {profile.streak}</p>
         <p class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Streak</p>
       </div>
-      <div class="bg-gray-100 p-4 rounded-2xl text-center border border-gray-300">
+      <div class="bg-[#FEFAFA] p-4 rounded-2xl text-center border border-gray-300">
         <p class="text-2xl font-bold">{profile.gamesPlayed}</p>
         <p class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Played</p>
       </div>

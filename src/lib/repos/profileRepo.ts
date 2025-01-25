@@ -50,7 +50,6 @@ export async function getProfile(userId: string): Promise<Profile | null> {
     if (userDoc.exists()) {
       return userDoc.data() as Profile;
     } else {
-      console.log('Profile not found');
       return null;
     }
   } catch (error) {

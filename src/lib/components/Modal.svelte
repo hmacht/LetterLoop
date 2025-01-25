@@ -19,8 +19,6 @@
   $: if (dialog && showModal === false && dialog.open) {
     dialog.close();
   }
-
-	
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
@@ -46,6 +44,7 @@
 <style>
   dialog {
     max-width: 32em;
+    min-width: 18em;
     border-radius: 0.2em;
     border: none;
     padding: 0;
