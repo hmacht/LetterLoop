@@ -81,11 +81,13 @@ export async function signOutUser(): Promise<void> {
   }
 }
 
-export async function currentUserId(): Promise<number | null> {
-  return new Promise<number | null>((resolve) => { 
+export async function currentUserId(): Promise<string | null> {
+  return new Promise<string | null>((resolve) => { 
     session.subscribe(async (cur: any) => {
       const user = cur?.user;
-      if (user && user.uid) {
+      const loggedIn = cur?.loggedIn;
+      
+      if (user && loggedIn && user.uid) {
         resolve(user.uid);
       }
     });
