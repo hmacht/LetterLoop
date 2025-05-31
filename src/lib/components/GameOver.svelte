@@ -7,13 +7,14 @@
     import OrbitsAd from '$lib/components/OrbitsAd.svelte';
     import PromotionLink from '$lib/components/PromotionLink.svelte';
     import Modal from '$lib/components/Modal.svelte';
-    import Profile from '$lib/components/Profile.svelte';
+    import ProfileComponent from '$lib/components/Profile.svelte';
 
     import { notifications } from "$lib/utils/notifications.js";
     import { gameData } from '$lib/stores/gameStore.js';
     import { secondsFormatted } from "$lib/utils/timeFormatter"
-    import { calculateEmoji } from "$lib/utils/emojiStreak";
+    import { calculateEmoji, calculateEmojiRank } from "$lib/utils/emojiStreak";
     import { getCurrentUserProfile } from "$lib/repos/profileRepo"
+    import { getTopProfiles, getRank } from "$lib/repos/leaderBoardRepo";
 
     import type { Profile } from "$lib/models/profile"
     
@@ -27,15 +28,26 @@
     var loadingProfile: boolean = true;
     var showProfileModal: boolean = false;
 
-    let profile: Profile;
+    let profile: Profile | null;
+    var top10Profile: Profile[] = [];
+    var usersLeaderboardRank: number | null = null;
 
     export let completedTodaysLoop = false;
 
     onMount(async () => {
       loadAd();
       retrieveGameDate();
+
+      // Load profile
       profile = await getCurrentUserProfile();
       loadingProfile = false;
+
+      // Load leaderboard
+      top10Profile = await getTopProfiles(15);
+      if (profile) {
+        usersLeaderboardRank = await getRank(profile.gamesPlayed);
+      }
+
       setStreakEmoji();
     });
 
@@ -169,6 +181,29 @@
       letter-spacing: 1px;
       cursor: pointer;
     }
+    
+    /* Leaderboard styles */
+    .leaderboard-list {
+      margin-top: 1rem;
+    }
+
+    li.leaderboard-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-top: 1px solid #eee;
+    }
+
+    .leaderboard-name {
+      font-weight: 500;
+    }
+
+    .leaderboard-stats {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
   </style>
   
   <main>
@@ -260,7 +295,7 @@
           </div>
 
           <div class="panel-section">
-            <span class="small-header mt-small" style="margin-top: 5rem;">Today's Primary Solution:</span>
+            <span class="small-header mt-small" style="margin-top: 5rem;">Today's Solution:</span>
             <p>
               {#if solutions && solutions.length > 2}
                 {#each solutions as solution}
@@ -277,6 +312,28 @@
           </div>
 
           <button class="share-button" on:click={share}>SHARE YOUR TIME</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-body">
+          <p class="small-header">Top 15 Loopers (# of games played)</p>
+          {#if usersLeaderboardRank}
+            <p class="mt-3">You are ranked <b>#{usersLeaderboardRank}</b></p>
+          {/if}
+          <ul class="leaderboard-list">
+            {#each top10Profile as profile, index}
+              <li class="leaderboard-item">
+                <span class="leaderboard-name">
+                  {index + 1}. {profile.name}
+                </span>
+                <span class="leaderboard-stats">
+                  {profile.gamesPlayed}
+                  {calculateEmojiRank(index + 1)}
+                </span>
+              </li>
+            {/each}
+          </ul>
         </div>
       </div>
 
@@ -307,7 +364,7 @@
             {/if}
           </div>
 
-          <p class="disclaimer">*Hey, stats not what they should be? Report the issue on Redit and we will fix right away! Thanks for playing.</p>
+          <p class="disclaimer">Hey, stats not what they should be? Report the issue on Redit and we will fix right away! Thanks for playing.</p>
         </div>
       </div>
 
@@ -317,7 +374,7 @@
 
   <Modal bind:showModal={showProfileModal} modalType={"profile"}>
     {#if profile && profile.id}
-      <Profile bind:userId={profile.id} />
+      <ProfileComponent bind:userId={profile.id} />
     {/if}
   </Modal>
 

@@ -6,6 +6,7 @@ import { currentUserId } from '$lib/repos/authRepo';
 
 import type { Profile } from '$lib/models/profile';
 import type { GameData } from '$lib/models/gameData';
+import type { Unsubscriber } from 'svelte/store';
 
 export async function createProfile(profile: Profile): Promise<void> {
   try {
@@ -60,12 +61,19 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 
 export async function getCurrentUserProfile(): Promise<Profile | null> {
   return new Promise<Profile | null>((resolve) => { 
-    const unsubscribe = session.subscribe(async (cur: any) => {
+    let unsubscribe: Unsubscriber;
+    unsubscribe = session.subscribe(async (cur: any) => {
       const user = cur?.user;
+
+      if (unsubscribe) {
+        unsubscribe();
+      }
+
       if (user && user.uid) {
         const fetchedProfile = await getProfile(user.uid);
-        unsubscribe();
         resolve(fetchedProfile);
+      } else {
+        resolve(null);
       }
     });
   });
@@ -95,7 +103,7 @@ export async function updateProfileStats(time: string, gaveUp: boolean) {
         id: profile.id,
         name: profile.name,
         email: profile.email,
-        streak: calculateStreak(profile.lastPlayedDate, profile.gamesPlayed),
+        streak: calculateStreak(profile.lastPlayedDate, profile.streak),
         gamesPlayed:updatedGamesPlayed,
         averageTime: calculateAverageTime(profile.averageTime, timeSec, updatedGamesPlayed),
         admin: profile.admin,
@@ -109,10 +117,10 @@ export async function updateProfileStats(time: string, gaveUp: boolean) {
 
 export async function createTodaysGameData(gameData: GameData) {
   try {
-    const userId = await currentUserId();
+    const userId: string | null = await currentUserId();
     if (!userId) return;
 
-    const profileRef = doc(db, 'profiles', `${userId}`);
+    const profileRef = doc(db, 'profiles', userId);
     const gameDataDocRef = doc(collection(profileRef, "gameData"), today());
     await setDoc(gameDataDocRef, gameData);
   } catch (error) {
@@ -123,10 +131,10 @@ export async function createTodaysGameData(gameData: GameData) {
 
 export async function getTodaysGameData(): Promise<GameData | null> {
   try {
-    const userId = await currentUserId();
+    const userId: string | null = await currentUserId();
     if (!userId) return null;
 
-    const profileRef = doc(db, 'profiles', `${userId}`);
+    const profileRef = doc(db, 'profiles', userId);
     const gameDataDocRef = doc(collection(profileRef, "gameData"), today());
     const gameDataDoc = await getDoc(gameDataDocRef);
 

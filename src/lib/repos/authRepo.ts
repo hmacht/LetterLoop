@@ -11,6 +11,7 @@ import {
   sendPasswordResetEmail,
   type UserCredential
 } from 'firebase/auth';
+import type { Unsubscriber } from 'svelte/store';
 
 export async function loginWithMail(email: string, password: string) {
   await signInWithEmailAndPassword(auth, email, password)
@@ -81,16 +82,26 @@ export async function signOutUser(): Promise<void> {
   }
 }
 
-export async function currentUserId(): Promise<number | null> {
-  return new Promise<number | null>((resolve) => { 
-    session.subscribe(async (cur: any) => {
+export async function currentUserId(): Promise<string | null> {
+  return new Promise<string | null>((resolve) => { 
+    let unsubscribe: Unsubscriber;
+
+    unsubscribe = session.subscribe((cur: any) => {
       const user = cur?.user;
-      if (user && user.uid) {
+      const loggedIn = cur?.loggedIn;
+      
+      if (unsubscribe) {
+        unsubscribe();
+      }
+      
+      if (user && loggedIn && user.uid) {
         resolve(user.uid);
+      } else {
+        resolve(null);
       }
     });
   });
-};
+}
 
 export async function resetPassword(email: string) {
   try {
@@ -120,18 +131,6 @@ async function initDbProfile(name: string, email: string, uid: string) {
   };
 
   await createProfile(profile);
-}
-
-export async function withCurrentUser<T>(callback: (userId: string) => Promise<T>): Promise<T | null> {
-  return new Promise<T | null>((resolve) => {
-    const unsubscribe = session.subscribe((cur: any) => {
-      const user = cur?.user;
-      if (user && user.uid) {
-        callback(user.uid).then(resolve).catch(() => resolve(null));
-        // unsubscribe();
-      }
-    });
-  });
 }
 
 function getHumanReadableError(errorCode: any) {
