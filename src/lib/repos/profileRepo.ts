@@ -6,6 +6,7 @@ import { currentUserId } from '$lib/repos/authRepo';
 
 import type { Profile } from '$lib/models/profile';
 import type { GameData } from '$lib/models/gameData';
+import type { Unsubscriber } from 'svelte/store';
 
 export async function createProfile(profile: Profile): Promise<void> {
   try {
@@ -60,12 +61,19 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 
 export async function getCurrentUserProfile(): Promise<Profile | null> {
   return new Promise<Profile | null>((resolve) => { 
-    const unsubscribe = session.subscribe(async (cur: any) => {
+    let unsubscribe: Unsubscriber;
+    unsubscribe = session.subscribe(async (cur: any) => {
       const user = cur?.user;
+
+      if (unsubscribe) {
+        unsubscribe();
+      }
+
       if (user && user.uid) {
         const fetchedProfile = await getProfile(user.uid);
-        unsubscribe();
         resolve(fetchedProfile);
+      } else {
+        resolve(null);
       }
     });
   });

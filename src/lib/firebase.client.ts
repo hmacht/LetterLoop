@@ -13,6 +13,7 @@ export let app: FirebaseApp;
 export let auth: Auth;
 export let realtimeDb: Database;
 
+// TODO: Stop being lazy and put these away in ENV
 const firebaseConfig = {
   apiKey: "AIzaSyD4qZNCNnlVihIZbdgtBB82R48AIC0bqG4",
   authDomain: "circlepuzzlegame-1738d.firebaseapp.com",

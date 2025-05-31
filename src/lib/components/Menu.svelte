@@ -21,12 +21,6 @@
   let loggedIn: boolean = false;
   let loadingUser: boolean = true;
   let user: User;
- 
-	session.subscribe((cur: any) => {
-    user = cur?.user;
-		loggedIn = cur?.loggedIn;
-    loadingUser = cur?.loading;
-	});
   
   function calculatePuzzleNumber() {
     const today = new Date();
@@ -38,6 +32,17 @@
 
   onMount(() => {
     loadAd();
+
+    const unsubscribe = session.subscribe((cur: any) => {
+      user = cur?.user;
+      loggedIn = cur?.loggedIn;
+      loadingUser = cur?.loading;
+    });
+
+    // Cleanup function - runs when component is destroyed
+    return () => {
+      unsubscribe();
+    };
   });
 
   function loadAd() {
