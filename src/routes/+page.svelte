@@ -1,6 +1,4 @@
 <script lang="ts">
-	export let data;
-	
 	import { onMount } from "svelte";
 
 	import Menu from '$lib/components/Menu.svelte';
