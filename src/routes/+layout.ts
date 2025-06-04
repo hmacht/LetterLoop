@@ -22,7 +22,7 @@ export async function load({ url }) {
 		};
 	}
 
-	// On server, return defaults
+	// For server
 	return {
 		user: null,
 		url: url.pathname
