@@ -1,4 +1,6 @@
 <script lang="ts">
+	export let data;
+	
 	import { onMount } from "svelte";
 
 	import Menu from '$lib/components/Menu.svelte';
@@ -11,18 +13,22 @@
 	import { gameData } from '$lib/stores/gameStore.js';
 	import { getTodaysGameData } from "$lib/repos/profileRepo";
 	import type { GameData } from "$lib/models/gameData";
+	import { session } from "$lib/session.js";
+	import { get } from "svelte/store";
 
 	let showGameBoard = false;
 	let gameOver = false;
 	let completedTodaysLoop = false;
 	let showAd = false;
+	let s = get(session)
+	let userId = s.user?.uid ?? null
 
 	onMount(async () => {
 		await getSavedGameDate()
 	});
 
 	async function getSavedGameDate() {
-    const userSavedData = await getTodaysGameData();
+    const userSavedData = await getTodaysGameData(userId);
     const sessionSavedData = JSON.parse(localStorage.getItem('gameTimeV2'));
 
     const updateData = userSavedData || (sessionSavedData?.date === today() ? sessionSavedData : null);

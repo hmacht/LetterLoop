@@ -11,6 +11,7 @@
   import { session, type User } from '$lib/session';
 
   import logo_src from '$lib/images/logo.png';
+	import { get } from 'svelte/store';
 
   export let showGameBoard;
 
@@ -20,7 +21,7 @@
   let puzzleNumber = calculatePuzzleNumber()
   let loggedIn: boolean = false;
   let loadingUser: boolean = true;
-  let user: User;
+  let user: User | null;
   
   function calculatePuzzleNumber() {
     const today = new Date();
@@ -33,16 +34,11 @@
   onMount(() => {
     loadAd();
 
-    const unsubscribe = session.subscribe((cur: any) => {
-      user = cur?.user;
-      loggedIn = cur?.loggedIn;
-      loadingUser = cur?.loading;
-    });
+    const s = get(session);
 
-    // Cleanup function - runs when component is destroyed
-    return () => {
-      unsubscribe();
-    };
+    user = s?.user;
+    loggedIn = s?.loggedIn ?? false;
+    loadingUser = s?.loading ?? true;
   });
 
   function loadAd() {

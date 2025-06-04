@@ -11,7 +11,6 @@ import {
   sendPasswordResetEmail,
   type UserCredential
 } from 'firebase/auth';
-import type { Unsubscriber } from 'svelte/store';
 
 export async function loginWithMail(email: string, password: string) {
   await signInWithEmailAndPassword(auth, email, password)
@@ -20,10 +19,10 @@ export async function loginWithMail(email: string, password: string) {
       session.set({
         loggedIn: true,
         user: {
-        displayName: user?.displayName,
-        email: user?.email,
-        photoURL: user?.photoURL,
-        uid: user?.uid
+          displayName: user?.displayName,
+          email: user?.email,
+          photoURL: user?.photoURL,
+          uid: user?.uid
         }
       });
       window.location.href = '/';
@@ -75,32 +74,12 @@ export async function signOutUser(): Promise<void> {
   try {
     await signOut(auth);
     console.log('User signed out successfully');
+    await anonymousSignIn();
     window.location.href = '/';
   } catch (error) {
     console.error('Error signing out:', error);
     throw new Error('Could not sign out');
   }
-}
-
-export async function currentUserId(): Promise<string | null> {
-  return new Promise<string | null>((resolve) => { 
-    let unsubscribe: Unsubscriber;
-
-    unsubscribe = session.subscribe((cur: any) => {
-      const user = cur?.user;
-      const loggedIn = cur?.loggedIn;
-      
-      if (unsubscribe) {
-        unsubscribe();
-      }
-      
-      if (user && loggedIn && user.uid) {
-        resolve(user.uid);
-      } else {
-        resolve(null);
-      }
-    });
-  });
 }
 
 export async function resetPassword(email: string) {

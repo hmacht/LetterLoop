@@ -7,6 +7,15 @@ import { browser } from '$app/environment';
 import type { FirebaseApp } from 'firebase/app';
 import type { Firestore } from 'firebase/firestore';
 import type { Auth } from 'firebase/auth';
+import {
+  PUBLIC_FIREBASE_API_KEY,
+  PUBLIC_FIREBASE_AUTH_DOMAIN,
+  PUBLIC_FIREBASE_DATABASE_URL,
+  PUBLIC_FIREBASE_PROJECT_ID,
+  PUBLIC_FIREBASE_STORAGE_BUCKET,
+  PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  PUBLIC_FIREBASE_APP_ID
+} from '$env/static/public';
 
 export let db: Firestore;
 export let app: FirebaseApp;
@@ -14,6 +23,7 @@ export let auth: Auth;
 export let realtimeDb: Database;
 
 // TODO: Stop being lazy and put these away in ENV
+
 const firebaseConfig = {
   apiKey: "AIzaSyD4qZNCNnlVihIZbdgtBB82R48AIC0bqG4",
   authDomain: "circlepuzzlegame-1738d.firebaseapp.com",

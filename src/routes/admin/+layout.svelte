@@ -1,22 +1,12 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { getCurrentUserProfile } from '$lib/repos/profileRepo'
-  import type { Profile } from '$lib/models/profile';
-  import { profileStore } from '$lib/stores/profileStore';
   import logo_src from '$lib/images/logo.png';
+	import { profileStore, profileLoading } from '$lib/stores/profileStore';
 
-  let profile: Profile | null = null;
-  let loadingUser: boolean = true;
-
-  onMount(async () => {
-    profile = await getCurrentUserProfile();
-    loadingUser = false;
-    profileStore.set(profile);
-  });
-
+  $: profile = $profileStore;
+  $: loading = $profileLoading;
 </script>
 
-{#if loadingUser}
+{#if loading}
   <div class="flex items-center justify-center h-screen">
     <p class="text-lg font-semibold text-gray-700 dark:text-gray-300">Loading...</p>
   </div>

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   import characterFlower from '$lib/images/character-flower.png';
   import characterBattery from '$lib/images/character-battery.png';
@@ -14,7 +14,7 @@
   export let headerText = "Header Text";
   export let subtitle = "Subtitle Text";
 
-  let characterImagePath;
+  let characterImagePath: string;
 
   onMount(() => {
     setImage() 

@@ -16,6 +16,8 @@
   let showAlert = false;
   let submittedWords = { primary: '', secondary: '' };
 
+  $: profile = $profileStore;
+
   onMount(async () => {
     primaryWords = await getPrimaryOptions();
   });
@@ -26,7 +28,7 @@
 
       if (valid) {
         const solution = formatLoop(selectedPrimary, selectedSecondary);
-        await addSolution(solution, $profileStore?.name ?? 'mystery');
+        await addSolution(solution, profile?.name ?? 'mystery');
 
         submittedWords = {
           primary: selectedPrimary,

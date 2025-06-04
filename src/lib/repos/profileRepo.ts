@@ -1,12 +1,12 @@
 import { db } from '$lib/firebase.client';
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc, collection } from 'firebase/firestore';
-import { session, type User } from '$lib/session';
+import { get } from 'svelte/store';
 import { today, yesterday } from "$lib/utils/timeFormatter"
-import { currentUserId } from '$lib/repos/authRepo';
 
 import type { Profile } from '$lib/models/profile';
 import type { GameData } from '$lib/models/gameData';
-import type { Unsubscriber } from 'svelte/store';
+import { profileStore, refreshProfileStore } from '$lib/stores/profileStore';
+import { session } from '$lib/session';
 
 export async function createProfile(profile: Profile): Promise<void> {
   try {
@@ -37,14 +37,17 @@ export async function updateProfile(profile: Profile): Promise<void> {
     };
     
     await updateDoc(ref, data);
+    refreshProfileStore();
   } catch (error) {
     console.error('Error updating profile:', error);
     throw new Error('Could not update profile');
   }
 }
 
-export async function getProfile(userId: string): Promise<Profile | null> {
+export async function getProfile(userId: string | null | undefined): Promise<Profile | null> {
   try {
+    if (!userId) return null;
+
     const userDocRef = doc(db, 'profiles', userId);
     const userDoc = await getDoc(userDocRef);
 
@@ -59,28 +62,8 @@ export async function getProfile(userId: string): Promise<Profile | null> {
   }
 }
 
-export async function getCurrentUserProfile(): Promise<Profile | null> {
-  return new Promise<Profile | null>((resolve) => { 
-    let unsubscribe: Unsubscriber;
-    unsubscribe = session.subscribe(async (cur: any) => {
-      const user = cur?.user;
-
-      if (unsubscribe) {
-        unsubscribe();
-      }
-
-      if (user && user.uid) {
-        const fetchedProfile = await getProfile(user.uid);
-        resolve(fetchedProfile);
-      } else {
-        resolve(null);
-      }
-    });
-  });
-};
-
 export async function updateProfileStats(time: string, gaveUp: boolean) {
-  const profile = await getCurrentUserProfile();
+  const profile = get(profileStore);
   const timeSec: number = timeToSeconds(time)
 
   if (profile != null) {
@@ -117,7 +100,8 @@ export async function updateProfileStats(time: string, gaveUp: boolean) {
 
 export async function createTodaysGameData(gameData: GameData) {
   try {
-    const userId: string | null = await currentUserId();
+    let s = get(session);
+	  let userId = s.user?.uid ?? null;
     if (!userId) return;
 
     const profileRef = doc(db, 'profiles', userId);
@@ -129,9 +113,8 @@ export async function createTodaysGameData(gameData: GameData) {
   }
 }
 
-export async function getTodaysGameData(): Promise<GameData | null> {
+export async function getTodaysGameData(userId: string | null): Promise<GameData | null> {
   try {
-    const userId: string | null = await currentUserId();
     if (!userId) return null;
 
     const profileRef = doc(db, 'profiles', userId);

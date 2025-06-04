@@ -1,26 +1,30 @@
-/** @type {import('./$types').LayoutLoad} */
-
+// +layout.ts
 import { initializeFirebase, auth } from '$lib/firebase.client';
 import { browser } from '$app/environment';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, type User } from 'firebase/auth';
 
 export async function load({ url }) {
- if (browser) {
-  try {
-   initializeFirebase();
-  } catch (ex) {
-   console.error(ex);
-  }
- }
+	if (browser) {
+		try {
+			initializeFirebase();
+		} catch (ex) {
+			console.error(ex);
+		}
 
- function getAuthUser() {
-  return new Promise((resolve) => {
-   onAuthStateChanged(auth, (user) => resolve(user ? user : false));
-  });
- }
+		// Wait for auth user here
+		const user = await new Promise<User | null>((resolve) => {
+			onAuthStateChanged(auth, (user) => resolve(user));
+		});
 
- return {
-  getAuthUser: getAuthUser,
-  url: url.pathname
- };
+		return {
+			user,
+			url: url.pathname
+		};
+	}
+
+	// On server, return defaults
+	return {
+		user: null,
+		url: url.pathname
+	};
 }
