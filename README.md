@@ -1,22 +1,17 @@
-# create-svelte
+# 🔴 Welcome Looper Devs 🔴
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+The [LetterLoop](theletterloop.com) is a morning word game. Simply find two 5 letter words that make the loop, the words will share the first and last letter.
 
-## Creating a project
+This project is built using Sveltkit and Firebase
 
-If you're seeing this, you've probably already done this step. Congrats!
+Firebase tools used
+- Auth
+- Realtime (for puzzle)
+- Firestore database (for account management)
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+## Getting Dev Enviroment Setup
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Installed dependencies with `npm install`, start a development server:
 
 ```bash
 npm run dev
@@ -25,14 +20,7 @@ npm run dev
 npm run dev -- --open
 ```
 
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+## Contributing
+- We have a bunch of issues open! Or open your own if you found a bug or have ideas.
+- If you have any question please ask in discussion.
+- Follow user feedback on our redit: https://www.reddit.com/r/letterloop/
