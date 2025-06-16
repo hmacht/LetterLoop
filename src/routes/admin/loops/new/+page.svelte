@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { getPrimaryOptions, getSecondaryOptions, validLoop, formatLoop } from '$lib/utils/loop'
-  import { addSolution } from '$lib/repos/solutionRepo'
+  import { getPrimaryOptions, getSecondaryOptions, validLoop } from '$lib/utils/loop'
+  import { addSolution, getSolutionUsage } from '$lib/repos/solutionRepo'
   import { profileStore } from '$lib/stores/profileStore';
   import { Alert } from 'flowbite-svelte';
   import { Button } from 'flowbite-svelte';
@@ -14,12 +14,18 @@
   let secondaryWords: string[] = [];
 
   let showAlert = false;
+  let showSWords = false;
   let submittedWords = { primary: '', secondary: '' };
+  
+  var primaryUsage: number | null = 0
+  var secondaryUsage: number | null = 0;
+  var loadingUsage: boolean = true;
 
   $: profile = $profileStore;
+  $: selectionComplete = selectedPrimary && selectedSecondary;
 
   onMount(async () => {
-    primaryWords = await getPrimaryOptions();
+    primaryWords = await getPrimaryOptions(5, showSWords);
   });
 
   async function handleSubmit() {
@@ -27,8 +33,7 @@
       let valid = await validLoop(selectedPrimary, selectedSecondary);
 
       if (valid) {
-        const solution = formatLoop(selectedPrimary, selectedSecondary);
-        await addSolution(solution, profile?.name ?? 'mystery');
+        await addSolution(selectedPrimary, selectedSecondary, profile?.name ?? 'mystery');
 
         submittedWords = {
           primary: selectedPrimary,
@@ -51,8 +56,17 @@
     secondaryWords = await getSecondaryOptions(word);
   }
 
+  async function secondarySelected(word: string) {
+    selectedSecondary = word;
+
+    loadingUsage = true;
+    primaryUsage = await getSolutionUsage(selectedPrimary);
+    secondaryUsage = await getSolutionUsage(selectedSecondary);
+    loadingUsage = false;
+  }
+
   async function shufflePrimaryWords() {
-    primaryWords = await getPrimaryOptions();
+    primaryWords = await getPrimaryOptions(5, showSWords);
   }
 </script>
 
@@ -66,6 +80,11 @@
 
   <div class="bg-white p-8 border border-slate-300 rounded-lg overflow-hidden">
     <p class="text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800 mb-3">The Loop Generator</p>
+
+    <label class="flex items-center space-x-2 mb-2 text-sm text-gray-700 dark:text-gray-300">
+      <input type="checkbox" bind:checked={showSWords} class="form-checkbox h-4 w-4 text-blue-600" />
+      <span>Show S words (Henry <i>hates</i> S words)</span>
+    </label>
     
     <!-- Primary Word Selection -->
     <div class="mb-2">
@@ -99,7 +118,7 @@
                 outline 
                 color="dark" 
                 class="{selectedSecondary === word ? 'bg-slate-900 text-white' : 'bg-transparent'}" 
-                on:click={() => selectedSecondary = word}>
+                on:click={() => secondarySelected(word)}>
                 {word}
               </Button>
             {/each}
@@ -121,8 +140,22 @@
         Please make your selections
       {/if}
     </Alert>
+    
+    {#if selectionComplete}
+      <Alert color="dark" class="mb-5 mt-2">
+        <i class="fa-solid fa-chart-simple"></i>
+        Selection Usage:
+        {#if loadingUsage}
+          Loading...
+        {:else if selectedPrimary && selectedSecondary}
+          <b class="primary-highlight">{primaryUsage}</b> ({selectedPrimary}) - <b class="primary-highlight">{secondaryUsage}</b> ({selectedSecondary})
+        {:else}
+          --- - ---
+        {/if}
+      </Alert>
+    {/if}
 
     <!-- Submit Button -->
-    <Button disabled={!selectedPrimary || !selectedSecondary} on:click={handleSubmit}>Submit</Button>
+    <Button disabled={!selectionComplete} on:click={handleSubmit}>Submit</Button>
   </div>
 </div>

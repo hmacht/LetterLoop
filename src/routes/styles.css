@@ -322,3 +322,7 @@ main {
 .center-text {
 	text-align: center;
 }
+
+.primary-highlight {
+	color: var(--color-theme-1);
+}

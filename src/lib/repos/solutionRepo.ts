@@ -1,10 +1,12 @@
 import { realtimeDb } from '$lib/firebase.client';
-import { ref, get, set, query, orderByChild, startAt, update, limitToLast } from 'firebase/database';
+import { ref, get, set, query, orderByChild, startAt, update, limitToLast, equalTo } from 'firebase/database';
 import { today } from "$lib/utils/timeFormatter"
+import { formatLoop } from '$lib/utils/loop'
+
 import type { Solution } from '$lib/models/solution';
 import type { DatabaseReference, DataSnapshot } from 'firebase/database';
 
-export async function addSolution(solution: string, author: string): Promise<void> {
+export async function addSolution(primary: string, secondary: string, author: string): Promise<void> {
   const rootRef = ref(realtimeDb, 'solutions');
 
   const solutionsQuery = query(
@@ -14,6 +16,7 @@ export async function addSolution(solution: string, author: string): Promise<voi
   );
 
   try {
+    const solution = formatLoop(primary, secondary);
     const snapshot = await get(solutionsQuery);
 
     if (!snapshot.exists()) {
@@ -35,7 +38,10 @@ export async function addSolution(solution: string, author: string): Promise<voi
     const data = {
       author: author,
       date: newDateISO,
-      solutions: [solution]
+      solutions: [solution],
+      solution: solution,
+      primary: primary,
+      secondary: secondary
     };
 
     await set(ref(realtimeDb, `solutions/${newDateStr}`), data);
@@ -91,6 +97,40 @@ export async function getTodaysSolution(): Promise<Solution | null> {
     console.error('Error fetching today\'s solutions:', error);
     return null;
   }
+}
+
+// Count the number of times this word has been used
+//
+// Each solution entry has a primary and secondary field.
+// Count the number of matches on all primary and secondary 
+// fields over all solutions
+export async function getSolutionUsage(word: string | null): Promise<number | null> {
+  try {
+    if (!word) {
+      return null;
+    }
+    
+    const [
+      countInPrimary,
+      countInSecondary,
+    ] = await Promise.all([
+      countMatchesByField('primary', word),
+      countMatchesByField('secondary', word),
+    ]);
+
+    return countInPrimary + countInSecondary;
+
+  } catch (error) {
+    console.error('Error fetching usage:', error);
+    return null;
+  }
+}
+
+// Private function to count number of matches.
+async function countMatchesByField(field: 'primary' | 'secondary', value: string): Promise<number> {
+  const snap = await get(query(ref(realtimeDb, 'solutions'), orderByChild(field), equalTo(value)));
+  if (!snap.exists()) return 0;
+  return snap.exists() ? Object.keys(snap.val()).length : 0;
 }
 
 export async function removeSolution(key: string): Promise<void> {}

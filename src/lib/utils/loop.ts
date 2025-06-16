@@ -3,23 +3,12 @@ import Typo from 'typo-js';
 let cachedWords: string[] = [];
 let dictionary = new Typo("en_US", null, null, { dictionaryPath: "/dictionaries" });
 
-// Private function to fetch word list
-async function fetchWordList(): Promise<string[]> {
-  try {
-    if (cachedWords.length === 0) {
-      const response = await fetch('/wordlists/prime.txt');
-      const text = await response.text();
-      cachedWords = text.split('\n').filter(word => word.trim() !== '');
-    }
-    return cachedWords;
-  } catch (error) {
-    console.error('Error fetching words:', error);
-    return [];
-  }
-}
-
 // Get options for first word
-export async function getPrimaryOptions(count: number = 5): Promise<string[]> {
+// 
+// count: the number of words to present
+// showSWords: S words are words that start or end with an S
+// S words make for bad solutions, so we give admin users the option to filter out
+export async function getPrimaryOptions(count: number = 5, showSWords: boolean = false): Promise<string[]> {
   const words = await fetchWordList();
   const randomWords: string[] = [];
 
@@ -28,7 +17,9 @@ export async function getPrimaryOptions(count: number = 5): Promise<string[]> {
   while (wordsChosenCount < 5) {
     const randomIndex = Math.floor(Math.random() * words.length);
     let word = words[randomIndex];
-    if (dictionary.check(word)) {
+    let validSWord = showSWords || (!word.endsWith('s') && !word.startsWith('s'));
+
+    if (validSWord && dictionary.check(word)) {
       randomWords.push(words[randomIndex].trim())
       wordsChosenCount++;
     }
@@ -38,6 +29,12 @@ export async function getPrimaryOptions(count: number = 5): Promise<string[]> {
 }
 
 // Get valid second words based on the primer word
+// 
+// primer: the first word selected
+//
+// A secondary word must have these properties:
+//    - First letter must equal last letter of primary
+//    - Last letter mmust equal first letter of primary
 export async function getSecondaryOptions(primer: string): Promise<string[]> {
   const words = await fetchWordList();
   const validWords: string[] = [];
@@ -96,4 +93,20 @@ export function parseLoop(loop: string, length: number = 5): [string, string] {
   const secondWord = loop.slice(length - 1) + firstWord[0];
   
   return [firstWord, secondWord];
+}
+
+
+// Private function to fetch word list
+async function fetchWordList(): Promise<string[]> {
+  try {
+    if (cachedWords.length === 0) {
+      const response = await fetch('/wordlists/prime.txt');
+      const text = await response.text();
+      cachedWords = text.split('\n').filter(word => word.trim() !== '');
+    }
+    return cachedWords;
+  } catch (error) {
+    console.error('Error fetching words:', error);
+    return [];
+  }
 }
