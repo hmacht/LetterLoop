@@ -240,9 +240,9 @@
             <p class="login-header">Want to save your stats?</p>
             <button 
               class="menu-btn no-fill" 
-              on:click={() => window.location.href = '/auth/login'}
+              on:click={() => window.location.href = '/auth/signup'}
             >
-              Log In
+              Sign Up
             </button>
           </div>
         {/if}
