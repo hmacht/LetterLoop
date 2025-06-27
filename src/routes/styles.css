@@ -101,11 +101,14 @@ button:focus:not(:focus-visible) {
 	white-space: nowrap;
 }
 
-main {
+.centered-container {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	height: 100vh;
+}
+
+.full-height-container {
+	min-height: 100vh;
 }
 
 .circle-container {
@@ -210,6 +213,16 @@ main {
 	padding-bottom: 3px;
 }
 
+.title-lg {
+	margin: 0;
+	font-family: "Playfair Display", serif;
+	font-optical-sizing: auto;
+	font-size: 30px;
+	font-weight: 500;
+	font-style: normal;
+	color: black;
+}
+
 .title-link {
 	color: black;
 }
@@ -253,12 +266,9 @@ main {
 .title-container{
 	margin: 10px;
 }
-.logo-container {
-	display: flex;
-	align-items: center;
-}
-.logo-container:hover {
+.nav-logo:hover {
 	text-decoration: none;
+	cursor: pointer !important;
 }
 .nav-image {
 	width: 25px;

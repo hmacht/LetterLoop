@@ -23,7 +23,7 @@
   /* Form container on the right */
   .login-form {
     width: 100vw;
-    height: 100%;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -79,7 +79,7 @@
 
 <main>
   <div class="login-form">
-    <img class="w-12 h-12 mx-auto object-contain mb-[15%] mt-5" src={logo_src} alt="Our Little Loop Logo" />
+    <img class="w-12 h-12 mx-auto object-contain mb-[5%] mt-5" src={logo_src} alt="Our Little Loop Logo" />
 
     <p class="menu-header">Send Reset Email</p>
 

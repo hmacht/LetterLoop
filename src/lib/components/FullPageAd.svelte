@@ -58,7 +58,7 @@
   }
 </style>
 
-<div class="main-container">
+<div class="main-container full-height-container">
   <div class="ad-container">
     {#if canSkip}
       <button class="skip-btn" on:click={skipAd}>Skip & View Stats</button>
