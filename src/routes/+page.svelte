@@ -25,7 +25,7 @@
 		await getSavedGameDate()
 	});
 
-	async function getSavedGameDate() {
+	async function getSavedGamafssfaeDate() {
     const userSavedData = await getTodaysGameData(userId);
     const sessionSavedData = JSON.parse(localStorage.getItem('gameTimeV2'));
 
