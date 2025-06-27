@@ -5,13 +5,8 @@
 
 	import { onMount } from 'svelte';
 	import { session } from '$lib/session';
-	import { hideNav } from '$lib/stores/layoutUIStore';
 	import { anonymousSignIn } from '$lib/repos/authRepo';
 	import type { LayoutData } from './$types';
-
-	import Footer from '$lib/components/Footer.svelte';
-	import PromoBanner from '$lib/components/PromoBanner.svelte';
-	import NavBar from '$lib/components/NavBar.svelte';
 
 	export let data: LayoutData;
 
@@ -34,11 +29,6 @@
 
 <div class="app">
 	<main>
-		<PromoBanner />
-		{#if !$hideNav}
-			<NavBar />
-		{/if}
 		<slot />
-		<Footer />
 	</main>
 </div>
