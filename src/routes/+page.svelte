@@ -1,11 +1,13 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { onMount, onDestroy } from "svelte";
 
 	import Menu from '$lib/components/Menu.svelte';
 	import GameBoard from "$lib/components/GameBoard.svelte";
 	import GameOver from "$lib/components/GameOver.svelte";
 	import PromoBanner from "$lib/components/PromoBanner.svelte";
 	import FullPageAd from "$lib/components/FullPageAd.svelte";
+	import NavBar from "$lib/components/NavBar.svelte";
+	import Footer from "$lib/components/Footer.svelte";
 
 	import { today } from "$lib/utils/timeFormatter"
 	import { gameData } from '$lib/stores/gameStore.js';
@@ -13,6 +15,7 @@
 	import type { GameData } from "$lib/models/gameData";
 	import { session } from "$lib/session.js";
 	import { get } from "svelte/store";
+	import { hideNav } from '$lib/stores/layoutUIStore';
 
 	let showGameBoard = false;
 	let gameOver = false;
@@ -21,9 +24,15 @@
 	let s = get(session)
 	let userId = s.user?.uid ?? null
 
+	$: hideNav.set((showGameBoard && !gameOver) || showAd);
+
 	onMount(async () => {
 		await getSavedGameDate()
 	});
+
+	onDestroy(() => {
+		hideNav.set(false);
+	})
 
 	async function getSavedGameDate() {
     const userSavedData = await getTodaysGameData(userId);
@@ -46,7 +55,6 @@
 
 
 <main>
-	<PromoBanner />
 	{#if showAd}
 		<FullPageAd bind:showAd={showAd} />
 	{:else}
@@ -60,7 +68,9 @@
 					<GameBoard bind:gameOver={gameOver} bind:showAd={showAd}/>
 				{/if}
 			{:else}
-				<Menu bind:showGameBoard={showGameBoard} />
+				<main class="flex-grow">
+					<Menu bind:showGameBoard={showGameBoard} />
+				</main>
 			{/if}
 		{/if}
 	{/if}

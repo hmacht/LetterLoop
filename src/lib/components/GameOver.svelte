@@ -23,7 +23,6 @@
   var globalStats;
   var streakEmoji = "";
   var loadingProfile: boolean = true;
-  var showProfileModal: boolean = false;
 
   let profile: Profile | null;
   var top10Profile: Profile[] = [];
@@ -203,175 +202,146 @@
 </style>
 
 <main>
-  <div class="nav-flex-container-filled">
-    <div class="title-container">
-      <div class="logo-container">
-        <p class="title">LetterLoop</p>
-      </div>
+  <div class="centered-container">
+
+    <Toast />
+
+    <div id='theletterloop-com_300x50'>
+      <!-- JS Ad Injection -->
     </div>
-    <div class="spacer"></div>
-    {#if profile}
-      <button 
-        class="menu-btn no-fill" 
-        on:click={() => showProfileModal = true}
-      >
-        <div class="flex gap-1 items-center">
-          <i class="fa-regular fa-user mb-0.5"></i>
-          <p class="how-to-play">Profile</p>
-        </div>
-      </button>
-    {/if}
-    <a class="help-container" href="https://www.reddit.com/r/letterloop/" target="_blank">
-      <i class="fa-brands fa-reddit"></i>
-      <p class="how-to-play">Comments</p>
-    </a>
-  </div>
-  <div class="divider"></div>
 
-  <Toast />
-
-  <div id='theletterloop-com_300x50'>
-    <!-- JS Ad Injection -->
-  </div>
-
-  <div class="gameover-container">
-    {#if completedTodaysLoop}
-      <CharacterBanner
-        backgroundColor="#E4E5F2"
-        borderColor="#888AAF"
-        characterName="coffee"
-        characterSize="68px"
-        headerText="Welcome back looper!"
-        subtitle="Dont forget to share your time."
-      />
-    {:else}
-      {#if gaveUp == false}
-        {#if globalStats && globalStats["isUnderAverage"]}
-          <CharacterBanner
-            backgroundColor="#FFF9E3"
-            borderColor="#FFAE5D"
-            characterName="star"
-            characterSize="60px"
-            headerText="Congratulations speedster."
-            subtitle="You're under today's average!"
-          />
+    <div class="gameover-container">
+      {#if completedTodaysLoop}
+        <CharacterBanner
+          backgroundColor="#E4E5F2"
+          borderColor="#888AAF"
+          characterName="coffee"
+          characterSize="68px"
+          headerText="Welcome back looper!"
+          subtitle="Dont forget to share your time."
+        />
+      {:else}
+        {#if gaveUp == false}
+          {#if globalStats && globalStats["isUnderAverage"]}
+            <CharacterBanner
+              backgroundColor="#FFF9E3"
+              borderColor="#FFAE5D"
+              characterName="star"
+              characterSize="60px"
+              headerText="Congratulations speedster."
+              subtitle="You're under today's average!"
+            />
+          {:else}
+            <CharacterBanner
+              backgroundColor="#EEECEC"
+              borderColor="#B4B4B4"
+              characterName="hourglass"
+              characterSize="60px"
+              headerText="Not your fastest."
+              subtitle="You're over today's average."
+            />
+          {/if}
         {:else}
           <CharacterBanner
-            backgroundColor="#EEECEC"
-            borderColor="#B4B4B4"
-            characterName="hourglass"
+            backgroundColor="#FFD8DD"
+            borderColor="#DF5468"
+            characterName="battery"
             characterSize="60px"
-            headerText="Not your fastest."
-            subtitle="You're over today's average."
+            headerText="Oh no, you gave up."
+            subtitle="Try to get it tomorrow!"
           />
         {/if}
-      {:else}
-        <CharacterBanner
-          backgroundColor="#FFD8DD"
-          borderColor="#DF5468"
-          characterName="battery"
-          characterSize="60px"
-          headerText="Oh no, you gave up."
-          subtitle="Try to get it tomorrow!"
-        />
       {/if}
-    {/if}
 
-    <div class="panel">
-      <div class="panel-body">
+      <div class="panel">
+        <div class="panel-body">
 
-        <div class="panel-section">
-          <p class="small-header">Solved in</p>
-          <h1 class="time-text">{gaveUp ? "----" : elapsedSeconds}</h1>
-        </div>
+          <div class="panel-section">
+            <p class="small-header">Solved in</p>
+            <h1 class="time-text">{gaveUp ? "----" : elapsedSeconds}</h1>
+          </div>
 
-        <div class="panel-section">
-          <span class="small-header">Global Stats</span>
-          <Stats {globalStats}/>
-        </div>
+          <div class="panel-section">
+            <span class="small-header">Global Stats</span>
+            <Stats {globalStats}/>
+          </div>
 
-        <div class="panel-section">
-          <span class="small-header mt-small" style="margin-top: 5rem;">Today's Solution:</span>
-          <p>
-            {#if solutions && solutions.length > 2}
-              {#each solutions as solution}
-                {@html format_solution(solution)}
-              {/each}
-            {:else}
-              {#if solutions && solutions.length > 0}
-                {@html format_solution(solutions[0])}
+          <div class="panel-section">
+            <span class="small-header mt-small" style="margin-top: 5rem;">Today's Solution:</span>
+            <p>
+              {#if solutions && solutions.length > 2}
+                {#each solutions as solution}
+                  {@html format_solution(solution)}
+                {/each}
               {:else}
-                Loading Solutions...
+                {#if solutions && solutions.length > 0}
+                  {@html format_solution(solutions[0])}
+                {:else}
+                  Loading Solutions...
+                {/if}
+              {/if}
+            </p>
+          </div>
+
+          <button class="share-button" on:click={share}>SHARE YOUR TIME</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-body">
+          <p class="small-header">Top 15 Loopers (# of games played)</p>
+          {#if usersLeaderboardRank}
+            <p class="mt-3">You are ranked <b>#{usersLeaderboardRank}</b></p>
+          {/if}
+          <ul class="leaderboard-list">
+            {#each top10Profile as profile, index}
+              <li class="leaderboard-item">
+                <span class="leaderboard-name">
+                  {index + 1}. {profile.name}
+                </span>
+                <span class="leaderboard-stats">
+                  {profile.gamesPlayed}
+                  {calculateEmojiRank(index + 1)}
+                </span>
+              </li>
+            {/each}
+          </ul>
+        </div>
+      </div>
+
+      <PromotionLink />
+
+      <div class="panel">
+        <div class="panel-body">
+          <div class="stats-conatiner">
+            {#if loadingProfile}
+              Loading your stats...
+            {:else}
+              {#if profile}
+                <div>
+                  <p class="small-header" >Current Streak</p>
+                  <p class="stats-text">
+                    {streakEmoji}
+                    {profile.streak}
+                  </p>
+                </div>
+
+                <div>
+                  <p class="small-header">All Time Average</p>
+                  <p class="stats-text">{secondsFormatted(profile.averageTime)}</p>
+                </div>
+              {:else}
+                <span>Sign up for an account to see your stats! <a href="/auth/signup">Sign up</a></span>
               {/if}
             {/if}
-          </p>
+          </div>
+
+          <p class="disclaimer">Hey, stats not what they should be? Report the issue on Redit and we will fix right away! Thanks for playing.</p>
         </div>
-
-        <button class="share-button" on:click={share}>SHARE YOUR TIME</button>
       </div>
-    </div>
 
-    <div class="panel">
-      <div class="panel-body">
-        <p class="small-header">Top 15 Loopers (# of games played)</p>
-        {#if usersLeaderboardRank}
-          <p class="mt-3">You are ranked <b>#{usersLeaderboardRank}</b></p>
-        {/if}
-        <ul class="leaderboard-list">
-          {#each top10Profile as profile, index}
-            <li class="leaderboard-item">
-              <span class="leaderboard-name">
-                {index + 1}. {profile.name}
-              </span>
-              <span class="leaderboard-stats">
-                {profile.gamesPlayed}
-                {calculateEmojiRank(index + 1)}
-              </span>
-            </li>
-          {/each}
-        </ul>
-      </div>
-    </div>
-
-    <PromotionLink />
-
-    <div class="panel">
-      <div class="panel-body">
-        <div class="stats-conatiner">
-          {#if loadingProfile}
-            Loading your stats...
-          {:else}
-            {#if profile}
-              <div>
-                <p class="small-header" >Current Streak</p>
-                <p class="stats-text">
-                  {streakEmoji}
-                  {profile.streak}
-                </p>
-              </div>
-
-              <div>
-                <p class="small-header">All Time Average</p>
-                <p class="stats-text">{secondsFormatted(profile.averageTime)}</p>
-              </div>
-            {:else}
-              <span>Sign up for an account to see your stats! <a href="/auth/signup">Sign up</a></span>
-            {/if}
-          {/if}
-        </div>
-
-        <p class="disclaimer">Hey, stats not what they should be? Report the issue on Redit and we will fix right away! Thanks for playing.</p>
-      </div>
-    </div>
-
-    <div class="block-spacer-100"></div>
-  <div>
+      <div class="block-spacer-100"></div>
+    <div>
+  </div>
 </main>
-
-<Modal bind:showModal={showProfileModal} modalType={"profile"}>
-  {#if profile && profile.id}
-    <ProfileComponent bind:userId={profile.id} />
-  {/if}
-</Modal>
-
   

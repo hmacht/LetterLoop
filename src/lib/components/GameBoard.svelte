@@ -261,75 +261,76 @@
   
   <Toast />
 
-  <div class="flex-container">
-    <div class="timer-container">
-      <Timer bind:this={game_timer} bind:elapsedSeconds />
-    </div>
-  
-    <div on:click={pause_game} >
-      <i class="fa-solid fa-pause"></i>
-    </div>
-  </div>
-
-  {#if solutions.length > 0}
-    <div class="circle-container mb-5 mt-5">
-      {#each selectedLetters as letter, index}
-        <div
-          class="circle"
-          class:filled={letter != ""}
-          class:shared={sharedLetterIndexes.includes(index)}
-          style={`
-            left: calc(38% + ${Math.cos(((index / selectedLetters.length) * 2 * Math.PI) - (Math.PI / 2)) * 100}px);
-            top: calc(38% + ${Math.sin(((index / selectedLetters.length) * 2 * Math.PI) - (Math.PI / 2)) * 100}px);
-        `}
-        >
-          {letter == "" ? "" : letter}
-        </div>
-      {/each}
-    </div>
-
-    <div class="keyboard">
-      {#each scrambledLettersBank as letter, index (index)}
-        <div
-          class="key"
-          on:click={() => letterSelected(letter, index)}
-          class:disabled={isDisabled(index)}
-        >
-          {letter}
-        </div>
-      {/each}
-
-      <!-- Function Keys -->
-      <div 
-        class="key"
-        on:click={resetBoard}>
-        <i class="fa-solid fa-eraser"></i>
+  <div class="centered-container full-height-container">
+    <div class="flex-container">
+      <div class="timer-container">
+        <Timer bind:this={game_timer} bind:elapsedSeconds />
       </div>
-      <div 
-        class="key"
-        on:click={shuffleLetters}>
-        <i class="fa-solid fa-shuffle"></i>
-      </div>
-      <div 
-        class="key"
-        on:click={deleteLetter}>
-        <i class="fa-solid fa-delete-left"></i>
-      </div>
-
-      <div 
-        class="key enter-key"
-        on:click={checkSolution}>
-        Enter
-      </div>
-    </div>
-  {:else}
-    <p>{loadStatus}</p>
-  {/if}
-
-  <br>
-  <small style="color: rgb(46, 46, 46);">Edited by {puzzle_author}</small>
-  <small style="color: rgb(46, 46, 46);">{todays_date}</small>
     
+      <div on:click={pause_game} >
+        <i class="fa-solid fa-pause"></i>
+      </div>
+    </div>
+
+    {#if solutions.length > 0}
+      <div class="circle-container mb-5 mt-5">
+        {#each selectedLetters as letter, index}
+          <div
+            class="circle"
+            class:filled={letter != ""}
+            class:shared={sharedLetterIndexes.includes(index)}
+            style={`
+              left: calc(38% + ${Math.cos(((index / selectedLetters.length) * 2 * Math.PI) - (Math.PI / 2)) * 100}px);
+              top: calc(38% + ${Math.sin(((index / selectedLetters.length) * 2 * Math.PI) - (Math.PI / 2)) * 100}px);
+          `}
+          >
+            {letter == "" ? "" : letter}
+          </div>
+        {/each}
+      </div>
+
+      <div class="keyboard">
+        {#each scrambledLettersBank as letter, index (index)}
+          <div
+            class="key"
+            on:click={() => letterSelected(letter, index)}
+            class:disabled={isDisabled(index)}
+          >
+            {letter}
+          </div>
+        {/each}
+
+        <!-- Function Keys -->
+        <div 
+          class="key"
+          on:click={resetBoard}>
+          <i class="fa-solid fa-eraser"></i>
+        </div>
+        <div 
+          class="key"
+          on:click={shuffleLetters}>
+          <i class="fa-solid fa-shuffle"></i>
+        </div>
+        <div 
+          class="key"
+          on:click={deleteLetter}>
+          <i class="fa-solid fa-delete-left"></i>
+        </div>
+
+        <div 
+          class="key enter-key"
+          on:click={checkSolution}>
+          Enter
+        </div>
+      </div>
+    {:else}
+      <p>{loadStatus}</p>
+    {/if}
+
+    <br>
+    <small style="color: rgb(46, 46, 46);">Edited by {puzzle_author}</small>
+    <small style="color: rgb(46, 46, 46);">{todays_date}</small>
+  </div>
 </main>
 
 <svelte:window on:keydown|preventDefault={handleKeyPress} />
