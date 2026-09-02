@@ -14,8 +14,14 @@ const DEFAULT_TIMEOUT = 3000;
 function createNotificationStore() {
 	const queue = writable<Notification[]>([]);
 
+	/**
+	 * Shows a message, replacing whatever was on screen.
+	 *
+	 * Deliberately not a queue: mashing Enter on a wrong answer used to pile up
+	 * a column of identical toasts. One at a time, newest wins.
+	 */
 	function send(message: string, type: NotificationType = 'default', timeout = DEFAULT_TIMEOUT) {
-		queue.update((state) => [...state, { id: nextId(), type, message, timeout }]);
+		queue.set([{ id: nextId(), type, message, timeout }]);
 	}
 
 	// Drops the head of the queue once its timeout expires.
@@ -23,9 +29,11 @@ function createNotificationStore() {
 		set($queue);
 		if ($queue.length === 0) return;
 
+		const shown = $queue[0];
 		const timer = setTimeout(() => {
-			queue.update((state) => state.slice(1));
-		}, $queue[0].timeout);
+			// Only clear if it is still the same toast -- a newer one resets the clock.
+			queue.update((state) => (state[0]?.id === shown.id ? [] : state));
+		}, shown.timeout);
 
 		return () => clearTimeout(timer);
 	});

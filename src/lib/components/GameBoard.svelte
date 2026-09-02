@@ -79,9 +79,18 @@
 
 			applyPuzzle(state.puzzle);
 
-			// Trust the server's clock, not the device's.
-			startedAtMs = Date.now() - (Date.parse(state.serverNow) - Date.parse(state.startedAt));
-			running = true;
+			// Anchor to the server's NET elapsed time, not raw wall time since
+			// `startedAt` -- the latter ignores banked pauses, so reloading after a
+			// pause would jump the displayed clock forward by however long you were
+			// paused for.
+			startedAtMs = Date.now() - state.elapsedSeconds * 1000;
+
+			// The run may already be paused -- picked up on another device, or
+			// reloaded while the pause screen was open. Restore that, rather than
+			// showing a live board the server will refuse to accept guesses for.
+			paused = state.paused;
+			running = !state.paused;
+			showPauseModal = state.paused;
 		} catch (error) {
 			loadStatus = error instanceof Error ? error.message : 'Error Loading Game :(';
 			console.error('Could not start the game:', error);
@@ -105,7 +114,7 @@
 
 		const guess = selectedLetters.join('');
 		if (guess.length !== slotCount || selectedLetters.some((letter) => letter === '')) {
-			notifications.default('You must fill in every letter', 1000);
+			notifications.danger('You must fill in every letter', 1000);
 			return;
 		}
 
@@ -119,10 +128,10 @@
 			if (outcome.correct) {
 				finish(outcome.result);
 			} else {
-				notifications.default('Incorrect', 1000);
+				notifications.danger('Incorrect', 1000);
 			}
 		} catch (error) {
-			notifications.default(error instanceof Error ? error.message : 'Something went wrong', 2000);
+			notifications.danger(error instanceof Error ? error.message : 'Something went wrong', 2000);
 		} finally {
 			submitting = false;
 		}
@@ -136,7 +145,7 @@
 			await starting;
 			finish(await gameService.giveUp());
 		} catch (error) {
-			notifications.default(error instanceof Error ? error.message : 'Something went wrong', 2000);
+			notifications.danger(error instanceof Error ? error.message : 'Something went wrong', 2000);
 		} finally {
 			submitting = false;
 		}
@@ -155,7 +164,7 @@
 			running = false;
 			showPauseModal = true;
 		} catch (error) {
-			notifications.default(error instanceof Error ? error.message : 'Could not pause', 2000);
+			notifications.danger(error instanceof Error ? error.message : 'Could not pause', 2000);
 		} finally {
 			pauseBusy = false;
 		}
@@ -174,7 +183,7 @@
 			running = true;
 			showPauseModal = false;
 		} catch (error) {
-			notifications.default(error instanceof Error ? error.message : 'Could not resume', 2000);
+			notifications.danger(error instanceof Error ? error.message : 'Could not resume', 2000);
 		} finally {
 			pauseBusy = false;
 		}
@@ -323,7 +332,11 @@
 					<i class="fa-solid fa-delete-left"></i>
 				</button>
 				<button class="key enter-key" on:click={checkSolution} disabled={submitting}>
-					{submitting ? '...' : 'Enter'}
+					{#if submitting}
+						<i class="fa-solid fa-spinner fa-spin" aria-label="Checking"></i>
+					{:else}
+						Enter
+					{/if}
 				</button>
 			</div>
 		{:else}

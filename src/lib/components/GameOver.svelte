@@ -4,6 +4,7 @@
 	import Stats from '$lib/components/Stats.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import PromotionLink from '$lib/components/PromotionLink.svelte';
+	import Modal from '$lib/components/Modal.svelte';
 
 	import { notifications } from '$lib/utils/notifications';
 	import { formatDuration } from '$lib/utils/time';
@@ -26,6 +27,7 @@
 	let allTime: AllTimeBoard | null = null;
 	let leaderboardError = '';
 	let allTimeError = '';
+	let showLeaderboardHelp = false;
 
 	$: profile = $profileStore;
 	$: loadingProfile = $profileLoading;
@@ -172,8 +174,23 @@
 			<!-- 2. Today's fastest times, with the player's own placing -->
 			<div class="panel">
 				<div class="panel-body">
-					<p class="small-header">Today's Leaderboard</p>
-					<p class="card-note">Top 10 fastest times</p>
+					<div class="card-head">
+						<div>
+							<p class="small-header">
+								Today's Leaderboard
+								<span class="badge-new">New</span>
+							</p>
+							<p class="card-note">Top 10 fastest times</p>
+						</div>
+
+						<button
+							class="card-help"
+							on:click={() => (showLeaderboardHelp = true)}
+							aria-label="How the leaderboard works"
+						>
+							<i class="fa-regular fa-circle-question" aria-hidden="true"></i>
+						</button>
+					</div>
 
 					{#if leaderboardError}
 						<p class="muted">{leaderboardError}</p>
@@ -329,6 +346,28 @@
 		</div>
 	</div>
 </main>
+
+<Modal
+	bind:showModal={showLeaderboardHelp}
+	modalType="leaderboard-help"
+	title="How the leaderboard works"
+	subtitle="Everyone is timed the same way."
+>
+	<ul class="help-list">
+		<li>
+			<b>Pausing is free.</b> Pausing stops the clock and hides the board. Time spent paused is not counted
+			against you.
+		</li>
+		<li>
+			<b>Signed-in players only.</b> You need an account to appear here. Guests still get their time
+			&mdash; it just isn't ranked.
+		</li>
+		<li>
+			<b>Completed loops only.</b> Giving up doesn't place you on the board, and times that aren't humanly
+			possible are left off.
+		</li>
+	</ul>
+</Modal>
 
 <style>
 	main {
@@ -553,6 +592,54 @@
 		letter-spacing: 2px;
 		padding: 4px 0;
 		border-top: 1px solid #eee;
+	}
+
+	.card-head {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	.badge-new {
+		display: inline-block;
+		margin-left: 6px;
+		padding: 2px 7px;
+		border-radius: 999px;
+		background-color: #2f6fed;
+		color: white;
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.5px;
+		text-transform: uppercase;
+		vertical-align: middle;
+	}
+
+	.card-help {
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		color: #b0b0b0;
+		font-size: 17px;
+		line-height: 1;
+		flex-shrink: 0;
+	}
+
+	.card-help:hover {
+		color: #666;
+	}
+
+	.help-list {
+		margin: 0;
+		padding-left: 1.1rem;
+		font-size: 14px;
+		line-height: 1.5;
+		color: #444;
+	}
+
+	.help-list li + li {
+		margin-top: 0.8rem;
 	}
 
 	.card-note {
