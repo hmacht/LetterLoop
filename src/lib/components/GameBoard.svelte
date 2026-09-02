@@ -12,6 +12,7 @@
 	import { notifications } from '$lib/utils/notifications';
 	import { formatDayKey } from '$lib/utils/gameDate';
 	import { setProfile } from '$lib/stores/profileStore';
+	import { Event, track } from '$lib/services/analytics';
 
 	import Device from 'svelte-device-info';
 
@@ -23,6 +24,7 @@
 
 	let showHelpModal = false;
 	let showPauseModal = false;
+	let showGiveUpModal = false;
 
 	let letterBank = '';
 	let scrambledBank = '';
@@ -137,12 +139,19 @@
 		}
 	}
 
-	async function giveUp() {
+	function requestGiveUp() {
 		if (submitting || !running) return;
+		showGiveUpModal = true;
+	}
 
+	async function confirmGiveUp() {
+		if (submitting) return;
+
+		showGiveUpModal = false;
 		submitting = true;
 		try {
 			await starting;
+			track(Event.GaveUp, { elapsedSeconds: Math.floor((Date.now() - startedAtMs) / 1000) });
 			finish(await gameService.giveUp());
 		} catch (error) {
 			notifications.danger(error instanceof Error ? error.message : 'Something went wrong', 2000);
@@ -226,7 +235,8 @@
 	}
 
 	function handleKeyPress(event: KeyboardEvent) {
-		if (showHelpModal || showPauseModal || paused || result || !letterBank) return;
+		if (showHelpModal || showPauseModal || showGiveUpModal || paused || result || !letterBank)
+			return;
 
 		if (event.key === 'Enter') {
 			event.preventDefault();
@@ -260,7 +270,7 @@
 			<a href="/" class="title nav-logo">LetterLoop</a>
 		</div>
 		<div class="spacer"></div>
-		<button class="help-container" on:click={giveUp} disabled={submitting || !running}>
+		<button class="help-container" on:click={requestGiveUp} disabled={submitting || !running}>
 			<i class="fa-regular fa-face-sad-tear"></i>
 			{#if !Device.isMobile}
 				<p class="how-to-play">Give Up</p>
@@ -364,6 +374,20 @@
 </Modal>
 
 <Modal
+	bind:showModal={showGiveUpModal}
+	modalType="give-up"
+	title="Give up?"
+	subtitle="You'll see today's answer, but the loop won't count towards your streak or the leaderboard."
+>
+	<div class="confirm-actions">
+		<button class="confirm-secondary" on:click={() => (showGiveUpModal = false)}>
+			Keep playing
+		</button>
+		<button class="confirm-danger" on:click={confirmGiveUp} disabled={submitting}>Give up</button>
+	</div>
+</Modal>
+
+<Modal
 	bind:showModal={showPauseModal}
 	hide_close={true}
 	modalType="pause"
@@ -414,6 +438,41 @@
 
 	.icon-button:disabled {
 		opacity: 0.4;
+		cursor: default;
+	}
+
+	.confirm-actions {
+		display: flex;
+		gap: 10px;
+	}
+
+	.confirm-secondary,
+	.confirm-danger {
+		flex: 1;
+		height: 48px;
+		border-radius: 20px;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 1px;
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	/* Keep playing is the safe option, so it gets the calmer treatment. */
+	.confirm-secondary {
+		background: transparent;
+		border: 1px solid #cfcfcf;
+		color: #444;
+	}
+
+	.confirm-danger {
+		background-color: #d92038;
+		border: none;
+		color: white;
+	}
+
+	.confirm-danger:disabled {
+		opacity: 0.6;
 		cursor: default;
 	}
 </style>

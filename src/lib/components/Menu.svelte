@@ -10,6 +10,7 @@
 	import { session } from '$lib/session';
 	import { loopNumber, todayKey, formatDayKey } from '$lib/utils/gameDate';
 	import { preloadTodaysPuzzle } from '$lib/services/puzzleService';
+	import { Event, track } from '$lib/services/analytics';
 
 	import logo_src from '$lib/images/logo.png';
 
@@ -43,6 +44,7 @@
 	}
 
 	function startButtonClick() {
+		track(Event.GameStarted);
 		showGameBoard = true;
 		hideKofiButton();
 	}

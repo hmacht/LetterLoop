@@ -15,6 +15,7 @@
 		allTime as loadAllTimeBoard
 	} from '$lib/services/leaderboardService';
 	import { profileStore, profileLoading } from '$lib/stores/profileStore';
+	import { Event, track } from '$lib/services/analytics';
 
 	import type { GameResult } from '$lib/services/gameService';
 	import type { AllTimeBoard, DailyLeaderboard } from '$lib/models/leaderboard';
@@ -96,6 +97,8 @@
 	}
 
 	async function share() {
+		track(Event.ShareClicked, { gaveUp: result.gaveUp, ranked: !!leaderboard?.you });
+
 		const rank = leaderboard?.you ? ` (#${leaderboard.you.rank} today)` : '';
 		const shareText = result.gaveUp
 			? "I didn't complete the LetterLoop today, but I sure did try my best"

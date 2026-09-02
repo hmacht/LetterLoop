@@ -15,6 +15,7 @@ import {
 import { auth } from '$lib/firebase.client';
 import { api } from '$lib/services/apiClient';
 import { createMyProfile } from '$lib/services/profileService';
+import { Event, identifyUser, resetAnalytics, track } from '$lib/services/analytics';
 import { refreshProfile } from '$lib/stores/profileStore';
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -44,7 +45,9 @@ export function describeAuthError(code: unknown): string {
 
 export async function loginWithEmail(email: string, password: string): Promise<void> {
 	try {
-		await signInWithEmailAndPassword(auth, email, password);
+		const { user } = await signInWithEmailAndPassword(auth, email, password);
+		identifyUser(user.uid);
+		track(Event.SignedIn, { method: 'login' });
 		await refreshProfile();
 	} catch (err) {
 		throw new Error(describeAuthError((err as { code?: string }).code));
@@ -57,7 +60,9 @@ export async function signUpWithEmail(
 	password: string
 ): Promise<void> {
 	try {
-		await createUserWithEmailAndPassword(auth, email, password);
+		const { user } = await createUserWithEmailAndPassword(auth, email, password);
+		identifyUser(user.uid);
+		track(Event.SignedIn, { method: 'signup' });
 	} catch (err) {
 		throw new Error(describeAuthError((err as { code?: string }).code));
 	}
@@ -87,6 +92,9 @@ export async function signInAsGuest(): Promise<boolean> {
 
 export async function signOutUser(): Promise<void> {
 	await signOut(auth);
+	// Drop the identity before the next guest session begins, so their activity
+	// is not attributed to the account that just left.
+	resetAnalytics();
 	await signInAsGuest();
 }
 

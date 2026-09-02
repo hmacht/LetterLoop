@@ -10,12 +10,53 @@ import type { PuzzleRecord } from '$lib/models/puzzle';
 
 const ROOT = 'solutions';
 
+/**
+ * In-process cache for published puzzles.
+ *
+ * A day's puzzle is read on every single guess, and once published it does not
+ * change -- so re-reading it from the database each time buys nothing. The TTL
+ * exists only so an editor correcting a live puzzle sees it take effect without
+ * a redeploy; correctness never depends on it.
+ *
+ * Misses are deliberately NOT cached: a day with no puzzle yet must pick one up
+ * the moment it is published, not ten minutes later.
+ *
+ * Each server instance keeps its own copy, which is fine -- the value is
+ * identical everywhere and it warms on first use.
+ */
+const CACHE_TTL_MS = 10 * 60 * 1000;
+
+const cache = new Map<string, { record: PuzzleRecord; expiresAt: number }>();
+
 export async function findByDayKey(dayKey: string): Promise<PuzzleRecord | null> {
+	const now = Date.now();
+	const cached = cache.get(dayKey);
+	if (cached && cached.expiresAt > now) return cached.record;
+
 	const snapshot = await withDeadline(
 		adminRealtimeDb().ref(`${ROOT}/${dayKey}`).get(),
 		`read puzzle ${dayKey}`
 	);
-	return snapshot.exists() ? normalize(snapshot.val()) : null;
+
+	if (!snapshot.exists()) return null;
+
+	const record = normalize(snapshot.val());
+	cache.set(dayKey, { record, expiresAt: now + CACHE_TTL_MS });
+	pruneExpired(now);
+
+	return record;
+}
+
+/** Keeps the map from growing a stale entry per day, forever. */
+function pruneExpired(now: number): void {
+	for (const [key, entry] of cache) {
+		if (entry.expiresAt <= now) cache.delete(key);
+	}
+}
+
+/** Drops a cached puzzle so an edit is visible immediately. */
+export function invalidate(dayKey: string): void {
+	cache.delete(dayKey);
 }
 
 /** Every puzzle published on or after `fromIso`, oldest first. */
@@ -59,6 +100,7 @@ export async function create(dayKey: string, record: PuzzleRecord): Promise<void
 		adminRealtimeDb().ref(`${ROOT}/${dayKey}`).set(record),
 		`write puzzle ${dayKey}`
 	);
+	invalidate(dayKey);
 }
 
 export async function exists(dayKey: string): Promise<boolean> {

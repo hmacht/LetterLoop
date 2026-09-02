@@ -132,7 +132,12 @@ export async function submitGuess(
 	const run = await requireRunningRun(user, dayKey);
 
 	if (!(await puzzleService.isAcceptedSolution(dayKey, guess))) {
-		await runs.recordAttempt(user.uid, dayKey);
+		// Deliberately not awaited. This is a diagnostic counter -- its own
+		// contract already says an approximate count is fine -- and awaiting a
+		// Firestore write here roughly doubles the time a player waits to be told
+		// they were wrong. On a serverless host an occasional increment may be
+		// lost to a frozen instance; that is the accepted trade.
+		void runs.recordAttempt(user.uid, dayKey);
 		return { correct: false };
 	}
 
