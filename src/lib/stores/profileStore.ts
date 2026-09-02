@@ -1,6 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { session, type SessionState } from '$lib/session';
-import { getProfile } from '$lib/repos/profileRepo';
+import { getMyProfile } from '$lib/services/profileService';
 import type { Profile } from '$lib/models/profile';
 
 export const profileStore = writable<Profile | null>(null);
@@ -8,48 +8,40 @@ export const profileLoading = writable<boolean>(true);
 
 let lastFetchedUid: string | null = null;
 
-// Refresh profile session manually
-export async function refreshProfileStore(): Promise<void> {
-  const s = get(session);
-  const user = s.user;
+/** Re-reads the profile from the server, e.g. after finishing a game. */
+export async function refreshProfile(): Promise<void> {
+	const { user } = get(session) ?? { user: null };
 
-  if (!user) {
-    profileStore.set(null);
-    profileLoading.set(false);
-    return;
-  }
+	if (!user?.uid) {
+		lastFetchedUid = null;
+		profileStore.set(null);
+		profileLoading.set(false);
+		return;
+	}
 
-  profileLoading.set(true);
-  const profile = await getProfile(user.uid);
-  profileStore.set(profile ?? null);
-  profileLoading.set(false);
+	profileLoading.set(true);
+	try {
+		lastFetchedUid = user.uid;
+		profileStore.set(await getMyProfile());
+	} catch (err) {
+		console.error('Failed to load profile:', err);
+		profileStore.set(null);
+	} finally {
+		profileLoading.set(false);
+	}
 }
 
-// Listen to user changes and fetch profile
-session.subscribe((s: SessionState) => {
-  if (!s || s.loading) return;
+/** Lets a completed game push fresh stats in without another round trip. */
+export function setProfile(profile: Profile | null): void {
+	profileStore.set(profile);
+	profileLoading.set(false);
+}
 
-  const uid = s.user?.uid ?? null;
+session.subscribe((state: SessionState) => {
+	if (!state || state.loading) return;
 
-  if (!uid) {
-    lastFetchedUid = null;
-    profileStore.set(null);
-    return;
-  }
+	const uid = state.user?.uid ?? null;
+	if (uid === lastFetchedUid) return;
 
-  if (uid === lastFetchedUid) return;
-
-  lastFetchedUid = uid;
-
-  (async () => {
-    try {
-      const profile = await getProfile(uid);
-      profileStore.set(profile ?? null);
-    } catch (err) {
-      console.error('Failed to fetch profile:', err);
-      profileStore.set(null);
-    } finally {
-      profileLoading.set(false);
-    }
-  })();
+	void refreshProfile();
 });

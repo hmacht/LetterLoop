@@ -1,7 +1,7 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
 
-  export let showAd;
+  export let showAd: boolean;
 
   let canSkip = false;
   let countdown = 5;
@@ -12,8 +12,9 @@
   });
 
   function loadAd() {
-    window.aiptag.cmd.display.push(function() {
-      window.aipDisplayTag.display('theletterloop-com_300x600');
+    // Third-party and frequently blocked -- must never break the page.
+    window.aiptag?.cmd.display.push(() => {
+      window.aipDisplayTag?.display('theletterloop-com_300x600');
     });
   }
 
@@ -34,7 +35,7 @@
 
 <style>
   .main-container {
-    width: 100vw;
+    width: 100%;
     display: flex;
     justify-content: center;
   }

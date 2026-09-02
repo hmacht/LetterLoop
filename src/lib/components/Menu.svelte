@@ -1,284 +1,228 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+	import { onMount } from 'svelte';
 
-  import Profile from '$lib/components/Profile.svelte';
-  import Modal from '$lib/components/Modal.svelte';
-  import Help from '$lib/components/Help.svelte';
-  import Toast from '$lib/components/Toast.svelte';
-  import PromotionLink from '$lib/components/PromotionLink.svelte';
+	import Profile from '$lib/components/Profile.svelte';
+	import Modal from '$lib/components/Modal.svelte';
+	import Help from '$lib/components/Help.svelte';
+	import Toast from '$lib/components/Toast.svelte';
+	import PromotionLink from '$lib/components/PromotionLink.svelte';
 
-  import { notifications } from "$lib/utils/notifications";
-  import { session, type User } from '$lib/session';
+	import { session } from '$lib/session';
+	import { loopNumber, todayKey, formatDayKey } from '$lib/utils/gameDate';
+	import { preloadTodaysPuzzle } from '$lib/services/puzzleService';
 
-  import logo_src from '$lib/images/logo.png';
-	import { get } from 'svelte/store';
+	import logo_src from '$lib/images/logo.png';
 
-  export let showGameBoard;
+	export let showGameBoard;
 
-  let showHelpModal = false;
-  let showProfileModal = false;
-  let today = new Date().toLocaleDateString();
-  let puzzleNumber = calculatePuzzleNumber()
-  let loggedIn: boolean = false;
-  let loadingUser: boolean = true;
-  let user: User | null;
-  
-  function calculatePuzzleNumber() {
-    const today = new Date();
-    const targetDate = new Date('2024-02-10'); // First Day of LetterLoop
-    const differenceInMs = today - targetDate;
+	let showHelpModal = false;
+	let showProfileModal = false;
+	let today = formatDayKey(todayKey());
+	let puzzleNumber = loopNumber();
+	// Reactive rather than read once on mount, so signing out updates the button
+	// without a reload. Undefined during SSR -> renders the placeholder, so a
+	// signed-in player never sees "Login" flash before it corrects itself.
+	$: loggedIn = $session?.loggedIn ?? false;
+	$: loadingUser = $session?.loading ?? true;
 
-    return Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
-  }
+	onMount(() => {
+		loadAd();
 
-  onMount(() => {
-    loadAd();
+		// Fetch the puzzle while the player is still on the menu, so pressing Play
+		// paints the board immediately. This does NOT start the clock -- that only
+		// happens on /api/game/start, when Play is actually pressed.
+		preloadTodaysPuzzle();
+	});
 
-    const s = get(session);
+	function loadAd() {
+		// The ad script is third-party and is routinely blocked; never let it
+		// take the menu down with it.
+		window.aiptag?.cmd.display.push(() => {
+			window.aipDisplayTag?.display('theletterloop-com_300x50');
+		});
+	}
 
-    user = s?.user;
-    loggedIn = s?.loggedIn ?? false;
-    loadingUser = s?.loading ?? true;
-  });
+	function startButtonClick() {
+		showGameBoard = true;
+		hideKofiButton();
+	}
 
-  function loadAd() {
-    window.aiptag.cmd.display.push(function() { window.aipDisplayTag.display('theletterloop-com_300x50'); });
-  }
-
-  function startButtonClick() {
-    showGameBoard = true;
-    hideKofiButton();
-  }
-  
-  function hideKofiButton() {
-    const kofiWidgets = document.querySelectorAll('[id^="kofi-widget-overlay-"]'); // select elements with ID starting with "kofi-widget-overlay-"
-    kofiWidgets.forEach(widget => {
-      widget.style.display = 'none';
-    });
-  }
-
-  const share = async () => {
-      let shareText = "New morning game! theletterloop.com"
-      
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: "",
-            text: shareText,
-            url: window.location.href
-          });
-        } catch (error) {
-          notifications.default('Error', 1000)
-        }
-      } else {
-        try {
-          await navigator.clipboard.writeText(shareText);
-          notifications.default('Copied Link!', 1000)
-        } catch (error) {
-          notifications.default('Error', 1000)
-        }
-      }
-    };
+	function hideKofiButton() {
+		document
+			.querySelectorAll<HTMLElement>('[id^="kofi-widget-overlay-"]')
+			.forEach((widget) => (widget.style.display = 'none'));
+	}
 </script>
 
-<style>
-  main {
-    background-color: #FFE9E9!important;
-  }
-  
-  .page {
-    display: flex;
-    flex-direction: column; /* Stack items vertically */
-    justify-content: center;
-    align-items: center;
-    margin: 0;
-    width: 100vw;
-    background-color: #FFE9E9;
-    height: min-content;
-  }
-
-  .content {
-    text-align: center;
-    padding: 20px;
-    color: #D8CFD2
-  }
-
-  .menu-header {
-    font-size: 28px;
-    margin: 3px;
-    color: black;
-    font-weight: 500;
-    font-family: "Playfair Display", serif;
-  }
-
-  .menu-sub-header {
-    font-size: 18px;
-    margin: 3px;
-    color: black;
-    margin-bottom: 2rem;
-    padding-left: 15px;
-    padding-right: 15px;
-  }
-
-  .menu-small-text {
-    font-size: 12px;
-    margin: 3px;
-    color: black;
-  }
-
-  .menu-date {
-    font-size: 15px;
-    color: black;
-    font-weight: 800;
-    margin-bottom:0;
-  }
-
-  .menu-number {
-    font-size: 15px;
-    margin: 0px;
-    color: black;
-    margin-bottom:5px;
-  }
-
-  .details-container {
-    margin-top: 2rem;
-    margin-bottom: 2rem;
-  }
-
-  .menu-btn {
-    padding: 10px 20px;
-    font-size: 16px;
-    background-image: -webkit-linear-gradient(top, #FF4F87, #FC2F4F);
-    background-image: linear-gradient(to bottom, #FF4F87, #FC2F4F);
-    border-radius: 50px;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    width: 150px;
-    height: 50px;
-    margin: 0 auto 10px auto;
-  }
-
-  .no-fill {
-    background-image: none !important;
-    background-color: transparent;
-    color: #FC2F4F !important;
-    border: 1px solid #FC2F4F;
-  }
-
-  .spacer {
-    flex-grow: 1;
-  }
-
-  .terms {
-    color: black;
-    text-decoration: underline;
-    font-size: 12px;
-  }
-
-  .shirt-ad {
-    display: none; 
-    margin: 0 auto;
-    padding-top: 1rem;
-  }
-
-  @media (min-width: 500px) {
-    .shirt-ad.large-screen {
-      display: block; /* Show the logo for large screens */
-      max-width: 550px;
-      width: 90%
-    }
-  }
-
-  @media (max-width: 500px) {
-    .shirt-ad.mobile-screen {
-      display: block; /* Show the logo for mobile screens */
-      width: 90%;
-    }
-  }
-
-  .version-tag {
-    font-size: 9px;
-    color: black;
-  }
-
-  .login-header {
-    font-size: 15px;
-    color: black;
-    margin: 20px 0 5px 0;
-  }
-</style>
-
 <main>
-  <div class="page">
-    <div class="content">
-      
-      <Toast />
+	<div class="page">
+		<div class="content">
+			<Toast />
 
-      <div id='theletterloop-com_300x50'>
-        <!-- JS Ad Injection -->
-      </div>
-  
-      <img class="w-12 h-12 mx-auto my-5 object-contain" src={logo_src} alt="Our Little Loop Logo" />
-  
-      <p class="menu-header">LetterLoop</p>
-      <p class="menu-sub-header">Two 5-letter words, two shared letters, one loop</p>
-    
-      <div><button class="menu-btn" on:click={startButtonClick}>Play</button></div>
-      <div><button class="menu-btn no-fill" on:click={() => showHelpModal = true}>How to play</button></div>
-      <div><button class="menu-btn no-fill" on:click={share}>Share</button></div>
-      {#if loadingUser != undefined && !loadingUser}
-        {#if loggedIn}
-          <button 
-            class="menu-btn no-fill" 
-            on:click={() => showProfileModal = true}
-          >
-            Profile
-          </button>
-        {:else}
-          <div>
-            <p class="login-header">Want to save your stats?</p>
-            <button 
-              class="menu-btn no-fill" 
-              on:click={() => window.location.href = '/auth/signup'}
-            >
-              Sign Up
-            </button>
-          </div>
-        {/if}
-      {/if}
-      
-      
-      <div class="details-container">
-        <p class="menu-date">{today}</p>
-        <p class="menu-number">Loop #{puzzleNumber}</p>
-        <i class="menu-small-text">For the love of morning games</i>
-      </div>
-      
-      <PromotionLink />
-  
-      <div style="padding-top:15px;">
-        <a class="terms" href="/privacy-policy">Privacy Policy</a>
-        <br>
-        <a class="terms" href="/terms">Terms and Conditions</a>
-      </div>
-  
-      <p class="version-tag">version 2.0</p>
-    </div>
-  </div>
+			<div id="theletterloop-com_300x50">
+				<!-- JS Ad Injection -->
+			</div>
+
+			<img
+				class="mx-auto my-5 h-12 w-12 object-contain"
+				src={logo_src}
+				alt="Our Little Loop Logo"
+			/>
+
+			<p class="menu-header">LetterLoop</p>
+			<p class="menu-sub-header">Two 5-letter words, two shared letters, one loop</p>
+
+			<div><button class="menu-btn" on:click={startButtonClick}>Play</button></div>
+
+			<div>
+				{#if loadingUser}
+					<button class="menu-btn no-fill" disabled>&nbsp;</button>
+				{:else if loggedIn}
+					<button class="menu-btn no-fill" on:click={() => (showProfileModal = true)}>
+						Profile
+					</button>
+				{:else}
+					<a class="menu-btn no-fill" href="/auth">Login</a>
+				{/if}
+			</div>
+
+			<div>
+				<button class="menu-btn no-fill" on:click={() => (showHelpModal = true)}>How To Play</button
+				>
+			</div>
+
+			<div class="details-container">
+				<p class="menu-date">{today}</p>
+				<p class="menu-number">Loop #{puzzleNumber}</p>
+				<i class="menu-small-text">For the love of morning games</i>
+			</div>
+
+			<PromotionLink />
+
+			<p class="version-tag">version 2.0</p>
+		</div>
+	</div>
 </main>
 
-
-<Modal bind:showModal={showHelpModal} modalType={"help"}>
-  <h2 slot="header">
-    <span class="styled-header">How To Play</span>
-  </h2>
-  <hr class="my-3 border-red-200">
-  <Help />
+<Modal
+	bind:showModal={showHelpModal}
+	modalType="help"
+	title="How To Play"
+	subtitle="Two 5-letter words, two shared letters, one loop."
+>
+	<Help />
 </Modal>
 
-<Modal bind:showModal={showProfileModal} modalType={"profile"}>
-  {#if user && user.uid}
-    <Profile bind:userId={user.uid} />
-  {/if}
+<Modal
+	bind:showModal={showProfileModal}
+	modalType="profile"
+	title="Your Profile"
+	subtitle="Your streak, average time and games played."
+>
+	<Profile />
 </Modal>
+
+<style>
+	main {
+		background-color: #ffe9e9 !important;
+	}
+
+	.page {
+		display: flex;
+		flex-direction: column; /* Stack items vertically */
+		justify-content: center;
+		align-items: center;
+		margin: 0;
+		width: 100%;
+		background-color: #ffe9e9;
+		height: min-content;
+	}
+
+	.content {
+		text-align: center;
+		padding: 20px;
+		color: #d8cfd2;
+	}
+
+	.menu-header {
+		font-size: 28px;
+		margin: 3px;
+		color: black;
+		font-weight: 500;
+		font-family: 'Playfair Display', serif;
+	}
+
+	.menu-sub-header {
+		font-size: 18px;
+		margin: 3px;
+		color: black;
+		margin-bottom: 2rem;
+		padding-left: 15px;
+		padding-right: 15px;
+	}
+
+	.menu-small-text {
+		font-size: 12px;
+		margin: 3px;
+		color: black;
+	}
+
+	.menu-date {
+		font-size: 15px;
+		color: black;
+		font-weight: 800;
+		margin-bottom: 0;
+	}
+
+	.menu-number {
+		font-size: 15px;
+		margin: 0px;
+		color: black;
+		margin-bottom: 5px;
+	}
+
+	.details-container {
+		margin-top: 2rem;
+		margin-bottom: 2rem;
+	}
+
+	/* `Login` is an anchor so it behaves like a link; these keep it visually
+     identical to the sibling buttons. */
+	a.menu-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-decoration: none;
+	}
+
+	.menu-btn:disabled {
+		opacity: 0;
+		cursor: default;
+	}
+
+	.menu-btn {
+		padding: 10px 20px;
+		font-size: 16px;
+		background-image: -webkit-linear-gradient(top, #ff4f87, #fc2f4f);
+		background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
+		border-radius: 50px;
+		color: #fff;
+		border: none;
+		cursor: pointer;
+		width: 150px;
+		height: 50px;
+		margin: 0 auto 10px auto;
+	}
+
+	.no-fill {
+		background-image: none !important;
+		background-color: transparent;
+		color: #fc2f4f !important;
+		border: 1px solid #fc2f4f;
+	}
+
+	.version-tag {
+		font-size: 9px;
+		color: black;
+	}
+</style>

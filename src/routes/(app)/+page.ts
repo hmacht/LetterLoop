@@ -1,3 +1,2 @@
-// since there's no dynamic data here, we can prerender
-// it so that it gets served as a static asset in production
+// The board is driven entirely by /api at runtime, so the shell can be static.
 export const prerender = true;

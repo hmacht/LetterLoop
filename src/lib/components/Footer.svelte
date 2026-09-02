@@ -34,17 +34,17 @@
 
       <!-- Right: Social Icons -->
       <div class="flex gap-5">
-        <a href="https://www.threads.com/@henrymacht" class="social-icon" target="_blank" rel="noopener" aria-label="Twitter">
+        <a href="https://www.threads.com/@henrymacht" class="social-icon" target="_blank" rel="noopener" aria-label="Threads">
           <i class="fa-brands fa-threads"></i>
         </a>
         <a href="https://www.instagram.com/theletterloop" class="social-icon" target="_blank" rel="noopener" aria-label="Instagram">
           <i class="fab fa-instagram"></i>
         </a>
-        <a href="https://www.tiktok.com/@theletterloop" class="social-icon" target="_blank" rel="noopener" aria-label="Facebook">
+        <a href="https://www.tiktok.com/@theletterloop" class="social-icon" target="_blank" rel="noopener" aria-label="TikTok">
           <i class="fa-brands fa-tiktok"></i>
         </a>
-        <a href="mailto:theletterloop@gmail.com" class="social-icon" aria-label="Email">
-          <i class="fas fa-envelope"></i>
+        <a href="https://www.reddit.com/r/letterloop/" class="social-icon" target="_blank" rel="noopener" aria-label="Reddit">
+          <i class="fa-brands fa-reddit"></i>
         </a>
       </div>
     </div>

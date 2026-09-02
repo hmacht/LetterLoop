@@ -1,112 +1,45 @@
-import Typo from 'typo-js';
+/**
+ * Pure loop shape helpers. No I/O, no dictionary -- safe on both sides of the
+ * wire. Anything needing the word list or a spell check lives in
+ * `$lib/server/services/loopService`.
+ *
+ * A "loop" is two words sharing their first and last letters, stored as the
+ * first word followed by the middle of the second: MUSIC + CHARM -> "musichar".
+ */
 
-let cachedWords: string[] = [];
-let dictionary = new Typo("en_US", null, null, { dictionaryPath: "/dictionaries" });
+export const DEFAULT_WORD_LENGTH = 5;
 
-// Get options for first word
-// 
-// count: the number of words to present
-// showSWords: S words are words that start or end with an S
-// S words make for bad solutions, so we give admin users the option to filter out
-export async function getPrimaryOptions(count: number = 5, showSWords: boolean = false): Promise<string[]> {
-  const words = await fetchWordList();
-  const randomWords: string[] = [];
-
-  var wordsChosenCount = 0
-
-  while (wordsChosenCount < 5) {
-    const randomIndex = Math.floor(Math.random() * words.length);
-    let word = words[randomIndex];
-    let validSWord = showSWords || (!word.endsWith('s') && !word.startsWith('s'));
-
-    if (validSWord && dictionary.check(word)) {
-      randomWords.push(words[randomIndex].trim())
-      wordsChosenCount++;
-    }
-  }
-
-  return randomWords;
+/** MUSIC + CHARM -> "musichar" */
+export function formatLoop(primary: string, secondary: string): string {
+	return primary + secondary.slice(1, -1);
 }
 
-// Get valid second words based on the primer word
-// 
-// primer: the first word selected
-//
-// A secondary word must have these properties:
-//    - First letter must equal last letter of primary
-//    - Last letter mmust equal first letter of primary
-export async function getSecondaryOptions(primer: string): Promise<string[]> {
-  const words = await fetchWordList();
-  const validWords: string[] = [];
-  const primerLower = primer.toLowerCase().trim();
-  const primerFirst = primerLower[0];
-  const primerLast = primerLower[primerLower.length - 1];
-
-  for (const word of words) {
-    const wordLower = word.toLowerCase().trim();
-    
-    // Skip the primer word itself
-    if (wordLower === primerLower) {
-      continue;
-    }
-
-    if (wordLower[0] === primerLast && 
-        wordLower[wordLower.length - 1] === primerFirst &&
-        dictionary.check(wordLower)
-    ) {
-      validWords.push(word);
-    }
-  }
-
-  return validWords;
+/** "musichar" -> ["music", "charm"] */
+export function parseLoop(loop: string, length: number = DEFAULT_WORD_LENGTH): [string, string] {
+	const primary = loop.slice(0, length);
+	const secondary = loop.slice(length - 1) + primary[0];
+	return [primary, secondary];
 }
 
-// Validates a loop
-//
-// Words must:
-// 1. Be valid dictionary words (not all word list are accurate)
-// 2. word1's first letter must be word2's last letter
-// 3. Word1's last letter must be word2's first letter
-// 4. Must have valid length
-export async function validLoop(word1: string, word2: string, length: number = 5): Promise<boolean> {
-  return word1.length === length &&
-         word2.length === length &&
-         dictionary.check(word1) && 
-         dictionary.check(word2) &&
-         word1[0] === word2[length - 1] && 
-         word1[length - 1] ===  word2[0];
+/**
+ * Do these two words form a loop? Checks length and the shared-letter rule
+ * only -- whether they are real words is a dictionary question.
+ */
+export function hasLoopShape(
+	primary: string,
+	secondary: string,
+	length: number = DEFAULT_WORD_LENGTH
+): boolean {
+	return (
+		primary.length === length &&
+		secondary.length === length &&
+		primary[0] === secondary[length - 1] &&
+		primary[length - 1] === secondary[0]
+	);
 }
 
-// Formats loop for database
-//
-// EX: music & charm = musichar
-// idk its just how I did it.
-export function formatLoop(word1: string, word2: string): string {
-  return word1 + word2.slice(1, -1);
-}
-
-// Formats loop for database
-//
-// EX: musichar = music & charm
-export function parseLoop(loop: string, length: number = 5): [string, string] {
-  const firstWord = loop.slice(0, length);
-  const secondWord = loop.slice(length - 1) + firstWord[0];
-  
-  return [firstWord, secondWord];
-}
-
-
-// Private function to fetch word list
-async function fetchWordList(): Promise<string[]> {
-  try {
-    if (cachedWords.length === 0) {
-      const response = await fetch('/wordlists/prime.txt');
-      const text = await response.text();
-      cachedWords = text.split('\n').filter(word => word.trim() !== '');
-    }
-    return cachedWords;
-  } catch (error) {
-    console.error('Error fetching words:', error);
-    return [];
-  }
+/** S-words make for awkward puzzles; editors can filter them out. */
+export function isSWord(word: string): boolean {
+	const lower = word.toLowerCase();
+	return lower.startsWith('s') || lower.endsWith('s');
 }

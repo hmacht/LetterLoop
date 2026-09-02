@@ -13,7 +13,6 @@
           transition:fly={{ y: 30 }}
       >
           <div class="content">{notification.message}</div>
-          {#if notification.icon}<i class={notification.icon} />{/if}
       </div>
   {/each}
 </div>
@@ -21,8 +20,7 @@
 <style>
   .notifications {
       position: fixed;
-      top: 13
-      0px;
+      top: 130px;
       left: 0;
       right: 0;
       margin: 0 auto;

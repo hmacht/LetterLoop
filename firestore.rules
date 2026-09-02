@@ -1,0 +1,26 @@
+rules_version = '2';
+
+// LetterLoop keeps no client-writable data in Firestore.
+//
+// Every read and write goes through the SvelteKit /api routes using the Admin
+// SDK, which bypasses these rules entirely. Denying the browser outright is
+// what makes the server-side clock worth having: a player cannot skip the
+// timer by writing their own profile, run or leaderboard row.
+//
+// If a future feature needs data in the browser, add an /api endpoint for it
+// rather than opening a path here.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // profiles/{uid}                    -- lifetime stats, written only by the API
+    // profiles/{uid}/gameData/{dayKey}   -- per-day results
+    // runs/{dayKey}_{uid}                -- server-timed runs; source of every score
+    // leaderboard/{dayKey}/entries/{uid} -- daily ranked times
+    //
+    // The leaderboard is the reason this matters most: a client that could
+    // write here would not need to beat the timer, only to edit its own row.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

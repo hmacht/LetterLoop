@@ -38,10 +38,6 @@
     color: black;
     max-width: 200px;
   }
-  .logo {
-    padding-left: 0.6rem;
-    width: 100px;
-  }
 
   .fa-arrow-up-right-from-square {
     position: absolute;

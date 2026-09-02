@@ -1,7 +1,4 @@
 <script lang="ts">
-  import TextBlock from "$lib/components/TextBlock.svelte";
-  import Help from "$lib/components/Help.svelte";
-
   import ex_solution from '$lib/images/ex-solution.png';
   import ex_letter_box from '$lib/images/ex-letter-box.png';
 </script>

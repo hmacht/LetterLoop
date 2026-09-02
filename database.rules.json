@@ -1,16 +1,13 @@
 {
   "rules": {
-    ".read": "auth !== null",
-    ".write": "false",
-    "UserData": {
-      "CompletionTimes": {
-        ".read": "false",
-        ".write": "auth.uid !== null"
-      }
-    },
-    "Stats": {
-      ".read": "auth.uid !== null",
-      ".write": "auth.uid !== null"
-    }
+    "//": [
+      "Fully closed to clients. The puzzle table lives here, and its rows",
+      "contain the answers -- the previous `.read: auth !== null` rule handed",
+      "every scheduled solution to anyone signed in, including anonymous",
+      "visitors. Puzzles are now served (without answers) by /api/puzzle/today,",
+      "and the Admin SDK bypasses these rules."
+    ],
+    ".read": false,
+    ".write": false
   }
 }

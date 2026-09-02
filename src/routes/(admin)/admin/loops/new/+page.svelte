@@ -1,8 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { getPrimaryOptions, getSecondaryOptions, validLoop } from '$lib/utils/loop'
-  import { addSolution, getSolutionUsage } from '$lib/repos/solutionRepo'
-  import { profileStore } from '$lib/stores/profileStore';
+  import { primaryOptions, secondaryOptions, scheduleLoop, wordUsage } from '$lib/services/adminService';
+  import { formatDayKey } from '$lib/utils/gameDate';
   import { Alert } from 'flowbite-svelte';
   import { Button } from 'flowbite-svelte';
 
@@ -15,58 +14,67 @@
 
   let showAlert = false;
   let showSWords = false;
-  let submittedWords = { primary: '', secondary: '' };
-  
-  var primaryUsage: number | null = 0
-  var secondaryUsage: number | null = 0;
-  var loadingUsage: boolean = true;
+  let submitting = false;
+  let errorMessage = '';
+  let submitted = { primary: '', secondary: '', dayKey: '' };
 
-  $: profile = $profileStore;
-  $: selectionComplete = selectedPrimary && selectedSecondary;
+  let primaryUsage: number | null = 0;
+  let secondaryUsage: number | null = 0;
+  let loadingUsage = true;
 
-  onMount(async () => {
-    primaryWords = await getPrimaryOptions(5, showSWords);
-  });
+  $: selectionComplete = !!selectedPrimary && !!selectedSecondary;
+
+  onMount(shufflePrimaryWords);
 
   async function handleSubmit() {
-    if (selectedPrimary && selectedSecondary) {
-      let valid = await validLoop(selectedPrimary, selectedSecondary);
+    if (!selectedPrimary || !selectedSecondary) return;
 
-      if (valid) {
-        await addSolution(selectedPrimary, selectedSecondary, profile?.name ?? 'mystery');
+    submitting = true;
+    errorMessage = '';
 
-        submittedWords = {
-          primary: selectedPrimary,
-          secondary: selectedSecondary
-        };
+    try {
+      // The server re-validates the loop and picks the date, so two editors
+      // submitting at once cannot both claim the same slot.
+      const created = await scheduleLoop(selectedPrimary, selectedSecondary);
 
-        showAlert = true;
-        setTimeout(() => {
-          showAlert = false;
-        }, 3000);
-      }
+      submitted = {
+        primary: created.primary,
+        secondary: created.secondary,
+        dayKey: created.dayKey
+      };
+
+      showAlert = true;
+      setTimeout(() => (showAlert = false), 4000);
+
       selectedPrimary = null;
       selectedSecondary = null;
+      secondaryWords = [];
+    } catch (error) {
+      errorMessage = error instanceof Error ? error.message : 'Could not schedule the loop.';
+    } finally {
+      submitting = false;
     }
   }
 
   async function primarySelected(word: string) {
     selectedPrimary = word;
     selectedSecondary = null;
-    secondaryWords = await getSecondaryOptions(word);
+    secondaryWords = await secondaryOptions(word);
   }
 
   async function secondarySelected(word: string) {
     selectedSecondary = word;
 
     loadingUsage = true;
-    primaryUsage = await getSolutionUsage(selectedPrimary);
-    secondaryUsage = await getSolutionUsage(selectedSecondary);
+    [primaryUsage, secondaryUsage] = await Promise.all([
+      wordUsage(selectedPrimary ?? ''),
+      wordUsage(word)
+    ]);
     loadingUsage = false;
   }
 
   async function shufflePrimaryWords() {
-    primaryWords = await getPrimaryOptions(5, showSWords);
+    primaryWords = await primaryOptions(5, showSWords);
   }
 </script>
 
@@ -74,7 +82,15 @@
   {#if showAlert}
     <Alert color="green" class="mb-5">
       <i class="fa-solid fa-circle-check"></i>
-      Added: <b>{submittedWords.primary}</b> + <b>{submittedWords.secondary}</b>
+      Scheduled <b>{submitted.primary}</b> + <b>{submitted.secondary}</b>
+      for <b>{formatDayKey(submitted.dayKey)}</b>
+    </Alert>
+  {/if}
+
+  {#if errorMessage}
+    <Alert color="red" class="mb-5">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      {errorMessage}
     </Alert>
   {/if}
 
@@ -100,10 +116,10 @@
           </Button>
         {/each}
 
-        <div class="flex items-center gap-2 cursor-pointer" on:click={() => shufflePrimaryWords()}>
+        <button type="button" class="flex items-center gap-2 cursor-pointer" on:click={shufflePrimaryWords}>
           <i class="fa-solid fa-shuffle"></i>
           <p><u>Shuffle</u></p>
-        </div>
+        </button>
       </div>
     </div>
 
@@ -156,6 +172,8 @@
     {/if}
 
     <!-- Submit Button -->
-    <Button disabled={!selectionComplete} on:click={handleSubmit}>Submit</Button>
+    <Button disabled={!selectionComplete || submitting} on:click={handleSubmit}>
+      {submitting ? 'Scheduling...' : 'Submit'}
+    </Button>
   </div>
 </div>

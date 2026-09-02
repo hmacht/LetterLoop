@@ -1,29 +1,23 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { getTodaysStats } from '$lib/repos/globalStatsRepo';
+  import { getTodaysStats } from '$lib/services/statsService';
+  import { formatDuration } from '$lib/utils/time';
   import type { GlobalStats } from '$lib/models/globalStats';
 
-  export let globalStats: GlobalStats | null;
-  export let loadingStatus = "Loading Stats...";
+  /** Passed in when the caller already has stats (e.g. straight after a game). */
+  export let globalStats: GlobalStats | null = null;
+
+  let loadingStatus = 'Loading Stats...';
 
   onMount(async () => {
-    await setGlobalStats()
+    if (globalStats) return;
+
+    try {
+      globalStats = await getTodaysStats();
+    } catch {
+      loadingStatus = 'Stats could not be loaded.';
+    }
   });
-
-  async function setGlobalStats() {
-    if (!globalStats) {
-      try {
-        globalStats = await getTodaysStats();
-      } catch (error) {
-        loadingStatus = "Stats could not be loaded."
-        return null;
-      }
-    }
-
-    if (!globalStats) {
-      loadingStatus = "Stats could not be loaded."
-    }
-  }
 </script>
 
 <style>
@@ -34,9 +28,11 @@
 </style>
 
 <p class="result">
-  {#if globalStats}
-      <b>{globalStats.count}</b> people have looped today with an average time of 
-      <b>{globalStats.averageTime}</b>
+  {#if globalStats && globalStats.count > 0}
+    <b>{globalStats.count}</b> people have looped today with an average time of
+    <b>{formatDuration(globalStats.averageSeconds)}</b>
+  {:else if globalStats}
+    Be the first to loop today!
   {:else}
     {loadingStatus}
   {/if}

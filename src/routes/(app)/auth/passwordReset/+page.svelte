@@ -1,11 +1,11 @@
 <script lang="ts">
   import logo_src from '$lib/images/logo.png';
-  import { resetPassword } from '$lib/repos/authRepo';
+  import { resetPassword } from '$lib/services/authService';
   import { Alert } from 'flowbite-svelte';
 
   let email: string = '';
-  let errorMessage: string;
-  let successMessage: string;
+  let errorMessage: string = '';
+  let successMessage: string = '';
 
   async function sendReset() {
     const result = await resetPassword(email);
@@ -14,7 +14,7 @@
       successMessage = "Email sent!"
       errorMessage = ""
     } else {
-      errorMessage = result.errorMessage;
+      errorMessage = result.errorMessage ?? 'Could not send the reset email.';
     }
   }
 </script>
@@ -22,7 +22,7 @@
 <style>
   /* Form container on the right */
   .login-form {
-    width: 100vw;
+    width: 100%;
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -65,16 +65,7 @@
     font-family: "Playfair Display", serif;
   }
 
-  .small-text {
-    font-size: 14px;
-  }
 
-  .logo {
-    width: 50px;
-    height: 50px;
-    padding-bottom: 15%;
-    margin-top: 2rem;
-  }
 </style>
 
 <main>

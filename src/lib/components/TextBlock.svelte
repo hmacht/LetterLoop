@@ -41,6 +41,9 @@
     <p class="header">{title}</p>
     <br>
 
+    <!-- `content` is markdown written by the LetterLoop editors and compiled
+         into the bundle at build time -- never user input. -->
+    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
     <div>{@html marked(content)}</div>
     <br><br>
   </div>

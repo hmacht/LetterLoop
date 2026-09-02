@@ -1,359 +1,406 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+	import { onMount } from 'svelte';
 
-  import Modal from '$lib/components/Modal.svelte';
-  import Toast from '$lib/components/Toast.svelte';
-  import Timer from '$lib/components/Timer.svelte';
-  import Help from '$lib/components/Help.svelte';
+	import Modal from '$lib/components/Modal.svelte';
+	import Toast from '$lib/components/Toast.svelte';
+	import Timer from '$lib/components/Timer.svelte';
+	import Help from '$lib/components/Help.svelte';
 
-  import { updateProfileStats, createTodaysGameData } from "$lib/repos/profileRepo"
-  import { logTime } from '$lib/repos/globalStatsRepo';
-  import { getTodaysSolution } from "$lib/repos/solutionRepo"
-  
-  import { notifications } from "$lib/utils/notifications";
-  import { today } from "$lib/utils/timeFormatter"
-  import { gameData } from '$lib/stores/gameStore';
+	import * as gameService from '$lib/services/gameService';
+	import type { GameResult, GameState } from '$lib/services/gameService';
+	import { loadTodaysPuzzle } from '$lib/services/puzzleService';
+	import { notifications } from '$lib/utils/notifications';
+	import { formatDayKey } from '$lib/utils/gameDate';
+	import { setProfile } from '$lib/stores/profileStore';
 
-  import type { GameData } from '$lib/models/gameData';
+	import Device from 'svelte-device-info';
 
-  import Typo from 'typo-js';
-  import Device from 'svelte-device-info'
+	/** Set when the run ends; the parent swaps in <GameOver>. */
+	export let result: GameResult | null = null;
+	/** True when the run was already over before this mount, not just finished. */
+	export let returning = false;
+	export let showAd: boolean;
 
-  export let gameOver;
-  export let showAd;
+	let showHelpModal = false;
+	let showPauseModal = false;
 
-  let showHelpModal = false;
-  let showPauseModal = false;
-  let solutions: string[] = [];
-  solutions = solutions.map(solution => solution.toLowerCase());
-  let letterBank;
-  let selectedLetters = Array(8).fill("");
-  let disabledKeys = [];
-  let scrambledLettersBank;
-  let currentIndex = 0
-  let sharedLetterIndexes = [0, 4]
-  let game_timer;
-  let elapsedSeconds = 0;
-  let puzzle_author = "---";
-  let gaveUp = false;
-  let loadStatus = "Loading Game..."
-  let dictionary;
+	let letterBank = '';
+	let scrambledBank = '';
+	let author = '---';
+	let dayKey = '';
+	let loopNumber: number | null = null;
+	let slotCount = 8;
 
-  onMount(async () => {
-    loadDictionary()
-    await fireUpGameBoard();
-  });
+	let selectedLetters: string[] = [];
+	let usedKeys: number[] = [];
+	let startedAtMs = Date.now();
+	let running = false;
+	let paused = false;
+	let pauseBusy = false;
+	let submitting = false;
+	let loadStatus = 'Loading Game...';
 
-  async function fireUpGameBoard() {
-    try {
-      await loadPuzzle() 
-      game_timer.start();
-    } catch (error) {
-      loadStatus = "Error Loading Game :("
-      console.error('Error fetching data from Firebase:', error);
-    }
-  }
+	/** The in-flight `start` call. Guesses wait on it rather than racing it. */
+	let starting: Promise<GameState> | null = null;
 
-  function loadDictionary() {
-    dictionary = new Typo("en_US", false, false, { dictionaryPath: "/dictionaries" });
-  }
+	const sharedLetterIndexes = [0, 4];
 
-  async function loadPuzzle() {
-    // Fetch Solutions
-    const data = await getTodaysSolution();
+	onMount(startGame);
 
-    // Set Solutions
-    if (data && data.solutions && data.solutions.length > 0) {
-      puzzle_author = data.author;
-      solutions = data.solutions;
-    } else {
-      throw new Error("Invalid data");
-    }
+	async function startGame() {
+		// Two calls, deliberately in parallel:
+		//
+		//   loadTodaysPuzzle() is usually already cached by the menu, so the board
+		//   paints immediately -- no spinner between pressing Play and seeing
+		//   letters.
+		//
+		//   gameService.start() is the authoritative one: it stamps the server-side
+		//   start time. It cannot be preloaded, because doing so would start the
+		//   clock while the player was still reading the menu.
+		starting = gameService.start();
 
-    // Create letter bank
-    letterBank = solutions[0]
-    scrambledLettersBank = scrambleLettersBank(letterBank)
-  }
-  
-  function findPressedKeyIndex(bank, letter) {
-    for (let i = 0; i < bank.length; i++) {
-      if (bank[i] == letter && !isDisabled(i)) {
-        return i;
-      }
-    }
-    return -1;
-  }
+		try {
+			applyPuzzle(await loadTodaysPuzzle());
+		} catch {
+			// Fall through -- start() carries the same puzzle and better errors.
+		}
 
-  function handleKeyPress(event) {
-    const keyPressed = event.key.toLowerCase();
-    const index = findPressedKeyIndex(scrambledLettersBank, keyPressed)
+		try {
+			const state = await starting;
 
-    if (event.keyCode === 13) {
-      checkSolution()
-    } else if (event.keyCode === 8) {
-      deleteLetter()
-    } else if (index !== -1 && !isDisabled(index)) {
-      letterSelected(keyPressed, index);
-    }
-  }
+			// The run may already be over -- a refresh after finishing, say. The
+			// parent needs to know it was not finished just now, so it shows the
+			// "welcome back" banner rather than judging today's time again.
+			if (state.finished) {
+				returning = true;
+				result = state.finished;
+				return;
+			}
 
-  function scrambleLettersBank(letterBank) {
-    const scrambledArray = letterBank.split('').sort(() => Math.random() - 0.5);
-    return scrambledArray.join('');
-  }
+			applyPuzzle(state.puzzle);
 
-  function letterSelected(letter, index) {    
-      if (
-      currentIndex < selectedLetters.length &&
-      !isDisabled(index)
-    ) {
-      selectedLetters[currentIndex] = letter;
-      currentIndex += 1;
-      disabledKeys = [...disabledKeys, index];
-    }
-  }
+			// Trust the server's clock, not the device's.
+			startedAtMs = Date.now() - (Date.parse(state.serverNow) - Date.parse(state.startedAt));
+			running = true;
+		} catch (error) {
+			loadStatus = error instanceof Error ? error.message : 'Error Loading Game :(';
+			console.error('Could not start the game:', error);
+		}
+	}
 
-  function checkSolution() {
-    const solution = selectedLetters.join('');
+	function applyPuzzle(puzzle: GameState['puzzle']) {
+		if (letterBank) return; // Already painted from the preload.
 
-    if (isCorrectSolution(solution)) {
-      gaveUp = false
-      endGame()
-    } else {
-      notifications.default('Incorrect', 1000)
-    }
-  }
+		letterBank = puzzle.letterBank;
+		scrambledBank = letterBank;
+		author = puzzle.author;
+		dayKey = puzzle.dayKey;
+		loopNumber = puzzle.loopNumber;
+		slotCount = letterBank.length;
+		selectedLetters = Array(slotCount).fill('');
+	}
 
-  function isCorrectSolution(solution) {
-    if (solution.length != 8) {
-      notifications.default('You Must fill in every letter', 1000);
-      return false;
-    }
+	async function checkSolution() {
+		if (submitting || result) return;
 
-    console.log("Checking")
+		const guess = selectedLetters.join('');
+		if (guess.length !== slotCount || selectedLetters.some((letter) => letter === '')) {
+			notifications.default('You must fill in every letter', 1000);
+			return;
+		}
 
-    if (solutions.includes(solution)) {
-      return true;
-    } else {
-      // Spell Check Words
-      const word1 = solution.slice(0, 5);
-      const word2 = solution.slice(-4) + solution.slice(0, 1);
+		submitting = true;
+		try {
+			// The board can be usable a moment before `start` resolves; wait for it
+			// rather than sending a guess the server has no run for.
+			await starting;
+			const outcome = await gameService.submitGuess(guess);
 
-      return dictionary.check(word1) && dictionary.check(word2);
-    }
-  }
+			if (outcome.correct) {
+				finish(outcome.result);
+			} else {
+				notifications.default('Incorrect', 1000);
+			}
+		} catch (error) {
+			notifications.default(error instanceof Error ? error.message : 'Something went wrong', 2000);
+		} finally {
+			submitting = false;
+		}
+	}
 
-  function giveUp() {
-    gaveUp = true
-    endGame()
-  }
+	async function giveUp() {
+		if (submitting || !running) return;
 
-  function endGame() {
-    game_timer.stop();
-    logTime(elapsedSeconds)
-      .then((globalStats) => {
-        gameData.update(data => ({
-          ...data,
-          elapsedSeconds,
-          solutions,
-          gaveUp,
-          globalStats
-        }));
+		submitting = true;
+		try {
+			await starting;
+			finish(await gameService.giveUp());
+		} catch (error) {
+			notifications.default(error instanceof Error ? error.message : 'Something went wrong', 2000);
+		} finally {
+			submitting = false;
+		}
+	}
 
-        saveGameTime()
-        updateProfileStats(elapsedSeconds, gaveUp);
+	async function pauseGame() {
+		if (pauseBusy || !running) return;
 
-        showAd = true;
-        gameOver = true;
-      })
-      .catch((error) => {
-          console.error('Error:', error);
-      });
-  }
+		pauseBusy = true;
+		try {
+			await starting;
+			await gameService.pause();
+			// Only blank the board once the server has actually stopped the clock,
+			// so the two can never disagree about what is being timed.
+			paused = true;
+			running = false;
+			showPauseModal = true;
+		} catch (error) {
+			notifications.default(error instanceof Error ? error.message : 'Could not pause', 2000);
+		} finally {
+			pauseBusy = false;
+		}
+	}
 
-  function saveGameTime() {
-    const gameData: GameData = {
-      elapsedSeconds: elapsedSeconds,
-      gaveUp: gaveUp,
-      completed: true,
-      completedAt: new Date(),
-      solutions: solutions
-    }
+	async function resumeGame() {
+		if (pauseBusy) return;
 
-    // Save in database
-    createTodaysGameData(gameData);
+		pauseBusy = true;
+		try {
+			const state = await gameService.resume();
+			// Re-anchor the display to the server's net elapsed time, which now
+			// excludes everything spent paused.
+			startedAtMs = Date.now() - state.elapsedSeconds * 1000;
+			paused = false;
+			running = true;
+			showPauseModal = false;
+		} catch (error) {
+			notifications.default(error instanceof Error ? error.message : 'Could not resume', 2000);
+		} finally {
+			pauseBusy = false;
+		}
+	}
 
-    // Save in local cookie
-    localStorage.setItem('gameTimeV2', JSON.stringify({ 
-      elapsedSeconds: elapsedSeconds, 
-      date: today(),
-      gaveUp: gaveUp,
-      solutions: solutions
-    }));
-  }
+	function finish(finished: GameResult) {
+		running = false;
+		// The server returns the freshly updated profile, so the stats panel does
+		// not need a second round trip to show the new streak.
+		if (finished.profile) setProfile(finished.profile);
+		showAd = true;
+		result = finished;
+	}
 
-  function resetBoard() {
-    selectedLetters = Array(8).fill("");
-    currentIndex = 0
-    disabledKeys = []
-  }
+	function letterSelected(letter: string, index: number) {
+		const slot = selectedLetters.findIndex((value) => value === '');
+		if (slot === -1 || usedKeys.includes(index)) return;
 
-  function shuffleLetters() {
-    scrambledLettersBank = scrambleLettersBank(letterBank);
-    resetBoard();
-  }
+		selectedLetters[slot] = letter;
+		usedKeys = [...usedKeys, index];
+	}
 
-  function deleteLetter() {
-    if (currentIndex > 0) {
-      selectedLetters[currentIndex - 1] = "";
-      currentIndex -= 1;
-      // @ts-ignore
-      disabledKeys = disabledKeys.slice(0, -1);
-    }
-  }
-  
-  function pause_game() {
-    game_timer.stop();
-    showPauseModal = true;
-  }
+	function deleteLetter() {
+		if (usedKeys.length === 0) return;
 
-  function resume_game() {
-    game_timer.start();
-    showPauseModal = false;
-  }
+		const slot = usedKeys.length - 1;
+		selectedLetters[slot] = '';
+		usedKeys = usedKeys.slice(0, -1);
+	}
 
-  function refreshPage() {
-    location.reload();
-  }
+	function resetBoard() {
+		selectedLetters = Array(slotCount).fill('');
+		usedKeys = [];
+	}
 
-  $: isDisabled = (index) => disabledKeys.includes(index);
-  $: todays_date = new Date().toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+	function shuffleLetters() {
+		// Presentation only -- the server does not care what order we display in.
+		scrambledBank = [...letterBank].sort(() => Math.random() - 0.5).join('');
+		resetBoard();
+	}
+
+	function handleKeyPress(event: KeyboardEvent) {
+		if (showHelpModal || showPauseModal || paused || result || !letterBank) return;
+
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			void checkSolution();
+			return;
+		}
+
+		if (event.key === 'Backspace') {
+			event.preventDefault();
+			deleteLetter();
+			return;
+		}
+
+		const index = [...scrambledBank].findIndex(
+			(letter, i) => letter === event.key.toLowerCase() && !usedKeys.includes(i)
+		);
+
+		if (index !== -1) {
+			event.preventDefault();
+			letterSelected(scrambledBank[index], index);
+		}
+	}
+
+	$: isDisabled = (index: number) => usedKeys.includes(index);
+	$: displayDate = dayKey ? formatDayKey(dayKey) : '';
 </script>
-  
+
 <main>
-  <div class="nav-flex-container">
-    <div class="title-container">
-      <div class="logo-container" on:click={refreshPage}>
-        <p class="title">LetterLoop</p>
-      </div>
-    </div>
-    <div class="spacer"></div>
-    <div class="help-container" on:click={giveUp}>
-      <i class="fa-regular fa-face-sad-tear"></i>
-      {#if !Device.isMobile}
-        <p class="how-to-play">Give Up</p>
-      {/if}
-    </div>
-    <div class="help-container" on:click={() => showHelpModal = true}>
-      {#if !Device.isMobile}
-        <i class="fa-regular fa-circle-question"></i>
-        <p class="how-to-play">How to play</p>
-      {:else}
-        <i class="fa-regular fa-circle-question" style="padding-right: 1rem;"></i>
-      {/if}
-    </div>
-  </div>
-  <div class="divider"></div>
-  
-  <Toast />
+	<div class="nav-flex-container">
+		<div class="title-container">
+			<a href="/" class="title nav-logo">LetterLoop</a>
+		</div>
+		<div class="spacer"></div>
+		<button class="help-container" on:click={giveUp} disabled={submitting || !running}>
+			<i class="fa-regular fa-face-sad-tear"></i>
+			{#if !Device.isMobile}
+				<p class="how-to-play">Give Up</p>
+			{/if}
+		</button>
+		<button class="help-container" on:click={() => (showHelpModal = true)}>
+			<i class="fa-regular fa-circle-question" style={Device.isMobile ? 'padding-right: 1rem;' : ''}
+			></i>
+			{#if !Device.isMobile}
+				<p class="how-to-play">How to play</p>
+			{/if}
+		</button>
+	</div>
+	<div class="divider"></div>
 
-  <div class="centered-container full-height-container">
-    <div class="flex-container">
-      <div class="timer-container">
-        <Timer bind:this={game_timer} bind:elapsedSeconds />
-      </div>
-    
-      <div on:click={pause_game} >
-        <i class="fa-solid fa-pause"></i>
-      </div>
-    </div>
+	<Toast />
 
-    {#if solutions.length > 0}
-      <div class="circle-container mb-5 mt-5">
-        {#each selectedLetters as letter, index}
-          <div
-            class="circle"
-            class:filled={letter != ""}
-            class:shared={sharedLetterIndexes.includes(index)}
-            style={`
-              left: calc(38% + ${Math.cos(((index / selectedLetters.length) * 2 * Math.PI) - (Math.PI / 2)) * 100}px);
-              top: calc(38% + ${Math.sin(((index / selectedLetters.length) * 2 * Math.PI) - (Math.PI / 2)) * 100}px);
-          `}
-          >
-            {letter == "" ? "" : letter}
-          </div>
-        {/each}
-      </div>
+	<div class="centered-container full-height-container">
+		<div class="flex-container">
+			<div class="timer-container">
+				<Timer {startedAtMs} {running} />
+			</div>
 
-      <div class="keyboard">
-        {#each scrambledLettersBank as letter, index (index)}
-          <div
-            class="key"
-            on:click={() => letterSelected(letter, index)}
-            class:disabled={isDisabled(index)}
-          >
-            {letter}
-          </div>
-        {/each}
+			<button
+				class="icon-button"
+				on:click={pauseGame}
+				disabled={!running || pauseBusy}
+				aria-label="Pause"
+			>
+				<i class="fa-solid fa-pause"></i>
+			</button>
+		</div>
 
-        <!-- Function Keys -->
-        <div 
-          class="key"
-          on:click={resetBoard}>
-          <i class="fa-solid fa-eraser"></i>
-        </div>
-        <div 
-          class="key"
-          on:click={shuffleLetters}>
-          <i class="fa-solid fa-shuffle"></i>
-        </div>
-        <div 
-          class="key"
-          on:click={deleteLetter}>
-          <i class="fa-solid fa-delete-left"></i>
-        </div>
+		{#if letterBank}
+			<div class="circle-container mb-5 mt-5">
+				{#each selectedLetters as letter, index}
+					<div
+						class="circle"
+						class:filled={letter !== ''}
+						class:shared={sharedLetterIndexes.includes(index)}
+						style={`
+              left: calc(38% + ${Math.cos((index / selectedLetters.length) * 2 * Math.PI - Math.PI / 2) * 100}px);
+              top: calc(38% + ${Math.sin((index / selectedLetters.length) * 2 * Math.PI - Math.PI / 2) * 100}px);
+            `}
+					>
+						{letter}
+					</div>
+				{/each}
+			</div>
 
-        <div 
-          class="key enter-key"
-          on:click={checkSolution}>
-          Enter
-        </div>
-      </div>
-    {:else}
-      <p>{loadStatus}</p>
-    {/if}
+			<div class="keyboard">
+				{#each scrambledBank as letter, index (index)}
+					<button
+						class="key"
+						class:disabled={isDisabled(index)}
+						on:click={() => letterSelected(letter, index)}
+					>
+						{letter}
+					</button>
+				{/each}
 
-    <br>
-    <small style="color: rgb(46, 46, 46);">Edited by {puzzle_author}</small>
-    <small style="color: rgb(46, 46, 46);">{todays_date}</small>
-  </div>
+				<button class="key" on:click={resetBoard} aria-label="Clear">
+					<i class="fa-solid fa-eraser"></i>
+				</button>
+				<button class="key" on:click={shuffleLetters} aria-label="Shuffle">
+					<i class="fa-solid fa-shuffle"></i>
+				</button>
+				<button class="key" on:click={deleteLetter} aria-label="Delete">
+					<i class="fa-solid fa-delete-left"></i>
+				</button>
+				<button class="key enter-key" on:click={checkSolution} disabled={submitting}>
+					{submitting ? '...' : 'Enter'}
+				</button>
+			</div>
+		{:else}
+			<p>{loadStatus}</p>
+		{/if}
+
+		<br />
+		<small style="color: rgb(46, 46, 46);">Edited by {author}</small>
+		<small style="color: rgb(46, 46, 46);">
+			{displayDate}{#if loopNumber !== null}
+				&middot; Loop #{loopNumber}{/if}
+		</small>
+	</div>
 </main>
 
-<svelte:window on:keydown|preventDefault={handleKeyPress} />
+<svelte:window on:keydown={handleKeyPress} />
 
-<Modal bind:showModal={showHelpModal} modalType={"help"}>
-  <h2 slot="header">
-    <span class="styled-header">How To Play</span>
-  </h2>
-  <hr />
-  <Help />
+<Modal
+	bind:showModal={showHelpModal}
+	modalType="help"
+	title="How To Play"
+	subtitle="Two 5-letter words, two shared letters, one loop."
+>
+	<Help />
 </Modal>
 
-
-<Modal bind:showModal={showPauseModal} hide_close={true} modalType={"pause"}>
-  <h2 slot="header">
-    <span class="styled-header">Paused</span>
-  </h2>
-  <hr />
-  
-  <div class="flex-container">
-    <div class="spacer"></div>
-    <button class="share-button" on:click={resume_game}>Resume</button>
-    <div class="spacer"></div>
-  </div>
+<Modal
+	bind:showModal={showPauseModal}
+	hide_close={true}
+	modalType="pause"
+	title="Paused"
+	subtitle="Your timer is stopped and the board is hidden. Nothing counts against you until you resume."
+>
+	<button class="share-button" on:click={resumeGame} disabled={pauseBusy}>
+		{pauseBusy ? 'Resuming...' : 'Resume'}
+	</button>
 </Modal>
-  
+
+<style>
+	.icon-button,
+	.help-container {
+		background: none;
+		border: none;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		font: inherit;
+		color: inherit;
+	}
+
+	.help-container:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+
+	.share-button {
+		background-image: -webkit-linear-gradient(top, #ff4f87, #fc2f4f);
+		background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
+		color: white;
+		border-radius: 20px;
+		width: 100%;
+		height: 56px;
+		border: none;
+		text-transform: uppercase;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 1px;
+		cursor: pointer;
+	}
+
+	.share-button:disabled {
+		opacity: 0.6;
+		cursor: default;
+	}
+
+	.icon-button:disabled {
+		opacity: 0.4;
+		cursor: default;
+	}
+</style>

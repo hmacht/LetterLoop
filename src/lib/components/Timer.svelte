@@ -1,72 +1,37 @@
-<!-- Timer.svelte -->
-<script>
-  import { writable, readable } from 'svelte/store';
+<!--
+  Display-only clock.
 
-  export let elapsedSeconds;
+  It counts up from the moment the SERVER started the run, corrected for however
+  far the local clock has drifted. It is deliberately not authoritative: the time
+  that gets recorded is computed server-side when the run finishes, so nothing
+  here can change a player's score.
+-->
+<script lang="ts">
+  import { onDestroy } from 'svelte';
+  import { formatDuration } from '$lib/utils/time';
 
-  let startDate = Date.now();
-  let isRunning = writable(false);
-  let elapsedSecondsStore = writable(0)
+  /** Server start time, already corrected onto the local clock. Epoch ms. */
+  export let startedAtMs: number;
+  /** Freezes the display once the run is over. */
+  export let running = true;
+  /** Bound out for callers that want the current reading. */
+  export let elapsedSeconds = 0;
 
-  const elapsedTime = readable(0, function start(set) {
-      const updateElapsedTime = () => {
-          if ($isRunning) {
-            elapsedSecondsStore.set(Math.round((Date.now() - startDate) / 1000));
-              set($elapsedSecondsStore);
-          }
-      };
+  let now = Date.now();
 
-      const interval = setInterval(updateElapsedTime, 1000);
+  const interval = setInterval(() => {
+    if (running) now = Date.now();
+  }, 250);
 
-      return function stop() {
-          clearInterval(interval);
-      };
-  });
+  onDestroy(() => clearInterval(interval));
 
-  $: hh = Math.floor($elapsedTime / 3600);
-  $: mm = Math.floor(($elapsedTime - hh * 3600) / 60);
-  $: ss = $elapsedTime - hh * 3600 - mm * 60;
-
-  function f(value) {
-      if (value < 10) {
-          return `0${value}`;
-      }
-      return value.toString();
-  }
-
-  export function start() {
-      if (!$isRunning) {
-          startDate = Date.now() - ($elapsedSecondsStore * 1000);
-          isRunning.set(true);
-      }
-  }
-
-  export function stop() {
-      if ($isRunning) {
-          isRunning.set(false);
-      }
-  }
-
-  export function reset() {
-      stop();
-      startDate = Date.now();
-      elapsedSecondsStore.set(0);
-  }
-
-  $: elapsedSeconds = f(hh) + ":" + f(mm) + ":" + f(ss);
-
+  $: elapsedSeconds = Math.max(0, Math.floor((now - startedAtMs) / 1000));
 </script>
 
-<span class="timer">
-  <span class="value">
-      {f(hh)}</span>:<span class="value">
-      {f(mm)}</span>:<span class="value">
-      {f(ss)}
-  </span>
-</span>
+<span class="timer">{formatDuration(elapsedSeconds)}</span>
 
 <style>
   span.timer {
-      padding: 0 0.2em;
+    padding: 0 0.2em;
   }
 </style>

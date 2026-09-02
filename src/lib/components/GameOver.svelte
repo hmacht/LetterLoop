@@ -1,347 +1,571 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+	import { onMount } from 'svelte';
 
-  import Stats from '$lib/components/Stats.svelte';
-  import CharacterBanner from '$lib/components/CharacterBanner.svelte';
-  import Toast from '$lib/components/Toast.svelte';
-  import PromotionLink from '$lib/components/PromotionLink.svelte';
-  import Modal from '$lib/components/Modal.svelte';
-  import ProfileComponent from '$lib/components/Profile.svelte';
+	import Stats from '$lib/components/Stats.svelte';
+	import Toast from '$lib/components/Toast.svelte';
+	import PromotionLink from '$lib/components/PromotionLink.svelte';
 
-  import { notifications } from "$lib/utils/notifications.js";
-  import { gameData } from '$lib/stores/gameStore.js';
-  import { secondsFormatted } from "$lib/utils/timeFormatter"
-  import { calculateEmoji, calculateEmojiRank } from "$lib/utils/emojiStreak";
-  import { getTopProfiles, getRank } from "$lib/repos/leaderBoardRepo";
+	import { notifications } from '$lib/utils/notifications';
+	import { formatDuration } from '$lib/utils/time';
+	import { calculateEmoji } from '$lib/utils/emojiStreak';
+	import { avatarSrc } from '$lib/images/avatars';
+	import {
+		today as loadDailyBoard,
+		allTime as loadAllTimeBoard
+	} from '$lib/services/leaderboardService';
+	import { profileStore, profileLoading } from '$lib/stores/profileStore';
 
-  import type { Profile } from "$lib/models/profile"
-  import { profileStore, profileLoading } from "$lib/stores/profileStore";
-  
-  var elapsedSeconds = "-----"
-  var gaveUp = false
-  var solutions = []
-  var globalStats;
-  var streakEmoji = "";
-  var loadingProfile: boolean = true;
+	import type { GameResult } from '$lib/services/gameService';
+	import type { AllTimeBoard, DailyLeaderboard } from '$lib/models/leaderboard';
 
-  let profile: Profile | null;
-  var top10Profile: Profile[] = [];
-  var usersLeaderboardRank: number | null = null;
+	export let result: GameResult;
+	/** True when the player finished earlier and has come back to the page. */
+	export let returning = false;
 
-  export let completedTodaysLoop = false;
+	let leaderboard: DailyLeaderboard | null = null;
+	let allTime: AllTimeBoard | null = null;
+	let leaderboardError = '';
+	let allTimeError = '';
 
-  $: profile = $profileStore
-  $: loadingProfile = $profileLoading
+	$: profile = $profileStore;
+	$: loadingProfile = $profileLoading;
+	$: streakEmoji = profile ? calculateEmoji(profile.streak) : '';
+	$: displayTime = formatDuration(result.elapsedSeconds);
 
-  onMount(async () => {
-    loadAd();
-    retrieveGameDate();
+	/**
+	 * The day's verdict: icon, accent colour and one-line slogan. Replaces the
+	 * old illustrated banner, which sat awkwardly above the card stack.
+	 */
+	$: outcome = returning
+		? {
+				icon: 'fa-solid fa-mug-hot',
+				color: '#7F81A8',
+				text: 'Welcome back looper!'
+			}
+		: result.gaveUp
+			? {
+					icon: 'fa-regular fa-face-sad-tear',
+					color: '#DF5468',
+					text: 'Oh no, you gave up. Try again tomorrow!'
+				}
+			: result.globalStats.isUnderAverage
+				? {
+						icon: 'fa-solid fa-bolt',
+						color: '#E09029',
+						text: "Congratulations speedster \u2014 you're under today's average!"
+					}
+				: {
+						icon: 'fa-solid fa-hourglass-half',
+						color: '#9A9A9A',
+						text: "Not your fastest \u2014 you're over today's average."
+					};
+	/** Player has a time but sits below the top list, so needs the "..." section. */
+	$: outsideTop = !!leaderboard?.you && leaderboard.you.rank > leaderboard.top.length;
 
-    // Load leaderboard
-    top10Profile = await getTopProfiles(15);
-    if (profile) {
-      usersLeaderboardRank = await getRank(profile.gamesPlayed);
-    }
+	onMount(async () => {
+		loadAd();
 
-    setStreakEmoji();
-  });
+		// Two independent boards -- fetched together, and one failing must not
+		// blank the other.
+		const [daily, allTimeResult] = await Promise.allSettled([
+			loadDailyBoard(),
+			loadAllTimeBoard(10)
+		]);
 
-  function loadAd() {
-    window.aiptag.cmd.display.push(function() { window.aipDisplayTag.display('theletterloop-com_300x50'); });
-  }
+		if (daily.status === 'fulfilled') {
+			leaderboard = daily.value;
+		} else {
+			leaderboardError = 'Could not load the leaderboard.';
+			console.error('Could not load the daily leaderboard:', daily.reason);
+		}
 
-  function retrieveGameDate() {
-    return gameData.subscribe(value => {
-      elapsedSeconds = value.elapsedSeconds;
-      solutions = value.solutions;
-      gaveUp = value.gaveUp;
-      globalStats = value.globalStats;
-    });
-  }
+		if (allTimeResult.status === 'fulfilled') {
+			allTime = allTimeResult.value;
+		} else {
+			allTimeError = 'Could not load top loopers.';
+			console.error('Could not load the all-time leaderboard:', allTimeResult.reason);
+		}
+	});
 
-  function setStreakEmoji() {
-    if (!profile) return;
+	function loadAd() {
+		window.aiptag?.cmd.display.push(() => {
+			window.aipDisplayTag?.display('theletterloop-com_300x50');
+		});
+	}
 
-    let streak = Number(profile.streak);
-    if (!streak) return;
-    
-    streakEmoji = calculateEmoji(streak);
-  }
+	async function share() {
+		const rank = leaderboard?.you ? ` (#${leaderboard.you.rank} today)` : '';
+		const shareText = result.gaveUp
+			? "I didn't complete the LetterLoop today, but I sure did try my best"
+			: `I completed the LetterLoop in: \n🔴${displayTime}🔴${rank}`;
 
-  const share = async () => {
-    let shareText = "I completed the LetterLoop in: \n" + "🔴" + elapsedSeconds + "🔴"
-    if (gaveUp) {
-      shareText = "I didnt complete the LetterLoop today, but I sure did try my best"
-    }
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "",
-          text: shareText,
-          url: window.location.href
-        });
-      } catch (error) {
-        notifications.default('Error', 1000)
-      }
-    } else {
-      try {
-        await navigator.clipboard.writeText(shareText);
-        notifications.default('Copied Link!', 1000)
-      } catch (error) {
-        notifications.default('Error', 1000)
-      }
-    }
-  };
+		if (navigator.share) {
+			try {
+				await navigator.share({ title: '', text: shareText, url: window.location.href });
+			} catch {
+				// Dismissing the share sheet is not an error worth reporting.
+			}
+			return;
+		}
 
-  function format_solution(solution) {
-    if (!solution) {
-      return "Loading Solutions...";
-    }
-    
-    const firstPart = solution.substring(0, 5);
-    const lastPart = solution.substring(4, 8) + firstPart[0];
-  
-    const htmlString = `
-      <a href="https://www.merriam-webster.com/dictionary/${firstPart}" target="blank">${firstPart}</a> 
-      + 
-      <a href="https://www.merriam-webster.com/dictionary/${lastPart}" target="blank">${lastPart}</a>
-    `;
-  
-    return htmlString;
-  }
+		try {
+			await navigator.clipboard.writeText(shareText);
+			notifications.default('Copied Link!', 1000);
+		} catch {
+			notifications.default('Error', 1000);
+		}
+	}
 
-  function refreshPage() {
-    location.reload();
-  }
-
+	function dictionaryUrl(word: string) {
+		return `https://www.merriam-webster.com/dictionary/${word}`;
+	}
 </script>
-  
-<style>
-  main {
-    background-color: #FFE9E9!important;
-    width: 100vw;
-    height: min-content;
-  }
-
-  .gameover-container {
-    max-width: 400px;
-    width: 85%;
-  }
-
-  .panel-section {
-    margin-bottom: 1rem;
-  }
-
-  .panel-section p {
-    margin: 5px 0 0 0;
-  }
-
-  .time-text {
-    font-size: 40px;
-    font-weight: 700;
-    margin: 4px 0 0 0;
-    text-align: left;
-  }
-
-  .stats-text {
-    font-size: 25px;
-    font-weight: 700;
-    margin: 4px 0 0 0;
-    text-align: left;
-  }
-
-  .stats-conatiner {
-    display: flex;
-    gap: 20px;
-  }
-
-  .disclaimer {
-    font-size: 10px;
-    color: #bbbbbb;
-    margin-bottom: 0;
-  }
-
-  .share-button {
-    background-image: -webkit-linear-gradient(top, #FF4F87, #FC2F4F);
-    background-image: linear-gradient(to bottom, #FF4F87, #FC2F4F);
-    color: white;
-    border-radius: 20px;
-    width: 100%;
-    height: 70px;
-    border: none;
-    text-transform: uppercase;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    cursor: pointer;
-  }
-  
-  /* Leaderboard styles */
-  .leaderboard-list {
-    margin-top: 1rem;
-  }
-
-  li.leaderboard-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 0;
-    border-top: 1px solid #eee;
-  }
-
-  .leaderboard-name {
-    font-weight: 500;
-  }
-
-  .leaderboard-stats {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-</style>
 
 <main>
-  <div class="centered-container">
+	<div class="centered-container">
+		<Toast />
 
-    <Toast />
+		<div id="theletterloop-com_300x50">
+			<!-- JS Ad Injection -->
+		</div>
 
-    <div id='theletterloop-com_300x50'>
-      <!-- JS Ad Injection -->
-    </div>
+		<div class="gameover-container">
+			<!-- 1. Solved in -->
+			<div class="panel">
+				<div class="panel-body">
+					<p class="outcome" style="--accent: {outcome.color}">
+						<i class={outcome.icon} aria-hidden="true"></i>
+						<span>{outcome.text}</span>
+					</p>
 
-    <div class="gameover-container">
-      {#if completedTodaysLoop}
-        <CharacterBanner
-          backgroundColor="#E4E5F2"
-          borderColor="#888AAF"
-          characterName="coffee"
-          characterSize="68px"
-          headerText="Welcome back looper!"
-          subtitle="Dont forget to share your time."
-        />
-      {:else}
-        {#if gaveUp == false}
-          {#if globalStats && globalStats["isUnderAverage"]}
-            <CharacterBanner
-              backgroundColor="#FFF9E3"
-              borderColor="#FFAE5D"
-              characterName="star"
-              characterSize="60px"
-              headerText="Congratulations speedster."
-              subtitle="You're under today's average!"
-            />
-          {:else}
-            <CharacterBanner
-              backgroundColor="#EEECEC"
-              borderColor="#B4B4B4"
-              characterName="hourglass"
-              characterSize="60px"
-              headerText="Not your fastest."
-              subtitle="You're over today's average."
-            />
-          {/if}
-        {:else}
-          <CharacterBanner
-            backgroundColor="#FFD8DD"
-            borderColor="#DF5468"
-            characterName="battery"
-            characterSize="60px"
-            headerText="Oh no, you gave up."
-            subtitle="Try to get it tomorrow!"
-          />
-        {/if}
-      {/if}
+					<div class="panel-section">
+						<p class="small-header">Solved in</p>
+						{#if result.gaveUp}
+							<h1 class="time-text gave-up">Gave up</h1>
+						{:else}
+							<h1 class="time-text">{displayTime}</h1>
+						{/if}
+					</div>
 
-      <div class="panel">
-        <div class="panel-body">
+					<div class="panel-section">
+						<span class="small-header">Global Stats</span>
+						<Stats globalStats={result.globalStats} />
+					</div>
 
-          <div class="panel-section">
-            <p class="small-header">Solved in</p>
-            <h1 class="time-text">{gaveUp ? "----" : elapsedSeconds}</h1>
-          </div>
+					<div class="panel-section">
+						<span class="small-header">Today's Solution</span>
+						<p>
+							<a href={dictionaryUrl(result.solution.primary)} target="_blank" rel="noreferrer">
+								{result.solution.primary}
+							</a>
+							+
+							<a href={dictionaryUrl(result.solution.secondary)} target="_blank" rel="noreferrer">
+								{result.solution.secondary}
+							</a>
+						</p>
+					</div>
 
-          <div class="panel-section">
-            <span class="small-header">Global Stats</span>
-            <Stats {globalStats}/>
-          </div>
+					<button class="share-button" on:click={share}>SHARE YOUR TIME</button>
+				</div>
+			</div>
 
-          <div class="panel-section">
-            <span class="small-header mt-small" style="margin-top: 5rem;">Today's Solution:</span>
-            <p>
-              {#if solutions && solutions.length > 2}
-                {#each solutions as solution}
-                  {@html format_solution(solution)}
-                {/each}
-              {:else}
-                {#if solutions && solutions.length > 0}
-                  {@html format_solution(solutions[0])}
-                {:else}
-                  Loading Solutions...
-                {/if}
-              {/if}
-            </p>
-          </div>
+			<!-- 2. Today's fastest times, with the player's own placing -->
+			<div class="panel">
+				<div class="panel-body">
+					<p class="small-header">Today's Leaderboard</p>
+					<p class="card-note">Top 10 fastest times</p>
 
-          <button class="share-button" on:click={share}>SHARE YOUR TIME</button>
-        </div>
-      </div>
+					{#if leaderboardError}
+						<p class="muted">{leaderboardError}</p>
+					{:else if !leaderboard}
+						<p class="muted">Loading today's times...</p>
+					{:else}
+						{#if leaderboard.you}
+							<p class="rank-line">
+								<span class="rank-number">#{leaderboard.you.rank}</span>
+								<span class="rank-of">of {leaderboard.total} today</span>
+							</p>
+						{/if}
 
-      <div class="panel">
-        <div class="panel-body">
-          <p class="small-header">Top 15 Loopers (# of games played)</p>
-          {#if usersLeaderboardRank}
-            <p class="mt-3">You are ranked <b>#{usersLeaderboardRank}</b></p>
-          {/if}
-          <ul class="leaderboard-list">
-            {#each top10Profile as profile, index}
-              <li class="leaderboard-item">
-                <span class="leaderboard-name">
-                  {index + 1}. {profile.name}
-                </span>
-                <span class="leaderboard-stats">
-                  {profile.gamesPlayed}
-                  {calculateEmojiRank(index + 1)}
-                </span>
-              </li>
-            {/each}
-          </ul>
-        </div>
-      </div>
+						{#if leaderboard.top.length > 0}
+							<ul class="board">
+								{#each leaderboard.top as entry (entry.uid)}
+									<li class="board-row" class:is-you={entry.uid === leaderboard.you?.uid}>
+										<img class="board-avatar" src={avatarSrc(entry.avatar)} alt="" />
+										<span class="board-name">
+											{entry.name}{entry.uid === leaderboard.you?.uid ? ' (you)' : ''}
+										</span>
+										<span class="board-meta">
+											<span class="board-rank">#{entry.rank}</span>
+											<span class="board-time">{formatDuration(entry.elapsedSeconds)}</span>
+										</span>
+									</li>
+								{/each}
 
-      <PromotionLink />
+								<!-- Outside the top 10: break, then the rows either side of you.
+								     Ranked 11th needs no break -- the row above is the last one shown. -->
+								{#if outsideTop && leaderboard.you}
+									{#if leaderboard.you.rank > leaderboard.top.length + 1}
+										<li class="board-gap" aria-hidden="true">&hellip;</li>
+									{/if}
 
-      <div class="panel">
-        <div class="panel-body">
-          <div class="stats-conatiner">
-            {#if loadingProfile}
-              Loading your stats...
-            {:else}
-              {#if profile}
-                <div>
-                  <p class="small-header" >Current Streak</p>
-                  <p class="stats-text">
-                    {streakEmoji}
-                    {profile.streak}
-                  </p>
-                </div>
+									{#if leaderboard.above && leaderboard.above.rank > leaderboard.top.length}
+										<li class="board-row">
+											<img class="board-avatar" src={avatarSrc(leaderboard.above.avatar)} alt="" />
+											<span class="board-name">{leaderboard.above.name}</span>
+											<span class="board-meta">
+												<span class="board-rank">#{leaderboard.above.rank}</span>
+												<span class="board-time"
+													>{formatDuration(leaderboard.above.elapsedSeconds)}</span
+												>
+											</span>
+										</li>
+									{/if}
 
-                <div>
-                  <p class="small-header">All Time Average</p>
-                  <p class="stats-text">{secondsFormatted(profile.averageTime)}</p>
-                </div>
-              {:else}
-                <span>Sign up for an account to see your stats! <a href="/auth/signup">Sign up</a></span>
-              {/if}
-            {/if}
-          </div>
+									<li class="board-row is-you">
+										<span class="board-rank">{leaderboard.you.rank}</span>
+										<span class="board-name">{leaderboard.you.name} (you)</span>
+										<span class="board-meta">
+											<span class="board-rank">#{leaderboard.you.rank}</span>
+											<span class="board-time"
+												>{formatDuration(leaderboard.you.elapsedSeconds)}</span
+											>
+										</span>
+									</li>
 
-          <p class="disclaimer">Hey, stats not what they should be? Report the issue on Redit and we will fix right away! Thanks for playing.</p>
-        </div>
-      </div>
+									{#if leaderboard.below}
+										<li class="board-row">
+											<img class="board-avatar" src={avatarSrc(leaderboard.below.avatar)} alt="" />
+											<span class="board-name">{leaderboard.below.name}</span>
+											<span class="board-meta">
+												<span class="board-rank">#{leaderboard.below.rank}</span>
+												<span class="board-time"
+													>{formatDuration(leaderboard.below.elapsedSeconds)}</span
+												>
+											</span>
+										</li>
+									{/if}
+								{/if}
+							</ul>
+						{:else}
+							<p class="muted">No one has finished today yet. Be the first!</p>
+						{/if}
 
-      <div class="block-spacer-100"></div>
-    <div>
-  </div>
+						{#if leaderboard.reason === 'not-signed-in'}
+							<div class="signin-cta">
+								<p class="signin-cta-text">Login to get your time on the leaderboard!</p>
+								<p class="signin-cta-sub">
+									It's free, and it saves your streak, average time and daily rank.
+								</p>
+								<a class="signin-cta-button" href="/auth">Login or Create account</a>
+							</div>
+						{:else if !leaderboard.you && result.gaveUp}
+							<p class="muted signin-prompt">Finish a loop to get on today's leaderboard.</p>
+						{/if}
+					{/if}
+
+					{#if profile || loadingProfile}
+						<div class="your-stats">
+							{#if loadingProfile}
+								<span class="muted">Loading your stats...</span>
+							{:else if profile}
+								<div>
+									<p class="small-header">Current Streak</p>
+									<p class="stats-text">{streakEmoji} {profile.streak}</p>
+								</div>
+								<div>
+									<p class="small-header">Historical Average</p>
+									<p class="stats-text">{formatDuration(profile.averageTime)}</p>
+								</div>
+							{/if}
+						</div>
+					{/if}
+				</div>
+			</div>
+
+			<!-- 3. Donation -->
+			<PromotionLink />
+
+			<!-- 4. Most games played, all time -->
+			<div class="panel">
+				<div class="panel-body">
+					<p class="small-header">Top 10 Loopers</p>
+					<p class="card-note">Most games played, all time</p>
+
+					{#if allTimeError}
+						<p class="muted">{allTimeError}</p>
+					{:else if allTime && allTime.top.length > 0}
+						<ul class="board">
+							{#each allTime.top as entry (entry.uid)}
+								<li
+									class="board-row"
+									class:is-you={entry.gamesPlayed === allTime.yourGamesPlayed &&
+										entry.rank === allTime.yourRank}
+								>
+									<img class="board-avatar" src={avatarSrc(entry.avatar)} alt="" />
+									<span class="board-name">{entry.name}</span>
+									<span class="board-meta">
+										<span class="board-rank">#{entry.rank}</span>
+										<span class="board-time">{entry.gamesPlayed} games</span>
+									</span>
+								</li>
+							{/each}
+						</ul>
+
+						{#if allTime.yourRank && allTime.yourRank > allTime.top.length}
+							<p class="card-note your-standing">
+								You're <b>#{allTime.yourRank}</b> with {allTime.yourGamesPlayed} games played.
+							</p>
+						{/if}
+					{:else if allTime}
+						<p class="muted">No loopers yet.</p>
+					{:else}
+						<p class="muted">Loading...</p>
+					{/if}
+				</div>
+			</div>
+
+			<div class="block-spacer-100"></div>
+		</div>
+	</div>
 </main>
-  
+
+<style>
+	main {
+		background-color: #ffe9e9 !important;
+		width: 100%;
+		height: min-content;
+	}
+
+	.gameover-container {
+		max-width: 400px;
+		width: 85%;
+	}
+
+	.panel-section {
+		margin-bottom: 1rem;
+	}
+
+	.panel-section p {
+		margin: 5px 0 0 0;
+	}
+
+	.outcome {
+		display: flex;
+		align-items: center;
+		gap: 9px;
+		margin: 0 0 1.1rem 0;
+		padding-bottom: 0.9rem;
+		border-bottom: 1px solid #eee;
+		font-size: 14px;
+		font-weight: 600;
+		line-height: 1.3;
+		color: #333;
+	}
+
+	.outcome i {
+		color: var(--accent);
+		font-size: 17px;
+		flex-shrink: 0;
+	}
+
+	.time-text {
+		font-size: 40px;
+		font-weight: 700;
+		margin: 4px 0 0 0;
+		text-align: left;
+	}
+
+	.time-text.gave-up {
+		font-size: 26px;
+		color: #df5468;
+	}
+
+	.stats-text {
+		font-size: 25px;
+		font-weight: 700;
+		margin: 4px 0 0 0;
+		text-align: left;
+	}
+
+	.share-button {
+		background-image: -webkit-linear-gradient(top, #ff4f87, #fc2f4f);
+		background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
+		color: white;
+		border-radius: 20px;
+		width: 100%;
+		height: 70px;
+		border: none;
+		text-transform: uppercase;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 1px;
+		cursor: pointer;
+	}
+
+	.rank-line {
+		display: flex;
+		align-items: baseline;
+		gap: 8px;
+		margin: 6px 0 0 0;
+	}
+
+	.rank-number {
+		font-size: 40px;
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	.rank-of {
+		font-size: 13px;
+		color: #888;
+	}
+
+	.board {
+		list-style: none;
+		margin: 1rem 0 0 0;
+		padding: 0;
+	}
+
+	.board-row {
+		display: grid;
+		grid-template-columns: 28px 1fr auto;
+		align-items: center;
+		gap: 10px;
+		padding: 7px 0;
+		border-top: 1px solid #eee;
+	}
+
+	.board-avatar {
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		object-fit: cover;
+		display: block;
+	}
+
+	.board-meta {
+		display: flex;
+		align-items: baseline;
+		gap: 8px;
+	}
+
+	.board-rank {
+		font-size: 12px;
+		color: #aaa;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.board-name {
+		font-weight: 500;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.board-time {
+		font-variant-numeric: tabular-nums;
+		font-size: 14px;
+		color: #444;
+	}
+
+	.board-row.is-you {
+		background-color: #fff3f5;
+		border-radius: 8px;
+		margin: 0 -8px;
+		padding-left: 8px;
+		padding-right: 8px;
+	}
+
+	.board-row.is-you .board-name,
+	.board-row.is-you .board-time {
+		font-weight: 700;
+		color: #fc2f4f;
+	}
+
+	.your-stats {
+		display: flex;
+		gap: 20px;
+		margin-top: 1.25rem;
+		padding-top: 1rem;
+		border-top: 1px solid #eee;
+	}
+
+	.muted {
+		color: #777;
+		font-size: 14px;
+		margin: 8px 0 0 0;
+	}
+
+	.signin-prompt {
+		margin-top: 12px;
+	}
+
+	/* Signed-out players see the board but have no row on it, so the ask needs
+	   to be a real call to action rather than a footnote. Sits directly on the
+	   card -- a panel inside a panel reads as a separate, unrelated thing. */
+	.signin-cta {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		gap: 6px;
+		margin-top: 1.5rem;
+	}
+
+	.signin-cta-text {
+		margin: 0;
+		font-size: 17px;
+		font-weight: 600;
+		line-height: 1.3;
+		color: #222;
+	}
+
+	.signin-cta-sub {
+		margin: 0 0 6px 0;
+		font-size: 13px;
+		line-height: 1.45;
+		color: #888;
+	}
+
+	.signin-cta-button {
+		display: block;
+		width: 100%;
+		padding: 13px 16px;
+		border-radius: 20px;
+		background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
+		color: white;
+		text-decoration: none;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 1px;
+		text-transform: uppercase;
+	}
+
+	.signin-cta-button:hover {
+		text-decoration: none;
+		opacity: 0.92;
+	}
+
+	.board-gap {
+		text-align: center;
+		color: #bbb;
+		letter-spacing: 2px;
+		padding: 4px 0;
+		border-top: 1px solid #eee;
+	}
+
+	.card-note {
+		font-size: 12px;
+		color: #888;
+		margin: 4px 0 0 0;
+	}
+
+	.your-standing {
+		margin-top: 12px;
+		padding-top: 10px;
+		border-top: 1px solid #eee;
+		font-size: 13px;
+		color: #555;
+	}
+</style>

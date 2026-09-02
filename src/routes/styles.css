@@ -196,7 +196,7 @@ button:focus:not(:focus-visible) {
 
 .divider {
 	height: 1.5px;
-	width: 100vw;
+	width: 100%;
 	background-color: #333;
 	opacity: 0.1;
 }
@@ -241,7 +241,7 @@ button:focus:not(:focus-visible) {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	width: 100vw;
+	width: 100%;
 	height: 50px;
 }
 
@@ -249,7 +249,7 @@ button:focus:not(:focus-visible) {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	width: 100vw;
+	width: 100%;
 	height: 50px;
 	background-color: white;
 }
