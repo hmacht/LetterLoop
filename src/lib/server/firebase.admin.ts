@@ -125,6 +125,17 @@ export async function assertAdminCredentials(): Promise<void> {
 	if (credentialState === 'missing') throw missingCredentialsError();
 }
 
+/**
+ * Hard ceiling on the credential check.
+ *
+ * With no service-account key, `applicationDefault()` falls back to probing the
+ * GCP metadata server. On Google infrastructure that answers instantly; on
+ * Vercel or Render the address is simply unreachable and the lookup can hang
+ * far longer than the platform's function timeout -- which surfaces as an
+ * opaque FUNCTION_INVOCATION_FAILED rather than a useful error.
+ */
+const CREDENTIAL_PROBE_TIMEOUT_MS = 5000;
+
 async function probeCredentials(): Promise<void> {
 	// The emulators accept any caller.
 	if (usingEmulators()) {
@@ -137,8 +148,25 @@ async function probeCredentials(): Promise<void> {
 		if (!credential) throw new Error('No credential configured.');
 
 		// Forces the token exchange that would otherwise fail asynchronously
-		// somewhere deep inside the first Firestore call.
-		await credential.getAccessToken();
+		// somewhere deep inside the first Firestore call. Raced against a
+		// deadline so a hanging metadata lookup cannot take the whole instance
+		// down with it -- every later request awaits this same promise.
+		await Promise.race([
+			credential.getAccessToken(),
+			new Promise((_, reject) =>
+				setTimeout(
+					() =>
+						reject(
+							new Error(
+								`Credential check timed out after ${CREDENTIAL_PROBE_TIMEOUT_MS}ms. ` +
+									'This usually means no service account is configured and the host ' +
+									'has no metadata server to fall back to.'
+							)
+						),
+					CREDENTIAL_PROBE_TIMEOUT_MS
+				)
+			)
+		]);
 		credentialState = 'ok';
 	} catch (cause) {
 		credentialState = 'missing';
