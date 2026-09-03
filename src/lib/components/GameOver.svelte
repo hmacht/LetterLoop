@@ -7,15 +7,16 @@
 	import Modal from '$lib/components/Modal.svelte';
 	import Loading from '$lib/components/Loading.svelte';
 	import LeaderRow from '$lib/components/LeaderRow.svelte';
+	import Profile from '$lib/components/Profile.svelte';
+	import { avatarSrc } from '$lib/images/avatars';
 
 	import { notifications } from '$lib/utils/notifications';
 	import { formatDuration } from '$lib/utils/time';
-	import { calculateEmoji } from '$lib/utils/emojiStreak';
 	import {
 		today as loadDailyBoard,
 		allTime as loadAllTimeBoard
 	} from '$lib/services/leaderboardService';
-	import { profileStore, profileLoading } from '$lib/stores/profileStore';
+	import { profileStore } from '$lib/stores/profileStore';
 	import { session } from '$lib/session';
 	import { Event, track } from '$lib/services/analytics';
 
@@ -36,14 +37,13 @@
 	let allTimeError = '';
 	let showLeaderboardHelp = false;
 	let showAllTime = false;
+	let showProfile = false;
 	let loading = true;
 
 	/* Read from the session rather than the leaderboard payload: the prompt
 	   should be there from first paint, not once the boards have loaded. */
 	$: loggedIn = $session?.loggedIn ?? false;
 	$: profile = $profileStore;
-	$: loadingProfile = $profileLoading;
-	$: streakEmoji = profile ? calculateEmoji(profile.streak) : '';
 	$: displayTime = formatDuration(result.elapsedSeconds);
 	$: beatAverage = !result.gaveUp && result.globalStats.isUnderAverage;
 
@@ -182,13 +182,43 @@
 				</p>
 			</section>
 
-			<button class="share-button" on:click={share}>Share</button>
+			<button class="share-button" on:click={share}>
+				<i class="fa-solid fa-share-nodes" aria-hidden="true"></i>
+				Share
+			</button>
+
+			{#if profile}
+				<button class="profile-trigger" on:click={() => (showProfile = true)}>
+					<img class="trigger-icon" src={avatarSrc(profile.avatar)} alt="" />
+					<span>
+						Check your streak, times and games played.
+						<span class="trigger-link">View profile</span>
+					</span>
+				</button>
+			{/if}
 
 			<!-- Today's fastest times -->
 			<section class="board-block board-block-lead">
 				<div class="board-title">
-					<span class="badge-new">New</span>
-					<p class="label">Leaderboard</p>
+					<div class="board-heading">
+						<span class="badge-new">New</span>
+						<h2 class="board-name">Leaderboard</h2>
+
+						{#if leaderboard?.you}
+							<p class="board-blurb">
+								Awesome work today! You ranked
+								<b>#{leaderboard.you.rank}</b>
+								out of <b>{leaderboard.total.toLocaleString()}</b> players!
+							</p>
+						{:else}
+							<p class="board-blurb">
+								Todays top players ranked by times.{loggedIn
+									? ''
+									: ' Sign in to get your name on the leaderboard!'}
+							</p>
+						{/if}
+					</div>
+
 					<button
 						class="board-help"
 						on:click={() => (showLeaderboardHelp = true)}
@@ -201,13 +231,6 @@
 				{#if leaderboardError}
 					<p class="muted">{leaderboardError}</p>
 				{:else if leaderboard}
-					{#if leaderboard.you}
-						<p class="rank-line">
-							<span class="rank-number">#{leaderboard.you.rank}</span>
-							<span class="rank-of">of {leaderboard.total.toLocaleString()} today</span>
-						</p>
-					{/if}
-
 					{#if leaderboard.top.length > 0}
 						<ul class="board">
 							{#each leaderboard.top as entry (entry.uid)}
@@ -270,25 +293,14 @@
 
 			<PromotionLink />
 
-			{#if profile || loadingProfile}
-				<section class="board-block">
-					<p class="label">Your Stats</p>
-					{#if loadingProfile}
-						<p class="muted">Loading your stats...</p>
-					{:else if profile}
-						<div class="your-stats">
-							<div>
-								<p class="stat-value">{streakEmoji} {profile.streak}</p>
-								<p class="stat-label">Current Streak</p>
-							</div>
-							<div>
-								<p class="stat-value">{formatDuration(profile.averageTime)}</p>
-								<p class="stat-label">All Time Average</p>
-							</div>
-						</div>
-					{/if}
-				</section>
-			{/if}
+			<!-- Signs the page off the same way the menu signs itself off. -->
+			<div class="sign-off">
+				<i class="tagline">For the love of morning games</i>
+				<p class="thanks">
+					<i class="fa-regular fa-face-smile" aria-hidden="true"></i>
+					Thanks for playing
+				</p>
+			</div>
 
 			<div class="block-spacer-100"></div>
 		</div>
@@ -348,6 +360,15 @@
 			possible are left off.
 		</li>
 	</ul>
+</Modal>
+
+<Modal
+	bind:showModal={showProfile}
+	modalType="profile"
+	title="Your Profile"
+	subtitle="Your streak, average time and games played."
+>
+	<Profile />
 </Modal>
 
 <style>
@@ -438,11 +459,18 @@
 		width: 60%;
 		max-width: 240px;
 		height: 54px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 10px;
 		font-size: 16px;
 		font-weight: 600;
 		cursor: pointer;
-		margin: 0.5rem auto 3rem auto;
-		display: block;
+		margin: 0.5rem auto 1.75rem auto;
+	}
+
+	.share-button i {
+		font-size: 15px;
 	}
 
 	/* ---- leaderboards, blended into the page ---- */
@@ -459,11 +487,9 @@
 	}
 
 	.badge-new {
-		grid-area: 1 / 2;
-		justify-self: center;
 		padding: 3px 9px;
 		border-radius: 6px;
-		background-color: #2f6fed;
+		background-color: #fc365a;
 		color: white;
 		font-size: 10px;
 		font-weight: 700;
@@ -471,33 +497,49 @@
 		text-transform: uppercase;
 	}
 
-	/* Two rows: the badge sits over the heading, and the help button shares the
-	   heading's row so it lines up with the word rather than with the stack as a
-	   whole. Equal `1fr` side columns keep the middle column centred. */
+	/* Badge, title and a line of copy stacked as one centred block, with the help
+	   button held out at the top right. Equal `1fr` side columns keep the block
+	   centred in the section whatever width the button takes. */
 	.board-title {
 		display: grid;
 		grid-template-columns: 1fr auto 1fr;
-		align-items: center;
 		column-gap: 12px;
-		row-gap: 7px;
-		margin-bottom: 4px;
+		margin-bottom: 1.1rem;
 	}
 
-	/* The leaderboard is the section being introduced, so its heading carries
-	   more weight than the plain labels above it. A tight line height stops the
-	   serif's ascender space from dragging the row's midline upwards. */
-	.board-title .label {
-		grid-area: 2 / 2;
-		font-family: 'Playfair Display', serif;
-		font-size: 22px;
-		font-weight: 700;
-		line-height: 1;
-		letter-spacing: normal;
-		text-transform: none;
+	.board-heading {
+		grid-column: 2;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 7px;
+		text-align: center;
+	}
+
+	.board-name {
+		font-size: 30px;
+		font-weight: 800;
+		line-height: 1.1;
+		letter-spacing: -0.5px;
+		color: black;
+		margin: 0;
+	}
+
+	.board-blurb {
+		font-size: 17px;
+		line-height: 1.3;
+		color: black;
+		margin: 0;
+	}
+
+	/* The two numbers are the whole point of the sentence. */
+	.board-blurb b {
+		color: #fc365a;
 	}
 
 	.board-help {
-		grid-area: 2 / 3;
+		grid-column: 3;
+		align-self: start;
 		justify-self: end;
 		display: block;
 		background: none;
@@ -507,25 +549,6 @@
 		color: #b09a9d;
 		font-size: 19px;
 		line-height: 1;
-	}
-
-	.rank-line {
-		display: flex;
-		align-items: baseline;
-		gap: 8px;
-		margin: 10px 0 0 0;
-	}
-
-	.rank-number {
-		font-size: 38px;
-		font-weight: 800;
-		line-height: 1;
-		color: black;
-	}
-
-	.rank-of {
-		font-size: 13px;
-		color: #9a8386;
 	}
 
 	.board {
@@ -630,26 +653,55 @@
 		white-space: nowrap;
 	}
 
-	.your-stats {
+	/* Matches `.all-time-trigger`, with the player's own face as the icon. */
+	.profile-trigger {
 		display: flex;
-		gap: 32px;
-		margin-top: 0.75rem;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+		width: 100%;
+		/* No bottom margin: the leaderboard's own top padding is the gap below the
+		   rule, and it matches the share button's margin above it. */
+		margin: 0;
+		padding: 0.95rem 0;
+		border: none;
+		border-top: 1px solid rgba(0, 0, 0, 0.08);
+		border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+		background: none;
+		cursor: pointer;
+		font-size: 14px;
+		line-height: 1.45;
+		color: black;
+		text-align: left;
 	}
 
-	.stat-value {
-		font-size: 24px;
-		font-weight: 700;
-		margin: 0;
+	.profile-trigger span {
+		min-width: 0;
+	}
+
+	.profile-trigger .trigger-icon {
+		border-radius: 50%;
+	}
+
+	.sign-off {
+		margin-top: 2rem;
+		text-align: center;
+	}
+
+	.tagline {
+		font-size: 12px;
 		color: black;
 	}
 
-	.stat-label {
-		font-size: 11px;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-		font-weight: 600;
-		color: #9a8386;
-		margin: 2px 0 0 0;
+	.thanks {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 7px;
+		margin: 8px 0 0 0;
+		font-size: 14px;
+		color: black;
 	}
 
 	.help-list {

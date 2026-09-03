@@ -36,4 +36,10 @@
 		margin: 5px 0 0 0;
 		line-height: 1.2;
 	}
+
+	/* The two figures are the point of the sentence, picked out in the same red
+	   the leaderboard blurb uses for a rank. */
+	.result b {
+		color: #fc365a;
+	}
 </style>
