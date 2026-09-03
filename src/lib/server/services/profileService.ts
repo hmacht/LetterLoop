@@ -1,6 +1,9 @@
 /** Player profile business logic. */
 import { error } from '@sveltejs/kit';
 import * as profiles from '$lib/server/repositories/profileRepository';
+import * as runs from '$lib/server/repositories/runRepository';
+import * as leaderboard from '$lib/server/repositories/leaderboardRepository';
+import { isPlausibleRun } from '$lib/server/gameRules';
 import { todayKey, yesterdayKey } from '$lib/utils/gameDate';
 import { isValidAvatar, randomAvatar, AVATAR_COUNT } from '$lib/utils/avatars';
 import type { AuthUser } from '$lib/server/auth';
@@ -24,7 +27,7 @@ export async function requireAdmin(user: AuthUser): Promise<Profile> {
 }
 
 export async function create(user: AuthUser, name: string): Promise<Profile> {
-	const profile: Profile = {
+	const blank: Profile = {
 		id: user.uid,
 		name: name.trim() || 'Looper',
 		email: user.email ?? '',
@@ -37,8 +40,44 @@ export async function create(user: AuthUser, name: string): Promise<Profile> {
 		lastPlayedDate: null
 	};
 
+	const dayKey = todayKey();
+	const played = await completedRunToday(user.uid, dayKey);
+	const profile = played === null ? blank : { ...blank, ...creditFor(played, dayKey) };
+
 	await profiles.create(profile);
+
+	// Guests are never ranked, so a game finished before signing up has no board
+	// entry yet. Write it now that the same player has a name to show.
+	if (played !== null && isPlausibleRun(played)) {
+		await leaderboard.record(dayKey, {
+			uid: profile.id,
+			name: profile.name,
+			avatar: profile.avatar,
+			elapsedSeconds: played
+		});
+	}
+
 	return profile;
+}
+
+/**
+ * Today's finished time for this uid, or null if there isn't one to claim.
+ *
+ * Signing up upgrades the anonymous session in place rather than minting a
+ * second account, so a player who looped as a guest an hour ago still owns that
+ * run -- it just predates their profile. Giving up is deliberately excluded:
+ * it never counted as a game played, and the run record alone is enough to keep
+ * the day closed.
+ */
+async function completedRunToday(uid: string, dayKey: string): Promise<number | null> {
+	const run = await runs.find(uid, dayKey);
+	if (!run?.completed || run.gaveUp || run.elapsedSeconds === null) return null;
+	return run.elapsedSeconds;
+}
+
+/** What that run is worth to a profile that has no other games in it. */
+function creditFor(elapsedSeconds: number, dayKey: string): Partial<Profile> {
+	return { gamesPlayed: 1, streak: 1, averageTime: elapsedSeconds, lastPlayedDate: dayKey };
 }
 
 /** Applies the fields a player is allowed to change about themselves. */

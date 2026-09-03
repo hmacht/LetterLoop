@@ -37,8 +37,15 @@
 	on:cancel={handleCancel}
 	on:click|self={() => !hide_close && dialog.close()}
 >
-	<!-- svelte-ignore a11y-no-static-element-interactions a11y-click-events-have-key-events -->
-	<div class="modal-card" on:click|stopPropagation>
+	<!--
+		`showModal()` focuses the first focusable descendant unless something is
+		marked autofocus -- which meant the close button lit up with a focus ring
+		every time a modal opened. Focusing the card instead puts focus somewhere
+		sensible for screen readers (the top of the dialog) without ringing a
+		control the user never chose.
+	-->
+	<!-- svelte-ignore a11y-no-static-element-interactions a11y-click-events-have-key-events a11y-autofocus -->
+	<div class="modal-card" tabindex="-1" autofocus on:click|stopPropagation>
 		<Toast />
 
 		{#if title || !hide_close}
@@ -60,7 +67,9 @@
 			</div>
 		{/if}
 
-		<slot />
+		<div class="modal-body">
+			<slot />
+		</div>
 	</div>
 </dialog>
 
@@ -78,6 +87,8 @@
 	}
 
 	.modal-card {
+		/* Focusable only as the dialog's initial target; never shows a ring. */
+		outline: none;
 		border: 1px solid #d7d7d7;
 		background-color: #fffbfb;
 		border-radius: 30px;
@@ -89,6 +100,24 @@
 		align-items: flex-start;
 		gap: 12px;
 		margin-bottom: 1rem;
+	}
+
+	/*
+	  The all-time board runs to twenty rows, which is taller than a phone. Cap
+	  the card and scroll the body only, so the title and the close button stay
+	  put while the list moves under them.
+	*/
+	dialog[data-modal-type='all-time'] .modal-card {
+		display: flex;
+		flex-direction: column;
+		max-height: 80vh;
+	}
+
+	dialog[data-modal-type='all-time'] .modal-body {
+		overflow-y: auto;
+		/* A flex child will not shrink past its content without this. */
+		min-height: 0;
+		overscroll-behavior: contain;
 	}
 
 	.modal-heading {

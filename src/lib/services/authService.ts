@@ -10,7 +10,10 @@ import {
 	createUserWithEmailAndPassword,
 	signInAnonymously,
 	signOut,
-	sendPasswordResetEmail
+	sendPasswordResetEmail,
+	linkWithCredential,
+	EmailAuthProvider,
+	type User
 } from 'firebase/auth';
 import { auth } from '$lib/firebase.client';
 import { api } from '$lib/services/apiClient';
@@ -20,6 +23,8 @@ import { refreshProfile } from '$lib/stores/profileStore';
 
 const ERROR_MESSAGES: Record<string, string> = {
 	'auth/email-already-in-use': 'This email is already in use. Please use a different one.',
+	// What linking an anonymous session reports for the same situation.
+	'auth/credential-already-in-use': 'This email is already in use. Please use a different one.',
 	'auth/invalid-email': 'The email address is not valid. Please enter a valid email.',
 	'auth/invalid-credential': 'The email or password is incorrect.',
 	'auth/weak-password': 'Your password is too weak. Please use a stronger password.',
@@ -60,7 +65,7 @@ export async function signUpWithEmail(
 	password: string
 ): Promise<void> {
 	try {
-		const { user } = await createUserWithEmailAndPassword(auth, email, password);
+		const user = await register(email, password);
 		identifyUser(user.uid);
 		track(Event.SignedIn, { method: 'signup' });
 	} catch (err) {
@@ -77,6 +82,31 @@ export async function signUpWithEmail(
 			'Your account was created, but we could not set up your profile. Please contact support.'
 		);
 	}
+}
+
+/**
+ * Turns the visitor into a registered account.
+ *
+ * Everyone is already signed in anonymously, and that anonymous uid is what
+ * today's run, stats and saved game are filed under. Linking the password to
+ * that same account keeps the uid, so a player who looped as a guest and only
+ * then signed up still owns the game they just played -- creating a fresh
+ * account instead would hand them an empty day and a second attempt at it.
+ */
+async function register(email: string, password: string): Promise<User> {
+	const guest = auth.currentUser;
+
+	if (!guest?.isAnonymous) {
+		const { user } = await createUserWithEmailAndPassword(auth, email, password);
+		return user;
+	}
+
+	const { user } = await linkWithCredential(guest, EmailAuthProvider.credential(email, password));
+
+	// The cached ID token still describes an anonymous sign-in. Force a fresh one
+	// before the profile call, or the server refuses it as a guest.
+	await user.getIdToken(true);
+	return user;
 }
 
 /** Every visitor gets an identity so the game can be timed server-side. */

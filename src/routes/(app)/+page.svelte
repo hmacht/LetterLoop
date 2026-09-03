@@ -1,22 +1,25 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 
 	import Menu from '$lib/components/Menu.svelte';
 	import GameBoard from '$lib/components/GameBoard.svelte';
 	import GameOver from '$lib/components/GameOver.svelte';
 	import FullPageAd from '$lib/components/FullPageAd.svelte';
+	import Loading from '$lib/components/Loading.svelte';
 
 	import * as gameService from '$lib/services/gameService';
 	import type { GameResult } from '$lib/services/gameService';
-	import { hideNav } from '$lib/stores/layoutUIStore';
 
 	let showGameBoard = false;
 	let showAd = false;
 	let result: GameResult | null = null;
 	/** True when today's run was finished before this page load. */
 	let returning = false;
-
-	$: hideNav.set((showGameBoard && !result) || showAd);
+	/**
+	 * Until the server has told us whether today's loop is already done, we do
+	 * not know whether to show the menu or the results -- so show neither.
+	 */
+	let restoring = true;
 
 	onMount(async () => {
 		// The server is the source of truth for "have I played today" -- it knows
@@ -30,15 +33,17 @@
 		} catch (error) {
 			// Not fatal: the player can still start, and /api/game/start will
 			// return the finished run if there is one.
-			console.error('Could not restore today\'s game:', error);
+			console.error("Could not restore today's game:", error);
+		} finally {
+			restoring = false;
 		}
 	});
-
-	onDestroy(() => hideNav.set(false));
 </script>
 
 <main>
-	{#if showAd}
+	{#if restoring}
+		<Loading />
+	{:else if showAd}
 		<FullPageAd bind:showAd />
 	{:else if result}
 		<GameOver {result} {returning} />

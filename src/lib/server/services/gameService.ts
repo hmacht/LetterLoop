@@ -11,22 +11,12 @@ import * as puzzleService from '$lib/server/services/puzzleService';
 import * as statsService from '$lib/server/services/statsService';
 import * as profileService from '$lib/server/services/profileService';
 import * as leaderboardService from '$lib/server/services/leaderboardService';
+import { isPlausibleRun } from '$lib/server/gameRules';
 import { todayKey } from '$lib/utils/gameDate';
 import type { AuthUser } from '$lib/server/auth';
 import type { PublicPuzzle, RevealedPuzzle } from '$lib/models/puzzle';
 import type { GlobalStats } from '$lib/models/globalStats';
 import type { Profile } from '$lib/models/profile';
-
-/**
- * Floor for a physically possible run.
- *
- * Set low on purpose: it is meant to catch scripted submissions, not to judge
- * fast players. A genuinely quick human can select eight letters and hit enter
- * in a handful of seconds, so anything at or above this is taken at face value.
- * Runs below it still get their time and stats -- they just do not reach the
- * leaderboard, and the run is flagged for review.
- */
-const MIN_PLAUSIBLE_SECONDS = 2;
 
 export interface GameState {
 	dayKey: string;
@@ -170,7 +160,7 @@ async function finish(
 	gaveUp: boolean
 ): Promise<GameResult> {
 	const elapsedSeconds = elapsedFor(run, new Date());
-	const flagged = !gaveUp && elapsedSeconds < MIN_PLAUSIBLE_SECONDS;
+	const flagged = !gaveUp && !isPlausibleRun(elapsedSeconds);
 
 	await runs.finish(user.uid, dayKey, { elapsedSeconds, gaveUp });
 
@@ -219,13 +209,19 @@ async function describeFinishedRun(
 		profileService.get(user.uid)
 	]);
 
+	// Recomputed rather than hard-coded false: a returning player should still be
+	// told they beat the day's average, otherwise the message is always the
+	// consolation one no matter how well they did.
+	const elapsedSeconds = run.elapsedSeconds ?? 0;
+	const beatAverage = !run.gaveUp && stats.count > 0 && elapsedSeconds < stats.averageSeconds;
+
 	return {
 		dayKey,
-		elapsedSeconds: run.elapsedSeconds ?? 0,
+		elapsedSeconds,
 		gaveUp: run.gaveUp,
 		flagged: false,
 		solution,
-		globalStats: withComparison(stats, false, false),
+		globalStats: withComparison(stats, beatAverage, false),
 		profile
 	};
 }

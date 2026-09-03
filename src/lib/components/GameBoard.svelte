@@ -14,8 +14,6 @@
 	import { setProfile } from '$lib/stores/profileStore';
 	import { Event, track } from '$lib/services/analytics';
 
-	import Device from 'svelte-device-info';
-
 	/** Set when the run ends; the parent swaps in <GameOver>. */
 	export let result: GameResult | null = null;
 	/** True when the run was already over before this mount, not just finished. */
@@ -40,7 +38,12 @@
 	let paused = false;
 	let pauseBusy = false;
 	let submitting = false;
+	let celebrating = false;
 	let loadStatus = 'Loading Game...';
+
+	/** Each circle swells and colours in turn, clockwise from 12 o'clock. */
+	const CELEBRATION_STAGGER_MS = 90;
+	const CELEBRATION_POP_MS = 520;
 
 	/** The in-flight `start` call. Guesses wait on it rather than racing it. */
 	let starting: Promise<GameState> | null = null;
@@ -128,6 +131,7 @@
 			const outcome = await gameService.submitGuess(guess);
 
 			if (outcome.correct) {
+				await celebrate();
 				finish(outcome.result);
 			} else {
 				notifications.danger('Incorrect', 1000);
@@ -198,6 +202,20 @@
 		}
 	}
 
+	/**
+	 * Plays the completion animation and resolves once it has finished.
+	 *
+	 * The results page used to replace the board the instant the server said
+	 * "correct", so there was no window for any of this to be seen.
+	 */
+	async function celebrate(): Promise<void> {
+		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+
+		celebrating = true;
+		const total = (slotCount - 1) * CELEBRATION_STAGGER_MS + CELEBRATION_POP_MS;
+		await new Promise((resolve) => setTimeout(resolve, total));
+	}
+
 	function finish(finished: GameResult) {
 		running = false;
 		// The server returns the freshly updated profile, so the stats panel does
@@ -265,45 +283,42 @@
 </script>
 
 <main>
-	<div class="nav-flex-container">
-		<div class="title-container">
-			<a href="/" class="title nav-logo">LetterLoop</a>
+	<div class="nav-flex-container game-header">
+		<div class="header-timer">
+			<Timer {startedAtMs} {running} />
 		</div>
-		<div class="spacer"></div>
-		<button class="help-container" on:click={requestGiveUp} disabled={submitting || !running}>
-			<i class="fa-regular fa-face-sad-tear"></i>
-			{#if !Device.isMobile}
-				<p class="how-to-play">Give Up</p>
-			{/if}
+
+		<button
+			class="header-action"
+			on:click={pauseGame}
+			disabled={!running || pauseBusy}
+			aria-label="Pause"
+			title="Pause"
+		>
+			<i class="fa-regular fa-circle-pause" aria-hidden="true"></i>
 		</button>
-		<button class="help-container" on:click={() => (showHelpModal = true)}>
-			<i class="fa-regular fa-circle-question" style={Device.isMobile ? 'padding-right: 1rem;' : ''}
-			></i>
-			{#if !Device.isMobile}
-				<p class="how-to-play">How to play</p>
-			{/if}
+		<button
+			class="header-action"
+			on:click={requestGiveUp}
+			disabled={submitting || !running}
+			aria-label="Give up"
+			title="Give up"
+		>
+			<i class="fa-regular fa-face-sad-tear" aria-hidden="true"></i>
+		</button>
+		<button
+			class="header-action"
+			on:click={() => (showHelpModal = true)}
+			aria-label="How to play"
+			title="How to play"
+		>
+			<i class="fa-regular fa-circle-question" aria-hidden="true"></i>
 		</button>
 	</div>
-	<div class="divider"></div>
 
 	<Toast />
 
-	<div class="centered-container full-height-container">
-		<div class="flex-container">
-			<div class="timer-container">
-				<Timer {startedAtMs} {running} />
-			</div>
-
-			<button
-				class="icon-button"
-				on:click={pauseGame}
-				disabled={!running || pauseBusy}
-				aria-label="Pause"
-			>
-				<i class="fa-solid fa-pause"></i>
-			</button>
-		</div>
-
+	<div class="centered-container full-height-container board-area">
 		{#if letterBank}
 			<div class="circle-container mb-5 mt-5">
 				{#each selectedLetters as letter, index}
@@ -311,9 +326,12 @@
 						class="circle"
 						class:filled={letter !== ''}
 						class:shared={sharedLetterIndexes.includes(index)}
+						class:celebrate={celebrating}
 						style={`
               left: calc(38% + ${Math.cos((index / selectedLetters.length) * 2 * Math.PI - Math.PI / 2) * 100}px);
               top: calc(38% + ${Math.sin((index / selectedLetters.length) * 2 * Math.PI - Math.PI / 2) * 100}px);
+              --pop-delay: ${index * CELEBRATION_STAGGER_MS}ms;
+              --pop-duration: ${CELEBRATION_POP_MS}ms;
             `}
 					>
 						{letter}
@@ -400,20 +418,133 @@
 </Modal>
 
 <style>
-	.icon-button,
-	.help-container {
+	/* Icon-only controls: no labels, so the glyphs carry the whole meaning and
+	   need to be big enough to read and to hit comfortably on a phone. The
+	   padding keeps each tap target near the 44px Apple/Android minimum even
+	   though the icon itself is 22px. */
+	/* The timer and its controls read as one group, centred over the board.
+	   `.nav-flex-container` sets space-between for the old logo-left layout,
+	   which has to be overridden now there is only the one cluster. */
+	.game-header {
+		justify-content: center;
+		gap: 4px;
+	}
+
+	/* Drops the board away from the timer cluster so the two read as separate
+	   things rather than one stack. */
+	.board-area {
+		padding-top: 28px;
+	}
+
+	.header-action {
 		background: none;
 		border: none;
 		cursor: pointer;
 		display: flex;
 		align-items: center;
+		justify-content: center;
 		font: inherit;
 		color: inherit;
+		font-size: 22px;
+		width: 42px;
+		height: 42px;
+		padding: 0;
+		border-radius: 12px;
+		line-height: 1;
+		transition:
+			background-color 0.15s ease,
+			color 0.15s ease;
 	}
 
-	.help-container:disabled {
-		opacity: 0.5;
+	/* Guarded on `hover: hover` so touch devices don't keep the highlight
+	   stuck on the last thing tapped. */
+	@media (hover: hover) {
+		.header-action:hover:not(:disabled) {
+			background-color: rgba(0, 0, 0, 0.07);
+			color: #000;
+		}
+	}
+
+	.header-action:active:not(:disabled) {
+		background-color: rgba(0, 0, 0, 0.12);
+	}
+
+	.header-action:disabled {
+		opacity: 0.4;
 		cursor: default;
+	}
+
+	/* The winning sweep: each circle swells and settles in turn, travelling
+	   clockwise from the top. Index 0 sits at 12 o'clock and the layout angle
+	   increases clockwise, so a plain per-index delay traces the right path. */
+	/*
+	  Each circle swells and settles in turn, clockwise from the top, taking its
+	  finished colour as its turn arrives.
+
+	  `forwards` rather than `both` is load-bearing: `both` also applies the 0%
+	  frame *backwards* through the delay, which would colour every circle at
+	  once the moment the sweep began. With `forwards` each circle keeps its
+	  normal grey until its own turn starts.
+	*/
+	.circle.celebrate {
+		animation: pop var(--pop-duration, 520ms) ease-in-out var(--pop-delay, 0ms) forwards;
+	}
+
+	/* The shared circles are already gradient-filled, so they only need the
+	   swell -- but they still take their place in the sweep. */
+	.circle.celebrate:not(.shared) {
+		animation: pop-fill var(--pop-duration, 520ms) ease-in-out var(--pop-delay, 0ms) forwards;
+	}
+
+	@keyframes pop {
+		0% {
+			transform: scale(1);
+		}
+		45% {
+			transform: scale(1.32);
+		}
+		100% {
+			transform: scale(1);
+		}
+	}
+
+	/* The colour is set on the very first frame and simply held -- it appears
+	   the instant the circle's turn comes, with no fade or wipe. */
+	@keyframes pop-fill {
+		0% {
+			transform: scale(1);
+			background-image: linear-gradient(to bottom, #ff5793, #f70303);
+			color: #ffffff;
+		}
+		45% {
+			transform: scale(1.32);
+			background-image: linear-gradient(to bottom, #ff5793, #f70303);
+			color: #ffffff;
+		}
+		100% {
+			transform: scale(1);
+			background-image: linear-gradient(to bottom, #ff5793, #f70303);
+			color: #ffffff;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.circle.celebrate,
+		.circle.celebrate:not(.shared) {
+			animation: none;
+		}
+	}
+
+	/* Timer sets no font-size of its own, so it inherits this. Tabular figures
+	   stop the width shifting as the digits tick over. */
+	.header-timer {
+		display: flex;
+		align-items: center;
+		font-size: 20px;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+		padding-right: 4px;
+		color: #333;
 	}
 
 	.share-button {
@@ -433,11 +564,6 @@
 
 	.share-button:disabled {
 		opacity: 0.6;
-		cursor: default;
-	}
-
-	.icon-button:disabled {
-		opacity: 0.4;
 		cursor: default;
 	}
 

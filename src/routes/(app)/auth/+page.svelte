@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import logo_src from '$lib/images/logo.png';
+	import loop_podeum from '$lib/images/loop_icons/loop_podeum.png';
 	import { emailHasAccount, loginWithEmail, signUpWithEmail } from '$lib/services/authService';
 
 	/**
@@ -132,8 +133,8 @@
 	{/if}
 
 	<p class="leaderboard-cta">
-		<i class="fa-solid fa-trophy" aria-hidden="true"></i>
-		<span>Login to get your time on the leaderboard!</span>
+		<img class="cta-icon" src={loop_podeum} alt="" />
+		<span>Login to get your time on the leaderboard and collect game stats</span>
 	</p>
 
 	<p class="legal">
@@ -239,23 +240,38 @@
 		padding: 0 1.5rem;
 	}
 
+	/* Icon and text on one line. Centre-aligned rather than baseline-aligned:
+	   the icon is far taller than the text, so a shared baseline would hang it
+	   well below the line. `center` keeps it level with the text block even when
+	   the sentence wraps to two lines. */
 	.leaderboard-cta {
 		display: flex;
-		align-items: baseline;
+		flex-direction: row;
+		align-items: center;
 		justify-content: center;
-		gap: 8px;
-		margin: 20px 0 0 0;
-		padding: 0 1.5rem;
-		font-size: 14px;
+		gap: 12px;
+		margin: 24px auto 0 auto;
+		/* Matches `.btn` so the sentence wraps inside the button's width instead
+		   of running wider than everything above it. */
+		width: 78%;
+		max-width: 300px;
+		padding: 0;
+		font-size: 13px;
+		line-height: 1.25;
 		color: #333;
-		text-align: center;
+		text-align: left;
 	}
 
-	.leaderboard-cta i {
-		/* Goldenrod rather than a lighter gold -- pale golds wash out badly
-		   against the white card. */
-		color: #d9a520;
-		font-size: 14px;
+	.leaderboard-cta span {
+		min-width: 0;
+	}
+
+	.cta-icon {
+		width: 32px;
+		height: 32px;
+		object-fit: contain;
+		flex-shrink: 0;
+		display: block;
 	}
 
 	.legal {
