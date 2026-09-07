@@ -5,17 +5,24 @@
 	import Toast from '$lib/components/Toast.svelte';
 	import PromotionLink from '$lib/components/PromotionLink.svelte';
 	import Modal from '$lib/components/Modal.svelte';
+	import Loading from '$lib/components/Loading.svelte';
+	import LeaderRow from '$lib/components/LeaderRow.svelte';
+	import Profile from '$lib/components/Profile.svelte';
+	import { avatarSrc } from '$lib/images/avatars';
 
 	import { notifications } from '$lib/utils/notifications';
 	import { formatDuration } from '$lib/utils/time';
-	import { calculateEmoji } from '$lib/utils/emojiStreak';
-	import { avatarSrc } from '$lib/images/avatars';
 	import {
 		today as loadDailyBoard,
 		allTime as loadAllTimeBoard
 	} from '$lib/services/leaderboardService';
-	import { profileStore, profileLoading } from '$lib/stores/profileStore';
+	import { profileStore } from '$lib/stores/profileStore';
+	import { session } from '$lib/session';
 	import { Event, track } from '$lib/services/analytics';
+
+	import loopCheck from '$lib/images/loop_icons/loop_check.png';
+	import loopX from '$lib/images/loop_icons/loop_x.png';
+	import loopPodeum from '$lib/images/loop_icons/loop_podeum.png';
 
 	import type { GameResult } from '$lib/services/gameService';
 	import type { AllTimeBoard, DailyLeaderboard } from '$lib/models/leaderboard';
@@ -29,39 +36,34 @@
 	let leaderboardError = '';
 	let allTimeError = '';
 	let showLeaderboardHelp = false;
+	let showAllTime = false;
+	let showProfile = false;
+	let loading = true;
 
+	/* Read from the session rather than the leaderboard payload: the prompt
+	   should be there from first paint, not once the boards have loaded. */
+	$: loggedIn = $session?.loggedIn ?? false;
 	$: profile = $profileStore;
-	$: loadingProfile = $profileLoading;
-	$: streakEmoji = profile ? calculateEmoji(profile.streak) : '';
 	$: displayTime = formatDuration(result.elapsedSeconds);
+	$: beatAverage = !result.gaveUp && result.globalStats.isUnderAverage;
 
 	/**
-	 * The day's verdict: icon, accent colour and one-line slogan. Replaces the
-	 * old illustrated banner, which sat awkwardly above the card stack.
+	 * The headline is a greeting plus an outcome, so the four states read as
+	 * variations of one sentence rather than four unrelated messages.
 	 */
-	$: outcome = returning
-		? {
-				icon: 'fa-solid fa-mug-hot',
-				color: '#7F81A8',
-				text: 'Welcome back looper!'
-			}
+	$: greeting = returning
+		? 'Welcome back!'
 		: result.gaveUp
-			? {
-					icon: 'fa-regular fa-face-sad-tear',
-					color: '#DF5468',
-					text: 'Oh no, you gave up. Try again tomorrow!'
-				}
-			: result.globalStats.isUnderAverage
-				? {
-						icon: 'fa-solid fa-bolt',
-						color: '#E09029',
-						text: "Congratulations speedster \u2014 you're under today's average!"
-					}
-				: {
-						icon: 'fa-solid fa-hourglass-half',
-						color: '#9A9A9A',
-						text: "Not your fastest \u2014 you're over today's average."
-					};
+			? 'Better luck tomorrow!'
+			: beatAverage
+				? 'Well done!'
+				: 'Nice Work!';
+	$: outcomeLine = result.gaveUp
+		? 'You tried your best!'
+		: beatAverage
+			? "You are above today's average."
+			: 'Thanks for playing.';
+
 	/** Player has a time but sits below the top list, so needs the "..." section. */
 	$: outsideTop = !!leaderboard?.you && leaderboard.you.rank > leaderboard.top.length;
 
@@ -72,7 +74,7 @@
 		// blank the other.
 		const [daily, allTimeResult] = await Promise.allSettled([
 			loadDailyBoard(),
-			loadAllTimeBoard(10)
+			loadAllTimeBoard(30)
 		]);
 
 		if (daily.status === 'fulfilled') {
@@ -88,6 +90,8 @@
 			allTimeError = 'Could not load top loopers.';
 			console.error('Could not load the all-time leaderboard:', allTimeResult.reason);
 		}
+
+		loading = false;
 	});
 
 	function loadAd() {
@@ -99,7 +103,9 @@
 	async function share() {
 		track(Event.ShareClicked, { gaveUp: result.gaveUp, ranked: !!leaderboard?.you });
 
-		const rank = leaderboard?.you ? ` (#${leaderboard.you.rank} today)` : '';
+		const rank = leaderboard?.you
+			? `\nRanked #${leaderboard.you.rank} out of ${leaderboard.total.toLocaleString()} players today`
+			: '';
 		const shareText = result.gaveUp
 			? "I didn't complete the LetterLoop today, but I sure did try my best"
 			: `I completed the LetterLoop in: \n🔴${displayTime}🔴${rank}`;
@@ -117,7 +123,7 @@
 			await navigator.clipboard.writeText(shareText);
 			notifications.default('Copied Link!', 1000);
 		} catch {
-			notifications.default('Error', 1000);
+			notifications.danger('Error', 1000);
 		}
 	}
 
@@ -126,235 +132,221 @@
 	}
 </script>
 
-<main>
-	<div class="centered-container">
+{#if loading}
+	<Loading />
+{:else}
+	<main>
 		<Toast />
 
-		<div id="theletterloop-com_300x50">
-			<!-- JS Ad Injection -->
-		</div>
+		<div class="results">
+			<div id="theletterloop-com_300x50"><!-- JS Ad Injection --></div>
 
-		<div class="gameover-container">
-			<!-- 1. Solved in -->
-			<div class="panel">
-				<div class="panel-body">
-					<p class="outcome" style="--accent: {outcome.color}">
-						<i class={outcome.icon} aria-hidden="true"></i>
-						<span>{outcome.text}</span>
+			<img class="outcome-icon" src={result.gaveUp ? loopX : loopCheck} alt="" />
+
+			<h1 class="headline">{greeting} {outcomeLine}</h1>
+
+			{#if !loggedIn}
+				<div class="signup-cta">
+					<p class="signup-sub">
+						Track your streak, your average time and get your name on the leaderboard.
 					</p>
-
-					<div class="panel-section">
-						<p class="small-header">Solved in</p>
-						{#if result.gaveUp}
-							<h1 class="time-text gave-up">Gave up</h1>
-						{:else}
-							<h1 class="time-text">{displayTime}</h1>
-						{/if}
-					</div>
-
-					<div class="panel-section">
-						<span class="small-header">Global Stats</span>
-						<Stats globalStats={result.globalStats} />
-					</div>
-
-					<div class="panel-section">
-						<span class="small-header">Today's Solution</span>
-						<p>
-							<a href={dictionaryUrl(result.solution.primary)} target="_blank" rel="noreferrer">
-								{result.solution.primary}
-							</a>
-							+
-							<a href={dictionaryUrl(result.solution.secondary)} target="_blank" rel="noreferrer">
-								{result.solution.secondary}
-							</a>
-						</p>
-					</div>
-
-					<button class="share-button" on:click={share}>SHARE YOUR TIME</button>
+					<a class="signup-button" href="/auth">Create a free account</a>
+					<a class="signup-login" href="/auth">Already registered? Log in</a>
 				</div>
-			</div>
+			{/if}
 
-			<!-- 2. Today's fastest times, with the player's own placing -->
-			<div class="panel">
-				<div class="panel-body">
-					<div class="card-head">
-						<div>
-							<p class="small-header">
-								Today's Leaderboard
-								<span class="badge-new">New</span>
+			<section class="block">
+				<p class="label">Solved in</p>
+				{#if result.gaveUp}
+					<p class="time gave-up">Gave up</p>
+				{:else}
+					<p class="time">{displayTime}</p>
+				{/if}
+			</section>
+
+			<section class="block">
+				<p class="label">Todays Stats</p>
+				<div class="body-text">
+					<Stats globalStats={result.globalStats} />
+				</div>
+			</section>
+
+			<section class="block">
+				<p class="label">Today's Solution</p>
+				<p class="body-text solution">
+					<a href={dictionaryUrl(result.solution.primary)} target="_blank" rel="noreferrer">
+						{result.solution.primary}
+					</a>
+					+
+					<a href={dictionaryUrl(result.solution.secondary)} target="_blank" rel="noreferrer">
+						{result.solution.secondary}
+					</a>
+				</p>
+			</section>
+
+			<button class="share-button" on:click={share}>
+				<i class="fa-solid fa-share-nodes" aria-hidden="true"></i>
+				Share
+			</button>
+
+			{#if profile}
+				<button class="profile-trigger" on:click={() => (showProfile = true)}>
+					<img class="trigger-icon" src={avatarSrc(profile.avatar)} alt="" />
+					<span>
+						Check your streak, times and games played.
+						<span class="trigger-link">View profile</span>
+					</span>
+				</button>
+			{/if}
+
+			<!-- Today's fastest times -->
+			<section class="board-block board-block-lead">
+				<div class="board-title">
+					<div class="board-heading">
+						<span class="badge-new">New</span>
+						<h2 class="board-name">Leaderboard</h2>
+
+						{#if leaderboard?.you}
+							<p class="board-blurb">
+								Awesome work today! You ranked
+								<b>#{leaderboard.you.rank}</b>
+								out of <b>{leaderboard.total.toLocaleString()}</b> players!
 							</p>
-							<p class="card-note">Top 10 fastest times</p>
-						</div>
-
-						<button
-							class="card-help"
-							on:click={() => (showLeaderboardHelp = true)}
-							aria-label="How the leaderboard works"
-						>
-							<i class="fa-regular fa-circle-question" aria-hidden="true"></i>
-						</button>
-					</div>
-
-					{#if leaderboardError}
-						<p class="muted">{leaderboardError}</p>
-					{:else if !leaderboard}
-						<p class="muted">Loading today's times...</p>
-					{:else}
-						{#if leaderboard.you}
-							<p class="rank-line">
-								<span class="rank-number">#{leaderboard.you.rank}</span>
-								<span class="rank-of">of {leaderboard.total} today</span>
+						{:else}
+							<p class="board-blurb">
+								Todays top players ranked by times.{loggedIn
+									? ''
+									: ' Sign in to get your name on the leaderboard!'}
 							</p>
 						{/if}
+					</div>
 
-						{#if leaderboard.top.length > 0}
-							<ul class="board">
-								{#each leaderboard.top as entry (entry.uid)}
-									<li class="board-row" class:is-you={entry.uid === leaderboard.you?.uid}>
-										<img class="board-avatar" src={avatarSrc(entry.avatar)} alt="" />
-										<span class="board-name">
-											{entry.name}{entry.uid === leaderboard.you?.uid ? ' (you)' : ''}
-										</span>
-										<span class="board-meta">
-											<span class="board-rank">#{entry.rank}</span>
-											<span class="board-time">{formatDuration(entry.elapsedSeconds)}</span>
-										</span>
-									</li>
-								{/each}
+					<button
+						class="board-help"
+						on:click={() => (showLeaderboardHelp = true)}
+						aria-label="How the leaderboard works"
+					>
+						<i class="fa-regular fa-circle-question" aria-hidden="true"></i>
+					</button>
+				</div>
 
-								<!-- Outside the top 10: break, then the rows either side of you.
-								     Ranked 11th needs no break -- the row above is the last one shown. -->
-								{#if outsideTop && leaderboard.you}
-									{#if leaderboard.you.rank > leaderboard.top.length + 1}
-										<li class="board-gap" aria-hidden="true">&hellip;</li>
-									{/if}
+				{#if leaderboardError}
+					<p class="muted">{leaderboardError}</p>
+				{:else if leaderboard}
+					{#if leaderboard.top.length > 0}
+						<ul class="board">
+							{#each leaderboard.top as entry (entry.uid)}
+								<LeaderRow
+									rank={entry.rank}
+									name={entry.name}
+									avatar={entry.avatar}
+									value={formatDuration(entry.elapsedSeconds)}
+									isYou={entry.uid === leaderboard.you?.uid}
+								/>
+							{/each}
 
-									{#if leaderboard.above && leaderboard.above.rank > leaderboard.top.length}
-										<li class="board-row">
-											<img class="board-avatar" src={avatarSrc(leaderboard.above.avatar)} alt="" />
-											<span class="board-name">{leaderboard.above.name}</span>
-											<span class="board-meta">
-												<span class="board-rank">#{leaderboard.above.rank}</span>
-												<span class="board-time"
-													>{formatDuration(leaderboard.above.elapsedSeconds)}</span
-												>
-											</span>
-										</li>
-									{/if}
-
-									<li class="board-row is-you">
-										<span class="board-rank">{leaderboard.you.rank}</span>
-										<span class="board-name">{leaderboard.you.name} (you)</span>
-										<span class="board-meta">
-											<span class="board-rank">#{leaderboard.you.rank}</span>
-											<span class="board-time"
-												>{formatDuration(leaderboard.you.elapsedSeconds)}</span
-											>
-										</span>
-									</li>
-
-									{#if leaderboard.below}
-										<li class="board-row">
-											<img class="board-avatar" src={avatarSrc(leaderboard.below.avatar)} alt="" />
-											<span class="board-name">{leaderboard.below.name}</span>
-											<span class="board-meta">
-												<span class="board-rank">#{leaderboard.below.rank}</span>
-												<span class="board-time"
-													>{formatDuration(leaderboard.below.elapsedSeconds)}</span
-												>
-											</span>
-										</li>
-									{/if}
+							{#if outsideTop && leaderboard.you}
+								{#if leaderboard.you.rank > leaderboard.top.length + 1}
+									<li class="gap" aria-hidden="true">&hellip;</li>
 								{/if}
-							</ul>
-						{:else}
-							<p class="muted">No one has finished today yet. Be the first!</p>
-						{/if}
 
-						{#if leaderboard.reason === 'not-signed-in'}
-							<div class="signin-cta">
-								<p class="signin-cta-text">Login to get your time on the leaderboard!</p>
-								<p class="signin-cta-sub">
-									It's free, and it saves your streak, average time and daily rank.
-								</p>
-								<a class="signin-cta-button" href="/auth">Login or Create account</a>
-							</div>
-						{:else if !leaderboard.you && result.gaveUp}
-							<p class="muted signin-prompt">Finish a loop to get on today's leaderboard.</p>
-						{/if}
-					{/if}
+								{#if leaderboard.above && leaderboard.above.rank > leaderboard.top.length}
+									<LeaderRow
+										rank={leaderboard.above.rank}
+										name={leaderboard.above.name}
+										avatar={leaderboard.above.avatar}
+										value={formatDuration(leaderboard.above.elapsedSeconds)}
+										isYou={false}
+									/>
+								{/if}
 
-					{#if profile || loadingProfile}
-						<div class="your-stats">
-							{#if loadingProfile}
-								<span class="muted">Loading your stats...</span>
-							{:else if profile}
-								<div>
-									<p class="small-header">Current Streak</p>
-									<p class="stats-text">{streakEmoji} {profile.streak}</p>
-								</div>
-								<div>
-									<p class="small-header">Historical Average</p>
-									<p class="stats-text">{formatDuration(profile.averageTime)}</p>
-								</div>
+								<LeaderRow
+									rank={leaderboard.you.rank}
+									name={leaderboard.you.name}
+									avatar={leaderboard.you.avatar}
+									value={formatDuration(leaderboard.you.elapsedSeconds)}
+									isYou={true}
+								/>
+
+								{#if leaderboard.below}
+									<LeaderRow
+										rank={leaderboard.below.rank}
+										name={leaderboard.below.name}
+										avatar={leaderboard.below.avatar}
+										value={formatDuration(leaderboard.below.elapsedSeconds)}
+										isYou={false}
+									/>
+								{/if}
 							{/if}
-						</div>
+						</ul>
+					{:else}
+						<p class="muted">No one has finished today yet. Be the first!</p>
 					{/if}
-				</div>
-			</div>
+				{/if}
 
-			<!-- 3. Donation -->
+				<button class="all-time-trigger" on:click={() => (showAllTime = true)}>
+					<img class="trigger-icon" src={loopPodeum} alt="" />
+					<span>
+						Want to see the best players of all time?
+						<span class="trigger-link">View leaders</span>
+					</span>
+				</button>
+			</section>
+
 			<PromotionLink />
 
-			<!-- 4. Most games played, all time -->
-			<div class="panel">
-				<div class="panel-body">
-					<p class="small-header">Top 10 Loopers</p>
-					<p class="card-note">Most games played, all time</p>
-
-					{#if allTimeError}
-						<p class="muted">{allTimeError}</p>
-					{:else if allTime && allTime.top.length > 0}
-						<ul class="board">
-							{#each allTime.top as entry (entry.uid)}
-								<li
-									class="board-row"
-									class:is-you={entry.gamesPlayed === allTime.yourGamesPlayed &&
-										entry.rank === allTime.yourRank}
-								>
-									<img class="board-avatar" src={avatarSrc(entry.avatar)} alt="" />
-									<span class="board-name">{entry.name}</span>
-									<span class="board-meta">
-										<span class="board-rank">#{entry.rank}</span>
-										<span class="board-time">{entry.gamesPlayed} games</span>
-									</span>
-								</li>
-							{/each}
-						</ul>
-
-						{#if allTime.yourRank && allTime.yourRank > allTime.top.length}
-							<p class="card-note your-standing">
-								You're <b>#{allTime.yourRank}</b> with {allTime.yourGamesPlayed} games played.
-							</p>
-						{/if}
-					{:else if allTime}
-						<p class="muted">No loopers yet.</p>
-					{:else}
-						<p class="muted">Loading...</p>
-					{/if}
-				</div>
+			<!-- Signs the page off the same way the menu signs itself off. -->
+			<div class="sign-off">
+				<i class="tagline">For the love of morning games</i>
+				<p class="thanks">
+					<i class="fa-regular fa-face-smile" aria-hidden="true"></i>
+					Thanks for playing
+				</p>
 			</div>
 
 			<div class="block-spacer-100"></div>
 		</div>
-	</div>
-</main>
+	</main>
+{/if}
+
+<Modal
+	bind:showModal={showAllTime}
+	modalType="all-time"
+	title="Top Loopers"
+	subtitle="Most games played, all time."
+>
+	{#if allTimeError}
+		<p class="muted">{allTimeError}</p>
+	{:else if allTime && allTime.top.length > 0}
+		<ul class="board">
+			{#each allTime.top as entry (entry.uid)}
+				<LeaderRow
+					rank={entry.rank}
+					name={entry.name}
+					avatar={entry.avatar}
+					value={entry.gamesPlayed.toLocaleString()}
+					isYou={entry.gamesPlayed === allTime.yourGamesPlayed && entry.rank === allTime.yourRank}
+				/>
+			{/each}
+		</ul>
+
+		{#if allTime.yourRank && allTime.yourRank > allTime.top.length}
+			<p class="muted standing">
+				You're <b>#{allTime.yourRank}</b> with {allTime.yourGamesPlayed} games played.
+			</p>
+		{/if}
+	{:else if allTime}
+		<p class="muted">No loopers yet.</p>
+	{:else}
+		<p class="muted">Loading...</p>
+	{/if}
+</Modal>
 
 <Modal
 	bind:showModal={showLeaderboardHelp}
 	modalType="leaderboard-help"
 	title="How the leaderboard works"
-	subtitle="Everyone is timed the same way."
+	subtitle="Sign in to take your place on the board."
 >
 	<ul class="help-list">
 		<li>
@@ -372,265 +364,346 @@
 	</ul>
 </Modal>
 
+<Modal
+	bind:showModal={showProfile}
+	modalType="profile"
+	title="Your Profile"
+	subtitle="Your streak, average time and games played."
+>
+	<Profile />
+</Modal>
+
 <style>
+	/*
+	  Everything sits directly on the pink. The results used to be a stack of
+	  white cards; the leaderboards now share the same flat treatment so they
+	  read as part of one page rather than panels bolted underneath. The donate
+	  card keeps its own colour deliberately -- it is the one thing here asking
+	  to be clicked.
+	*/
 	main {
-		background-color: #ffe9e9 !important;
+		background-color: #ffe9e9;
 		width: 100%;
-		height: min-content;
-	}
-
-	.gameover-container {
-		max-width: 400px;
-		width: 85%;
-	}
-
-	.panel-section {
-		margin-bottom: 1rem;
-	}
-
-	.panel-section p {
-		margin: 5px 0 0 0;
-	}
-
-	.outcome {
+		flex: 1 0 auto;
 		display: flex;
-		align-items: center;
-		gap: 9px;
-		margin: 0 0 1.1rem 0;
-		padding-bottom: 0.9rem;
-		border-bottom: 1px solid #eee;
-		font-size: 14px;
-		font-weight: 600;
-		line-height: 1.3;
-		color: #333;
+		justify-content: center;
 	}
 
-	.outcome i {
-		color: var(--accent);
-		font-size: 17px;
-		flex-shrink: 0;
+	.results {
+		width: 86%;
+		max-width: 360px;
+		padding-top: 1.5rem;
+		text-align: center;
 	}
 
-	.time-text {
-		font-size: 40px;
+	.outcome-icon {
+		width: 44px;
+		height: 44px;
+		object-fit: contain;
+		margin: 2.25rem auto 0.75rem auto;
+		display: block;
+	}
+
+	.headline {
+		font-family: 'Playfair Display', serif;
+		font-size: 27px;
 		font-weight: 700;
-		margin: 4px 0 0 0;
-		text-align: left;
+		line-height: 1.2;
+		color: black;
+		margin: 0 0 1.75rem 0;
 	}
 
-	.time-text.gave-up {
-		font-size: 26px;
+	.block {
+		margin-bottom: 2rem;
+	}
+
+	.label {
+		text-transform: uppercase;
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		color: black;
+		margin: 0;
+	}
+
+	.time {
+		font-size: 46px;
+		font-weight: 800;
+		letter-spacing: -1px;
+		margin: 6px 0 0 0;
+		color: black;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.time.gave-up {
+		font-size: 30px;
 		color: #df5468;
 	}
 
-	.stats-text {
-		font-size: 25px;
-		font-weight: 700;
-		margin: 4px 0 0 0;
-		text-align: left;
+	.body-text {
+		font-size: 18px;
+		line-height: 1.45;
+		color: black;
+		margin-top: 6px;
+	}
+
+	.solution a {
+		color: black;
+		text-decoration: underline;
+		text-transform: capitalize;
 	}
 
 	.share-button {
-		background-image: -webkit-linear-gradient(top, #ff4f87, #fc2f4f);
 		background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
 		color: white;
-		border-radius: 20px;
-		width: 100%;
-		height: 70px;
 		border: none;
-		text-transform: uppercase;
-		font-size: 12px;
-		font-weight: 600;
-		letter-spacing: 1px;
-		cursor: pointer;
-	}
-
-	.rank-line {
+		border-radius: 999px;
+		width: 60%;
+		max-width: 240px;
+		height: 54px;
 		display: flex;
-		align-items: baseline;
-		gap: 8px;
-		margin: 6px 0 0 0;
-	}
-
-	.rank-number {
-		font-size: 40px;
-		font-weight: 700;
-		line-height: 1;
-	}
-
-	.rank-of {
-		font-size: 13px;
-		color: #888;
-	}
-
-	.board {
-		list-style: none;
-		margin: 1rem 0 0 0;
-		padding: 0;
-	}
-
-	.board-row {
-		display: grid;
-		grid-template-columns: 28px 1fr auto;
 		align-items: center;
+		justify-content: center;
 		gap: 10px;
-		padding: 7px 0;
-		border-top: 1px solid #eee;
-	}
-
-	.board-avatar {
-		width: 28px;
-		height: 28px;
-		border-radius: 50%;
-		object-fit: cover;
-		display: block;
-	}
-
-	.board-meta {
-		display: flex;
-		align-items: baseline;
-		gap: 8px;
-	}
-
-	.board-rank {
-		font-size: 12px;
-		color: #aaa;
-		font-variant-numeric: tabular-nums;
-	}
-
-	.board-name {
-		font-weight: 500;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.board-time {
-		font-variant-numeric: tabular-nums;
-		font-size: 14px;
-		color: #444;
-	}
-
-	.board-row.is-you {
-		background-color: #fff3f5;
-		border-radius: 8px;
-		margin: 0 -8px;
-		padding-left: 8px;
-		padding-right: 8px;
-	}
-
-	.board-row.is-you .board-name,
-	.board-row.is-you .board-time {
-		font-weight: 700;
-		color: #fc2f4f;
-	}
-
-	.your-stats {
-		display: flex;
-		gap: 20px;
-		margin-top: 1.25rem;
-		padding-top: 1rem;
-		border-top: 1px solid #eee;
-	}
-
-	.muted {
-		color: #777;
-		font-size: 14px;
-		margin: 8px 0 0 0;
-	}
-
-	.signin-prompt {
-		margin-top: 12px;
-	}
-
-	/* Signed-out players see the board but have no row on it, so the ask needs
-	   to be a real call to action rather than a footnote. Sits directly on the
-	   card -- a panel inside a panel reads as a separate, unrelated thing. */
-	.signin-cta {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
-		gap: 6px;
-		margin-top: 1.5rem;
-	}
-
-	.signin-cta-text {
-		margin: 0;
-		font-size: 17px;
+		font-size: 16px;
 		font-weight: 600;
-		line-height: 1.3;
-		color: #222;
+		cursor: pointer;
+		margin: 0.5rem auto 1.75rem auto;
 	}
 
-	.signin-cta-sub {
-		margin: 0 0 6px 0;
-		font-size: 13px;
-		line-height: 1.45;
-		color: #888;
+	.share-button i {
+		font-size: 15px;
 	}
 
-	.signin-cta-button {
-		display: block;
-		width: 100%;
-		padding: 13px 16px;
-		border-radius: 20px;
-		background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
-		color: white;
-		text-decoration: none;
-		font-size: 12px;
-		font-weight: 600;
-		letter-spacing: 1px;
-		text-transform: uppercase;
+	/* ---- leaderboards, blended into the page ---- */
+
+	.board-block {
+		margin-bottom: 2.75rem;
+		text-align: left;
 	}
 
-	.signin-cta-button:hover {
-		text-decoration: none;
-		opacity: 0.92;
-	}
-
-	.board-gap {
-		text-align: center;
-		color: #bbb;
-		letter-spacing: 2px;
-		padding: 4px 0;
-		border-top: 1px solid #eee;
-	}
-
-	.card-head {
-		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		gap: 12px;
+	/* The leaderboard follows the share button, so it needs room to read as a new
+	   part of the page rather than a continuation of the results. */
+	.board-block-lead {
+		padding-top: 1.75rem;
 	}
 
 	.badge-new {
-		display: inline-block;
-		margin-left: 6px;
-		padding: 2px 7px;
-		border-radius: 999px;
-		background-color: #2f6fed;
+		padding: 3px 9px;
+		border-radius: 6px;
+		background-color: #fc365a;
 		color: white;
 		font-size: 10px;
 		font-weight: 700;
 		letter-spacing: 0.5px;
 		text-transform: uppercase;
-		vertical-align: middle;
 	}
 
-	.card-help {
+	/* Badge, title and a line of copy stacked as one centred block, with the help
+	   button held out at the top right. Equal `1fr` side columns keep the block
+	   centred in the section whatever width the button takes. */
+	.board-title {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		column-gap: 12px;
+		margin-bottom: 1.1rem;
+	}
+
+	.board-heading {
+		grid-column: 2;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 7px;
+		text-align: center;
+	}
+
+	.board-name {
+		font-size: 30px;
+		font-weight: 800;
+		line-height: 1.1;
+		letter-spacing: -0.5px;
+		color: black;
+		margin: 0;
+	}
+
+	.board-blurb {
+		font-size: 17px;
+		line-height: 1.3;
+		color: black;
+		margin: 0;
+	}
+
+	/* The two numbers are the whole point of the sentence. */
+	.board-blurb b {
+		color: #fc365a;
+	}
+
+	.board-help {
+		grid-column: 3;
+		align-self: start;
+		justify-self: end;
+		display: block;
 		background: none;
 		border: none;
 		padding: 0;
 		cursor: pointer;
-		color: #b0b0b0;
-		font-size: 17px;
+		color: #b09a9d;
+		font-size: 19px;
 		line-height: 1;
-		flex-shrink: 0;
 	}
 
-	.card-help:hover {
-		color: #666;
+	.board {
+		list-style: none;
+		margin: 0.9rem 0 0 0;
+		padding: 0;
+	}
+
+	.gap {
+		text-align: center;
+		color: #c4aeb1;
+		letter-spacing: 2px;
+		padding: 4px 0;
+		border-top: 1px solid rgba(0, 0, 0, 0.08);
+	}
+
+	.muted {
+		color: #8a7477;
+		font-size: 14px;
+		margin: 10px 0 0 0;
+	}
+
+	.standing {
+		padding-top: 10px;
+		border-top: 1px solid rgba(0, 0, 0, 0.08);
+	}
+
+	/* Serif subtitle and a full-width pill, sitting straight under the headline
+	   so the ask lands before the player scrolls into the results. */
+	.signup-cta {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 14px;
+		margin: 0 0 2.5rem 0;
+	}
+
+	.signup-sub {
+		font-family: 'Playfair Display', serif;
+		font-size: 17px;
+		line-height: 1.35;
+		color: black;
+		margin: 0;
+	}
+
+	.signup-button {
+		display: block;
+		width: 100%;
+		padding: 15px 16px;
+		border-radius: 999px;
+		background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
+		color: white;
+		text-decoration: none;
+		font-size: 16px;
+		font-weight: 600;
+	}
+
+	.signup-button:hover {
+		text-decoration: none;
+	}
+
+	.signup-login {
+		font-size: 14px;
+		color: black;
+		text-decoration: underline;
+	}
+
+	/* Sits under the board's sign-in line, so it picks up the same size and
+	   colour as that copy -- icon left, text to its right. */
+	.all-time-trigger {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 12px;
+		width: 100%;
+		margin: 1.1rem 0 0 0;
+		padding: 0;
+		background: none;
+		border: none;
+		cursor: pointer;
+		font-size: 14px;
+		line-height: 1.45;
+		color: black;
+		text-align: left;
+	}
+
+	.all-time-trigger span {
+		min-width: 0;
+	}
+
+	.trigger-icon {
+		width: 32px;
+		height: 32px;
+		object-fit: contain;
+		flex-shrink: 0;
+		display: block;
+	}
+
+	.trigger-link {
+		text-decoration: underline;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+
+	/* Matches `.all-time-trigger`, with the player's own face as the icon. */
+	.profile-trigger {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+		width: 100%;
+		/* No bottom margin: the leaderboard's own top padding is the gap below the
+		   rule, and it matches the share button's margin above it. */
+		margin: 0;
+		padding: 0.95rem 0;
+		border: none;
+		border-top: 1px solid rgba(0, 0, 0, 0.08);
+		border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+		background: none;
+		cursor: pointer;
+		font-size: 14px;
+		line-height: 1.45;
+		color: black;
+		text-align: left;
+	}
+
+	.profile-trigger span {
+		min-width: 0;
+	}
+
+	.profile-trigger .trigger-icon {
+		border-radius: 50%;
+	}
+
+	.sign-off {
+		margin-top: 2rem;
+		text-align: center;
+	}
+
+	.tagline {
+		font-size: 12px;
+		color: black;
+	}
+
+	.thanks {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 7px;
+		margin: 8px 0 0 0;
+		font-size: 14px;
+		color: black;
 	}
 
 	.help-list {
@@ -643,19 +716,5 @@
 
 	.help-list li + li {
 		margin-top: 0.8rem;
-	}
-
-	.card-note {
-		font-size: 12px;
-		color: #888;
-		margin: 4px 0 0 0;
-	}
-
-	.your-standing {
-		margin-top: 12px;
-		padding-top: 10px;
-		border-top: 1px solid #eee;
-		font-size: 13px;
-		color: #555;
 	}
 </style>

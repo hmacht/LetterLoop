@@ -11,22 +11,13 @@ import * as puzzleService from '$lib/server/services/puzzleService';
 import * as statsService from '$lib/server/services/statsService';
 import * as profileService from '$lib/server/services/profileService';
 import * as leaderboardService from '$lib/server/services/leaderboardService';
+import { isPlausibleRun } from '$lib/server/gameRules';
+import { warm as warmDictionary } from '$lib/server/dictionary';
 import { todayKey } from '$lib/utils/gameDate';
 import type { AuthUser } from '$lib/server/auth';
 import type { PublicPuzzle, RevealedPuzzle } from '$lib/models/puzzle';
 import type { GlobalStats } from '$lib/models/globalStats';
 import type { Profile } from '$lib/models/profile';
-
-/**
- * Floor for a physically possible run.
- *
- * Set low on purpose: it is meant to catch scripted submissions, not to judge
- * fast players. A genuinely quick human can select eight letters and hit enter
- * in a handful of seconds, so anything at or above this is taken at face value.
- * Runs below it still get their time and stats -- they just do not reach the
- * leaderboard, and the run is flagged for review.
- */
-const MIN_PLAUSIBLE_SECONDS = 2;
 
 export interface GameState {
 	dayKey: string;
@@ -58,8 +49,13 @@ export interface GameResult {
  * restarting the timer at zero.
  */
 export async function start(user: AuthUser, dayKey: string = todayKey()): Promise<GameState> {
-	const puzzle = await puzzleService.getPublicPuzzle(dayKey);
-	const run = await runs.startIfAbsent(user.uid, dayKey);
+	// The player's first guess is seconds away and it will need the spell check.
+	warmDictionary();
+
+	const [puzzle, run] = await Promise.all([
+		puzzleService.getPublicPuzzle(dayKey),
+		runs.startIfAbsent(user.uid, dayKey)
+	]);
 	const now = new Date();
 
 	return {
@@ -129,9 +125,14 @@ export async function submitGuess(
 	guess: string,
 	dayKey: string = todayKey()
 ): Promise<{ correct: false } | { correct: true; result: GameResult }> {
-	const run = await requireRunningRun(user, dayKey);
+	// Neither of these depends on the other, and checking the guess writes
+	// nothing -- so a rejected run simply discards a read that already happened.
+	const [run, accepted] = await Promise.all([
+		requireRunningRun(user, dayKey),
+		puzzleService.isAcceptedSolution(dayKey, guess)
+	]);
 
-	if (!(await puzzleService.isAcceptedSolution(dayKey, guess))) {
+	if (!accepted) {
 		// Deliberately not awaited. This is a diagnostic counter -- its own
 		// contract already says an approximate count is fine -- and awaiting a
 		// Firestore write here roughly doubles the time a player waits to be told
@@ -170,42 +171,49 @@ async function finish(
 	gaveUp: boolean
 ): Promise<GameResult> {
 	const elapsedSeconds = elapsedFor(run, new Date());
-	const flagged = !gaveUp && elapsedSeconds < MIN_PLAUSIBLE_SECONDS;
+	const flagged = !gaveUp && !isPlausibleRun(elapsedSeconds);
 
-	await runs.finish(user.uid, dayKey, { elapsedSeconds, gaveUp });
-
+	// The player is waiting on this, so it runs as two waves rather than six
+	// round trips in a row. Nothing here reads what another one writes: closing
+	// the run, folding the time into the day's totals, revealing the answer and
+	// updating the profile are independent of each other.
+	//
 	// Giving up is not a completion: folding it into the global average would
 	// drag the day's mean toward whoever quit fastest. The old client logged it.
-	const globalStats = gaveUp
-		? withComparison(await statsService.getForDay(dayKey), false, false)
-		: await statsService.recordCompletion(dayKey, elapsedSeconds);
-
-	const [solution, profile] = await Promise.all([
+	const [, stats, solution, profile] = await Promise.all([
+		runs.finish(user.uid, dayKey, { elapsedSeconds, gaveUp }),
+		gaveUp
+			? statsService.getForDay(dayKey).then((day) => withComparison(day, false, false))
+			: statsService.recordCompletion(dayKey, elapsedSeconds),
 		puzzleService.reveal(dayKey),
 		profileService.applyCompletion(user.uid, { dayKey, elapsedSeconds, gaveUp })
 	]);
 
-	// Ranked only for registered players, on a genuine completion. The service
-	// decides silently -- see recordResult.
-	await leaderboardService.recordResult(user, {
-		dayKey,
-		elapsedSeconds,
-		gaveUp,
-		flagged,
-		name: profile?.name ?? null,
-		avatar: profile?.avatar ?? 1
-	});
+	// Second wave: both need something from the first, and neither feeds the
+	// response. They are still awaited -- a serverless instance may freeze the
+	// moment it is sent, and a leaderboard row lost that way is not recoverable.
+	await Promise.all([
+		// Ranked only for registered players, on a genuine completion. The service
+		// decides silently -- see recordResult.
+		leaderboardService.recordResult(user, {
+			dayKey,
+			elapsedSeconds,
+			gaveUp,
+			flagged,
+			name: profile?.name ?? null,
+			avatar: profile?.avatar ?? 1
+		}),
+		profileService.saveGameData(user.uid, {
+			dayKey,
+			elapsedSeconds,
+			gaveUp,
+			completed: true,
+			completedAt: new Date().toISOString(),
+			solution: gaveUp ? null : solution.solution
+		})
+	]);
 
-	await profileService.saveGameData(user.uid, {
-		dayKey,
-		elapsedSeconds,
-		gaveUp,
-		completed: true,
-		completedAt: new Date().toISOString(),
-		solution: gaveUp ? null : solution.solution
-	});
-
-	return { dayKey, elapsedSeconds, gaveUp, flagged, solution, globalStats, profile };
+	return { dayKey, elapsedSeconds, gaveUp, flagged, solution, globalStats: stats, profile };
 }
 
 async function describeFinishedRun(
@@ -219,13 +227,19 @@ async function describeFinishedRun(
 		profileService.get(user.uid)
 	]);
 
+	// Recomputed rather than hard-coded false: a returning player should still be
+	// told they beat the day's average, otherwise the message is always the
+	// consolation one no matter how well they did.
+	const elapsedSeconds = run.elapsedSeconds ?? 0;
+	const beatAverage = !run.gaveUp && stats.count > 0 && elapsedSeconds < stats.averageSeconds;
+
 	return {
 		dayKey,
-		elapsedSeconds: run.elapsedSeconds ?? 0,
+		elapsedSeconds,
 		gaveUp: run.gaveUp,
 		flagged: false,
 		solution,
-		globalStats: withComparison(stats, false, false),
+		globalStats: withComparison(stats, beatAverage, false),
 		profile
 	};
 }

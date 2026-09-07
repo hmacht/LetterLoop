@@ -6,6 +6,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import PromotionLink from '$lib/components/PromotionLink.svelte';
+	import SocialLinks from '$lib/components/SocialLinks.svelte';
 
 	import { session } from '$lib/session';
 	import { loopNumber, todayKey, formatDayKey } from '$lib/utils/gameDate';
@@ -97,6 +98,7 @@
 				<p class="menu-date">{today}</p>
 				<p class="menu-number">Loop #{puzzleNumber}</p>
 				<i class="menu-small-text">For the love of morning games</i>
+				<SocialLinks />
 			</div>
 
 			<PromotionLink />

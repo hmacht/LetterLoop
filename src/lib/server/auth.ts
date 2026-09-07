@@ -29,7 +29,11 @@ export async function authenticate(request: Request): Promise<AuthUser | null> {
 		return {
 			uid: token.uid,
 			email: token.email ?? null,
-			isAnonymous: token.firebase?.sign_in_provider === 'anonymous'
+			// `sign_in_provider` records how this session began, and it keeps saying
+			// "anonymous" after a guest upgrades their account in place -- right up
+			// until they next sign in. An email on the token means the upgrade
+			// happened, so the caller is a real account whatever the claim says.
+			isAnonymous: token.firebase?.sign_in_provider === 'anonymous' && !token.email
 		};
 	} catch {
 		// Expired or forged token -- indistinguishable from being signed out.
