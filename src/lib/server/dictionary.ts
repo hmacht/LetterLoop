@@ -22,3 +22,17 @@ export function getDictionary(): Typo {
 export function isWord(word: string): boolean {
 	return getDictionary().check(word);
 }
+
+/**
+ * Parses the dictionary ahead of the first guess that needs it.
+ *
+ * Every guess is a rearrangement of the same eight letters, so every wrong one
+ * reaches the spell check -- and on a cold instance the first of them pays for
+ * parsing 62k entries while the player waits. Called when a run starts, on a
+ * macrotask so the parse lands after that response has gone out rather than in
+ * front of it.
+ */
+export function warm(): void {
+	if (dictionary) return;
+	setTimeout(getDictionary, 0);
+}

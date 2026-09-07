@@ -12,6 +12,7 @@ import * as statsService from '$lib/server/services/statsService';
 import * as profileService from '$lib/server/services/profileService';
 import * as leaderboardService from '$lib/server/services/leaderboardService';
 import { isPlausibleRun } from '$lib/server/gameRules';
+import { warm as warmDictionary } from '$lib/server/dictionary';
 import { todayKey } from '$lib/utils/gameDate';
 import type { AuthUser } from '$lib/server/auth';
 import type { PublicPuzzle, RevealedPuzzle } from '$lib/models/puzzle';
@@ -48,8 +49,13 @@ export interface GameResult {
  * restarting the timer at zero.
  */
 export async function start(user: AuthUser, dayKey: string = todayKey()): Promise<GameState> {
-	const puzzle = await puzzleService.getPublicPuzzle(dayKey);
-	const run = await runs.startIfAbsent(user.uid, dayKey);
+	// The player's first guess is seconds away and it will need the spell check.
+	warmDictionary();
+
+	const [puzzle, run] = await Promise.all([
+		puzzleService.getPublicPuzzle(dayKey),
+		runs.startIfAbsent(user.uid, dayKey)
+	]);
 	const now = new Date();
 
 	return {
@@ -119,9 +125,14 @@ export async function submitGuess(
 	guess: string,
 	dayKey: string = todayKey()
 ): Promise<{ correct: false } | { correct: true; result: GameResult }> {
-	const run = await requireRunningRun(user, dayKey);
+	// Neither of these depends on the other, and checking the guess writes
+	// nothing -- so a rejected run simply discards a read that already happened.
+	const [run, accepted] = await Promise.all([
+		requireRunningRun(user, dayKey),
+		puzzleService.isAcceptedSolution(dayKey, guess)
+	]);
 
-	if (!(await puzzleService.isAcceptedSolution(dayKey, guess))) {
+	if (!accepted) {
 		// Deliberately not awaited. This is a diagnostic counter -- its own
 		// contract already says an approximate count is fine -- and awaiting a
 		// Firestore write here roughly doubles the time a player waits to be told
@@ -162,40 +173,47 @@ async function finish(
 	const elapsedSeconds = elapsedFor(run, new Date());
 	const flagged = !gaveUp && !isPlausibleRun(elapsedSeconds);
 
-	await runs.finish(user.uid, dayKey, { elapsedSeconds, gaveUp });
-
+	// The player is waiting on this, so it runs as two waves rather than six
+	// round trips in a row. Nothing here reads what another one writes: closing
+	// the run, folding the time into the day's totals, revealing the answer and
+	// updating the profile are independent of each other.
+	//
 	// Giving up is not a completion: folding it into the global average would
 	// drag the day's mean toward whoever quit fastest. The old client logged it.
-	const globalStats = gaveUp
-		? withComparison(await statsService.getForDay(dayKey), false, false)
-		: await statsService.recordCompletion(dayKey, elapsedSeconds);
-
-	const [solution, profile] = await Promise.all([
+	const [, stats, solution, profile] = await Promise.all([
+		runs.finish(user.uid, dayKey, { elapsedSeconds, gaveUp }),
+		gaveUp
+			? statsService.getForDay(dayKey).then((day) => withComparison(day, false, false))
+			: statsService.recordCompletion(dayKey, elapsedSeconds),
 		puzzleService.reveal(dayKey),
 		profileService.applyCompletion(user.uid, { dayKey, elapsedSeconds, gaveUp })
 	]);
 
-	// Ranked only for registered players, on a genuine completion. The service
-	// decides silently -- see recordResult.
-	await leaderboardService.recordResult(user, {
-		dayKey,
-		elapsedSeconds,
-		gaveUp,
-		flagged,
-		name: profile?.name ?? null,
-		avatar: profile?.avatar ?? 1
-	});
+	// Second wave: both need something from the first, and neither feeds the
+	// response. They are still awaited -- a serverless instance may freeze the
+	// moment it is sent, and a leaderboard row lost that way is not recoverable.
+	await Promise.all([
+		// Ranked only for registered players, on a genuine completion. The service
+		// decides silently -- see recordResult.
+		leaderboardService.recordResult(user, {
+			dayKey,
+			elapsedSeconds,
+			gaveUp,
+			flagged,
+			name: profile?.name ?? null,
+			avatar: profile?.avatar ?? 1
+		}),
+		profileService.saveGameData(user.uid, {
+			dayKey,
+			elapsedSeconds,
+			gaveUp,
+			completed: true,
+			completedAt: new Date().toISOString(),
+			solution: gaveUp ? null : solution.solution
+		})
+	]);
 
-	await profileService.saveGameData(user.uid, {
-		dayKey,
-		elapsedSeconds,
-		gaveUp,
-		completed: true,
-		completedAt: new Date().toISOString(),
-		solution: gaveUp ? null : solution.solution
-	});
-
-	return { dayKey, elapsedSeconds, gaveUp, flagged, solution, globalStats, profile };
+	return { dayKey, elapsedSeconds, gaveUp, flagged, solution, globalStats: stats, profile };
 }
 
 async function describeFinishedRun(
