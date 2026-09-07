@@ -74,7 +74,7 @@
 		// blank the other.
 		const [daily, allTimeResult] = await Promise.allSettled([
 			loadDailyBoard(),
-			loadAllTimeBoard(20)
+			loadAllTimeBoard(30)
 		]);
 
 		if (daily.status === 'fulfilled') {
@@ -103,7 +103,9 @@
 	async function share() {
 		track(Event.ShareClicked, { gaveUp: result.gaveUp, ranked: !!leaderboard?.you });
 
-		const rank = leaderboard?.you ? ` (#${leaderboard.you.rank} today)` : '';
+		const rank = leaderboard?.you
+			? `\nRanked #${leaderboard.you.rank} out of ${leaderboard.total.toLocaleString()} players today`
+			: '';
 		const shareText = result.gaveUp
 			? "I didn't complete the LetterLoop today, but I sure did try my best"
 			: `I completed the LetterLoop in: \n🔴${displayTime}🔴${rank}`;
