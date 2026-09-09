@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { SquareArrowOutUpRight } from 'lucide-svelte';
+
   import kickstarterLogo from '$lib/images/Ko-fi_HEART.gif';
 </script>
 
@@ -39,13 +41,13 @@
     max-width: 200px;
   }
 
-  .fa-arrow-up-right-from-square {
+  /* Class lands on a component, so it is outside this file's scope. */
+  .kickstarter-container :global(.external-link) {
     position: absolute;
     top: 0;
     right: 0;
-    font-size: 15px;
-    padding: 15px 20px 0 0; 
-    color: #ffffff
+    padding: 15px 20px 0 0;
+    color: #ffffff;
   }
 
   .kickstarter-logo {
@@ -63,6 +65,6 @@
     </div>
 
     <div style="flex: 1;"></div>
-    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+    <SquareArrowOutUpRight size={15} class="external-link" />
   </div>
 </a>

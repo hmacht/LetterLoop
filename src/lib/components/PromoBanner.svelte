@@ -1,3 +1,7 @@
+<script lang="ts">
+  import { ArrowRight } from 'lucide-svelte';
+</script>
+
 <style>
   .banner-container {
     width: 100%;
@@ -15,6 +19,6 @@
 
 <div class="banner-container">
   <a href="https://ko-fi.com/letterloop" target="_blank">
-    <span>Donate $1 today on <b>Ko-Fi</b>. &nbsp <i class="fa-solid fa-arrow-right"></i></span>
+    <span>Donate $1 today on <b>Ko-Fi</b>.&nbsp;<ArrowRight size={14} /></span>
   </a>
 </div>

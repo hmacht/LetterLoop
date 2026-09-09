@@ -1,56 +1,132 @@
 <script lang="ts">
-  import logo_src from '$lib/images/logo.png';
+	/**
+	 * Admin shell: the gate, and the column everything sits in.
+	 *
+	 * The portal is a single page now, so there is no navigation to hold -- this
+	 * only decides whether you are allowed to see it.
+	 */
 	import { profileStore, profileLoading } from '$lib/stores/profileStore';
+	import { formatDayKey, todayKey } from '$lib/utils/gameDate';
 
-  $: profile = $profileStore;
-  $: loading = $profileLoading;
+	// The same mark the menu uses, so the portal is plainly the same product.
+	import logo from '$lib/images/logo.png';
+	import loadingLogo from '$lib/images/loading_logo.svg';
+
+	$: profile = $profileStore;
+	$: loading = $profileLoading;
 </script>
 
-{#if loading}
-  <div class="flex items-center justify-center h-screen">
-    <p class="text-lg font-semibold text-gray-700 dark:text-gray-300">Loading...</p>
-  </div>
-{:else if profile && profile.admin}
-  <div class="flex h-screen w-screen">
-    <!-- Sidebar -->
-    <nav class="fixed h-screen w-64 bg-gray-900 text-white flex flex-col">
-      <!-- Logo Section -->
-      <div class="flex items-center gap-3 p-4">
-        <img src={logo_src} alt="Our Little Loop Logo" class="w-8 h-8" />
-        <span class="text-xl font-bold">Admin Looper</span>
-      </div>
+<div class="admin">
+	<a class="mark" href="/" aria-label="LetterLoop home">
+		<img src={logo} alt="" />
+	</a>
 
-      <!-- Menu Sections -->
-      <div class="flex-grow px-4">
-        <!-- Generate Loop Section -->
-        <div class="mb-6">
-          <a href="/admin/loops/new" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white no-underline">
-            <i class="fas fa-plus-circle"></i>
-            <span>New Loop</span>
-          </a>
-          <a href="/admin/loops" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white">
-            <i class="fas fa-calendar-alt"></i>
-            <span>Upcoming Loops</span>
-          </a>
-        </div>
-      </div>
+	<p class="stamp">{formatDayKey(todayKey())}</p>
 
-      <!-- Home Section -->
-      <div class="mt-auto border-t border-gray-700 px-4 pt-4 mb-3">
-        <a href="/" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white">
-          <i class="fas fa-home"></i>
-          <span>Home</span>
-        </a>
-      </div>
-    </nav>
+	{#if loading}
+		<p class="gate">Checking your credentials...</p>
+	{:else if profile && profile.admin}
+		<div class="column">
+			<slot />
 
-    <!-- Main Content Area -->
-    <main class="ml-64 flex-grow bg-gray-100 dark:bg-gray-800 p-6 min-h-screen">
-      <slot />
-    </main>
-  </div>
-{:else}
-  <div class="flex items-center justify-center h-screen">
-    <p class="text-lg font-semibold text-red-600 dark:text-red-400">401 Permission Denied</p>
-  </div>
-{/if}
+			<footer class="sign-off">
+				<a class="home" href="/">&larr; Back to the game</a>
+				<img class="wordmark" src={loadingLogo} alt="" />
+			</footer>
+		</div>
+	{:else}
+		<div class="gate">
+			<p class="denied">401 &mdash; Permission Denied</p>
+			<a class="home" href="/">&larr; Back to the game</a>
+		</div>
+	{/if}
+</div>
+
+<style>
+	.admin {
+		position: relative;
+		min-height: 100vh;
+		width: 100%;
+		background-color: #ffe9e9;
+		display: flex;
+		justify-content: center;
+	}
+
+	/* Corner of the page rather than the column, so it reads as the product mark
+	   and not as part of the portal's own header. */
+	.mark {
+		position: absolute;
+		top: 18px;
+		left: 18px;
+	}
+
+	.mark img {
+		width: 32px;
+		height: 32px;
+		object-fit: contain;
+		display: block;
+	}
+
+	/* Balances the mark in the opposite corner. Quiet on purpose -- it is a date
+	   stamp, not a heading. */
+	.stamp {
+		position: absolute;
+		top: 22px;
+		right: 18px;
+		font-size: 12px;
+		color: #c7a4aa;
+		margin: 0;
+	}
+
+	.column {
+		width: 90%;
+		max-width: 560px;
+		padding: 9rem 0 4rem 0;
+	}
+
+	.gate {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 14px;
+		min-height: 60vh;
+		font-size: 15px;
+		color: #8a7477;
+	}
+
+	.denied {
+		font-family: 'Playfair Display', serif;
+		font-size: 24px;
+		font-weight: 700;
+		color: #fc365a;
+		margin: 0;
+	}
+
+	.home {
+		display: inline-block;
+		margin-top: 0.5rem;
+		font-size: 14px;
+		font-weight: 600;
+		color: #b0868c;
+		text-decoration: underline;
+	}
+
+	/* Closes the column the way the game closes its pages: a link out, then the
+	   wordmark sitting under it. */
+	.sign-off {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		margin-top: 3rem;
+	}
+
+	.wordmark {
+		width: 38%;
+		max-width: 130px;
+		height: auto;
+		margin-top: 1.5rem;
+		opacity: 0.55;
+		display: block;
+	}
+</style>

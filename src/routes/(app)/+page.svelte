@@ -15,6 +15,8 @@
 	let result: GameResult | null = null;
 	/** True when today's run was finished before this page load. */
 	let returning = false;
+	/** True when the finish never reached the server. */
+	let saveFailed = false;
 	/**
 	 * Until the server has told us whether today's loop is already done, we do
 	 * not know whether to show the menu or the results -- so show neither.
@@ -46,9 +48,9 @@
 	{:else if showAd}
 		<FullPageAd bind:showAd />
 	{:else if result}
-		<GameOver {result} {returning} />
+		<GameOver {result} {returning} {saveFailed} />
 	{:else if showGameBoard}
-		<GameBoard bind:result bind:returning bind:showAd />
+		<GameBoard bind:result bind:returning bind:saveFailed bind:showAd />
 	{:else}
 		<main class="flex-grow">
 			<Menu bind:showGameBoard />

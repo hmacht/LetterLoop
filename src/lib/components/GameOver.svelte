@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { CircleAlert, CircleQuestionMark, Share2, Smile } from 'lucide-svelte';
 
 	import Stats from '$lib/components/Stats.svelte';
 	import Toast from '$lib/components/Toast.svelte';
@@ -12,6 +13,7 @@
 
 	import { notifications } from '$lib/utils/notifications';
 	import { formatDuration } from '$lib/utils/time';
+	import { calculateEmoji } from '$lib/utils/emojiStreak';
 	import {
 		today as loadDailyBoard,
 		allTime as loadAllTimeBoard
@@ -30,6 +32,14 @@
 	export let result: GameResult;
 	/** True when the player finished earlier and has come back to the page. */
 	export let returning = false;
+	/**
+	 * True when the finish never reached the server.
+	 *
+	 * The time on screen is then the browser's own, and everything the server
+	 * would have returned -- the day's stats, the solution, a placing -- is
+	 * missing. Those panels are hidden rather than filled with zeroes.
+	 */
+	export let saveFailed = false;
 
 	let leaderboard: DailyLeaderboard | null = null;
 	let allTime: AllTimeBoard | null = null;
@@ -145,6 +155,16 @@
 
 			<h1 class="headline">{greeting} {outcomeLine}</h1>
 
+			{#if saveFailed}
+				<div class="save-failed" role="alert">
+					<CircleAlert size={18} class="alert-icon" aria-hidden="true" />
+					<p>
+						You finished the loop, but we could not save it. Your time is not on the leaderboard and
+						today's streak has not been counted.
+					</p>
+				</div>
+			{/if}
+
 			{#if !loggedIn}
 				<div class="signup-cta">
 					<p class="signup-sub">
@@ -164,28 +184,32 @@
 				{/if}
 			</section>
 
-			<section class="block">
-				<p class="label">Todays Stats</p>
-				<div class="body-text">
-					<Stats globalStats={result.globalStats} />
-				</div>
-			</section>
+			{#if !saveFailed}
+				<section class="block">
+					<p class="label">Todays Stats</p>
+					<div class="body-text">
+						<Stats globalStats={result.globalStats} />
+					</div>
+				</section>
+			{/if}
 
-			<section class="block">
-				<p class="label">Today's Solution</p>
-				<p class="body-text solution">
-					<a href={dictionaryUrl(result.solution.primary)} target="_blank" rel="noreferrer">
-						{result.solution.primary}
-					</a>
-					+
-					<a href={dictionaryUrl(result.solution.secondary)} target="_blank" rel="noreferrer">
-						{result.solution.secondary}
-					</a>
-				</p>
-			</section>
+			{#if result.solution.primary}
+				<section class="block">
+					<p class="label">Today's Solution</p>
+					<p class="body-text solution">
+						<a href={dictionaryUrl(result.solution.primary)} target="_blank" rel="noreferrer">
+							{result.solution.primary}
+						</a>
+						+
+						<a href={dictionaryUrl(result.solution.secondary)} target="_blank" rel="noreferrer">
+							{result.solution.secondary}
+						</a>
+					</p>
+				</section>
+			{/if}
 
 			<button class="share-button" on:click={share}>
-				<i class="fa-solid fa-share-nodes" aria-hidden="true"></i>
+				<Share2 size={16} aria-hidden="true" />
 				Share
 			</button>
 
@@ -193,8 +217,9 @@
 				<button class="profile-trigger" on:click={() => (showProfile = true)}>
 					<img class="trigger-icon" src={avatarSrc(profile.avatar)} alt="" />
 					<span>
-						Check your streak, times and games played.
-						<span class="trigger-link">View profile</span>
+						Hey {profile.name}, your current streak is
+						<b>{profile.streak} {calculateEmoji(profile.streak)}</b>.
+						<span class="trigger-link">View profile</span> to see more stats
 					</span>
 				</button>
 			{/if}
@@ -205,20 +230,6 @@
 					<div class="board-heading">
 						<span class="badge-new">New</span>
 						<h2 class="board-name">Leaderboard</h2>
-
-						{#if leaderboard?.you}
-							<p class="board-blurb">
-								Awesome work today! You ranked
-								<b>#{leaderboard.you.rank}</b>
-								out of <b>{leaderboard.total.toLocaleString()}</b> players!
-							</p>
-						{:else}
-							<p class="board-blurb">
-								Todays top players ranked by times.{loggedIn
-									? ''
-									: ' Sign in to get your name on the leaderboard!'}
-							</p>
-						{/if}
 					</div>
 
 					<button
@@ -226,8 +237,24 @@
 						on:click={() => (showLeaderboardHelp = true)}
 						aria-label="How the leaderboard works"
 					>
-						<i class="fa-regular fa-circle-question" aria-hidden="true"></i>
+						<CircleQuestionMark size={20} aria-hidden="true" />
 					</button>
+
+					<!-- Spans the whole row: kept beside the help button it would lose a
+					     line to the columns either side of it. -->
+					{#if leaderboard?.you}
+						<p class="board-blurb">
+							Awesome work today! You ranked
+							<b>#{leaderboard.you.rank}</b>
+							out of <b>{leaderboard.total.toLocaleString()}</b> players!
+						</p>
+					{:else}
+						<p class="board-blurb">
+							Todays top players ranked by times.{loggedIn
+								? ''
+								: ' Sign in to get your name on the leaderboard!'}
+						</p>
+					{/if}
 				</div>
 
 				{#if leaderboardError}
@@ -299,7 +326,7 @@
 			<div class="sign-off">
 				<i class="tagline">For the love of morning games</i>
 				<p class="thanks">
-					<i class="fa-regular fa-face-smile" aria-hidden="true"></i>
+					<Smile size={15} aria-hidden="true" />
 					Thanks for playing
 				</p>
 			</div>
@@ -413,6 +440,32 @@
 		margin: 0 0 1.75rem 0;
 	}
 
+	/* White card, red icon, black text: loud enough that nobody misses it, quiet
+	   enough that it does not read as "you lost". */
+	.save-failed {
+		display: flex;
+		align-items: flex-start;
+		gap: 11px;
+		margin: 0 0 2rem 0;
+		padding: 14px 16px;
+		border-radius: 18px;
+		background-color: white;
+		text-align: left;
+	}
+
+	.save-failed :global(.alert-icon) {
+		color: #fc365a;
+		flex-shrink: 0;
+		margin-top: 2px;
+	}
+
+	.save-failed p {
+		font-size: 14px;
+		line-height: 1.45;
+		color: black;
+		margin: 0;
+	}
+
 	.block {
 		margin-bottom: 2rem;
 	}
@@ -471,10 +524,6 @@
 		margin: 0.5rem auto 1.75rem auto;
 	}
 
-	.share-button i {
-		font-size: 15px;
-	}
-
 	/* ---- leaderboards, blended into the page ---- */
 
 	.board-block {
@@ -502,15 +551,21 @@
 	/* Badge, title and a line of copy stacked as one centred block, with the help
 	   button held out at the top right. Equal `1fr` side columns keep the block
 	   centred in the section whatever width the button takes. */
+	/*
+	  The side columns carry the same minimum, which is what actually keeps the
+	  heading centred: with a plain `1fr auto 1fr` the empty left column may
+	  shrink to nothing while the right one cannot go below the help button it
+	  holds, and the whole block drifts left by half a button.
+	*/
 	.board-title {
 		display: grid;
-		grid-template-columns: 1fr auto 1fr;
-		column-gap: 12px;
+		grid-template-columns: minmax(21px, 1fr) auto minmax(21px, 1fr);
+		column-gap: 6px;
 		margin-bottom: 1.1rem;
 	}
 
 	.board-heading {
-		grid-column: 2;
+		grid-area: 1 / 2;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -527,11 +582,15 @@
 		margin: 0;
 	}
 
+	/* Full width of the section, not the middle column: the copy needs every
+	   pixel to land in two lines. */
 	.board-blurb {
+		grid-column: 1 / -1;
 		font-size: 17px;
 		line-height: 1.3;
 		color: black;
-		margin: 0;
+		margin: 7px 0 0 0;
+		text-align: center;
 	}
 
 	/* The two numbers are the whole point of the sentence. */
@@ -540,7 +599,7 @@
 	}
 
 	.board-help {
-		grid-column: 3;
+		grid-area: 1 / 3;
 		align-self: start;
 		justify-self: end;
 		display: block;
@@ -663,8 +722,6 @@
 		justify-content: center;
 		gap: 12px;
 		width: 100%;
-		/* No bottom margin: the leaderboard's own top padding is the gap below the
-		   rule, and it matches the share button's margin above it. */
 		margin: 0;
 		padding: 0.95rem 0;
 		border: none;

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { ArrowRight } from 'lucide-svelte';
+
   import { onMount } from 'svelte';
 
   export let showAd: boolean;
@@ -45,28 +47,70 @@
     margin-top: 1rem;
   }
 
-  .skip-btn {
-    padding: 10px 15px 10px 15px;
-    background-color: lightgray;
-    border: 1.5px solid gray;
-    border-radius: 10px;
-    width: 300px;
+  /* The wait, counted down in the same red the game uses for its own buttons. */
+  /* A flex row rather than a badge dropped into running text: baseline nudging
+     left the circle sitting low and the spacing around it uneven. */
+  .waiting {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
     margin-top: 2rem;
+    font-weight: 700;
+    color: black;
   }
 
-  .skip-btn:hover {
+  /* Stands in for the digit, so there is one count, not two. */
+  .countdown {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .skip-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px 16px;
+    background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
+    color: white;
+    border: none;
+    border-radius: 999px;
+    width: 300px;
+    max-width: 100%;
+    margin-top: 2rem;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 700;
     cursor: pointer;
   }
+
 </style>
 
 <div class="main-container full-height-container">
   <div class="ad-container">
     {#if canSkip}
-      <button class="skip-btn" on:click={skipAd}>Skip & View Stats</button>
-    {/if}
+      <button class="skip-btn" on:click={skipAd}>
+        Skip &amp; View Stats
+        <ArrowRight size={16} aria-hidden="true" />
+      </button>
+    {:else}
+      <p class="waiting">
+        <span>Skip available in</span>
+        <span class="countdown">{countdown}</span>
+        <span>seconds...</span>
+      </p>
 
-    {#if !canSkip}
-      <p>Skip available in {countdown} seconds...</p>
     {/if}
 
     <div id='theletterloop-com_300x600'>

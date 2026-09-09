@@ -1,4 +1,7 @@
 @import '@fontsource/fira-mono';
+/* The admin status line sets mono type at 500 -- without the face, the browser
+   fakes it and the letters smear. */
+@import '@fontsource/fira-mono/500.css';
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 
 :root {
@@ -115,6 +118,14 @@ input[type='submit'],
 input[type='checkbox'],
 summary {
 	touch-action: manipulation;
+}
+
+/* Tailwind's preflight sets every `svg` to `display: block`, which drops an
+   icon sitting in a sentence onto its own line. Lucide icons are used inline as
+   often as they are used in flex rows, so they opt back out of it. */
+.lucide {
+	display: inline-block;
+	vertical-align: middle;
 }
 
 /* Stops a fast double-tap on the letter keys selecting their text and

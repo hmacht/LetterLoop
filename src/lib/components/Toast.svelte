@@ -1,21 +1,33 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
+	import { backOut, cubicIn } from 'svelte/easing';
+	import { CircleCheck, CircleX, TriangleAlert, type Icon } from 'lucide-svelte';
 	import { notifications, type NotificationType } from '$lib/utils/notifications';
 
 	/** Only `danger` carries an icon -- a tick on every "Incorrect" would be noise. */
-	const ICONS: Partial<Record<NotificationType, string>> = {
-		danger: 'fa-solid fa-circle-xmark',
-		warning: 'fa-solid fa-triangle-exclamation',
-		success: 'fa-solid fa-circle-check'
+	const ICONS: Partial<Record<NotificationType, typeof Icon>> = {
+		danger: CircleX,
+		warning: TriangleAlert,
+		success: CircleCheck
 	};
 </script>
 
 <div class="notifications">
 	{#each $notifications as notification (notification.id)}
-		<div class="toast" transition:fly={{ y: 30 }}>
+		<!-- Drops in from above the strip and leaves the same way, both quick
+		     enough to keep up with someone hammering Enter. -->
+		<div
+			class="toast"
+			in:fly={{ y: -26, duration: 170, easing: backOut }}
+			out:fly={{ y: -14, duration: 110, easing: cubicIn }}
+		>
 			{#if ICONS[notification.type]}
-				<i class={`toast-icon ${notification.type} ${ICONS[notification.type]}`} aria-hidden="true"
-				></i>
+				<svelte:component
+					this={ICONS[notification.type]}
+					class={`toast-icon ${notification.type}`}
+					size={17}
+					aria-hidden="true"
+				/>
 			{/if}
 			<span class="content">{notification.message}</span>
 		</div>
@@ -43,8 +55,9 @@
 		gap: 8px;
 		flex: 0 0 auto;
 		padding: 10px 14px;
+		border: 1px solid #dcdcdc;
 		border-radius: 10px;
-		background: #ebebeb;
+		background: white;
 	}
 
 	.content {
@@ -52,20 +65,21 @@
 		font-weight: 500;
 	}
 
-	.toast-icon {
-		font-size: 14px;
+	/* The icon is a component, so its class lands on an element this file does
+	   not own -- scoped selectors would never match it. */
+	.toast :global(.toast-icon) {
 		flex-shrink: 0;
 	}
 
-	.toast-icon.danger {
+	.toast :global(.toast-icon.danger) {
 		color: #d92038;
 	}
 
-	.toast-icon.warning {
+	.toast :global(.toast-icon.warning) {
 		color: #e09029;
 	}
 
-	.toast-icon.success {
+	.toast :global(.toast-icon.success) {
 		color: #2e9e5b;
 	}
 </style>

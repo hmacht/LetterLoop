@@ -9,10 +9,7 @@ export function createMyProfile(name: string): Promise<Profile> {
 	return api.post<Profile>('/api/profile', { name });
 }
 
-export function renameMyProfile(name: string): Promise<Profile> {
-	return api.patch<Profile>('/api/profile', { name });
-}
-
-export function setMyAvatar(avatar: number): Promise<Profile> {
-	return api.patch<Profile>('/api/profile', { avatar });
+/** Display name and avatar, saved together in one round trip. */
+export function updateMyProfile(changes: { name?: string; avatar?: number }): Promise<Profile> {
+	return api.patch<Profile>('/api/profile', changes);
 }

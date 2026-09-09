@@ -1,38 +1,20 @@
 <script lang="ts">
-	import { profileStore, profileLoading, setProfile } from '$lib/stores/profileStore';
+	import { LogOut, Pen, WandSparkles } from 'lucide-svelte';
+
+	import Modal from '$lib/components/Modal.svelte';
+	import EditProfile from '$lib/components/EditProfile.svelte';
+
+	import { profileStore, profileLoading } from '$lib/stores/profileStore';
 	import { signOutUser } from '$lib/services/authService';
-	import { setMyAvatar } from '$lib/services/profileService';
 	import { formatDuration } from '$lib/utils/time';
 	import { calculateEmoji } from '$lib/utils/emojiStreak';
-	import { AVATAR_CHOICES, avatarSrc } from '$lib/images/avatars';
-	import { notifications } from '$lib/utils/notifications';
+	import { avatarSrc } from '$lib/images/avatars';
+
+	let showEdit = false;
 
 	$: profile = $profileStore;
 	$: loading = $profileLoading;
 	$: streakEmoji = profile ? calculateEmoji(profile.streak) : '';
-
-	/** Applied immediately so the choice feels instant, rolled back on failure. */
-	let saving = false;
-
-	async function chooseAvatar(avatar: number) {
-		if (!profile || saving || profile.avatar === avatar) return;
-
-		const previous = profile;
-		saving = true;
-		setProfile({ ...previous, avatar });
-
-		try {
-			setProfile(await setMyAvatar(avatar));
-		} catch (error) {
-			setProfile(previous);
-			notifications.default(
-				error instanceof Error ? error.message : 'Could not save your avatar',
-				2000
-			);
-		} finally {
-			saving = false;
-		}
-	}
 
 	async function handleSignOut() {
 		try {
@@ -56,23 +38,15 @@
 					<p class="email">{profile.email}</p>
 				{/if}
 			</div>
-		</div>
 
-		<p class="small-header avatar-heading">Choose your avatar</p>
-		<div class="avatar-grid" role="radiogroup" aria-label="Choose your avatar">
-			{#each AVATAR_CHOICES as choice (choice.id)}
-				<button
-					class="avatar-option"
-					class:selected={profile.avatar === choice.id}
-					role="radio"
-					aria-checked={profile.avatar === choice.id}
-					aria-label={`Avatar ${choice.id}`}
-					disabled={saving}
-					on:click={() => chooseAvatar(choice.id)}
-				>
-					<img src={choice.src} alt="" />
-				</button>
-			{/each}
+			<button
+				class="edit-profile"
+				on:click={() => (showEdit = true)}
+				aria-label="Edit your display name and colour"
+				title="Edit your display name and colour"
+			>
+				<Pen size={19} aria-hidden="true" />
+			</button>
 		</div>
 
 		<div class="stat-grid">
@@ -92,11 +66,14 @@
 
 		<div class="account-actions">
 			<button class="link-button sign-out" on:click={handleSignOut}>
-				<i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
+				<LogOut size={14} aria-hidden="true" />
 				Sign Out
 			</button>
 			{#if profile.admin}
-				<a href="/admin/loops">Admin Portal</a>
+				<a class="link-button" href="/admin">
+					<WandSparkles size={14} aria-hidden="true" />
+					Admin Portal
+				</a>
 			{/if}
 		</div>
 	{:else}
@@ -104,11 +81,41 @@
 	{/if}
 </div>
 
+<Modal
+	bind:showModal={showEdit}
+	modalType="edit-profile"
+	title="Edit your profile"
+	subtitle="How you appear on the leaderboard."
+>
+	<EditProfile close={() => (showEdit = false)} />
+</Modal>
+
 <style>
 	.identity {
 		display: flex;
 		align-items: center;
 		gap: 14px;
+	}
+
+	.edit-profile {
+		flex-shrink: 0;
+		margin-left: auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 34px;
+		height: 34px;
+		padding: 0;
+		border: none;
+		border-radius: 50%;
+		background: none;
+		cursor: pointer;
+		color: #b09a9d;
+		font-size: 15px;
+	}
+
+	.edit-profile:hover {
+		color: #fc365a;
 	}
 
 	.current-avatar {
@@ -172,50 +179,16 @@
 		color: #d92038;
 	}
 
+	/* Matches the sign-out control opposite it, so the row reads as a pair. */
+	.account-actions a.link-button {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+	}
+
 	.account-actions a:hover,
 	.link-button:hover {
 		text-decoration: underline;
-	}
-
-	.avatar-heading {
-		margin: 1.25rem 0 0.6rem 0;
-		color: #888;
-	}
-
-	.avatar-grid {
-		display: grid;
-		grid-template-columns: repeat(6, 1fr);
-		gap: 8px;
-	}
-
-	.avatar-option {
-		padding: 0;
-		border: 2px solid transparent;
-		border-radius: 50%;
-		background: none;
-		cursor: pointer;
-		line-height: 0;
-		transition: border-color 0.15s ease-in-out;
-	}
-
-	.avatar-option img {
-		width: 100%;
-		aspect-ratio: 1;
-		border-radius: 50%;
-		object-fit: cover;
-		display: block;
-	}
-
-	.avatar-option:hover:not(:disabled) {
-		border-color: #f6a7b8;
-	}
-
-	.avatar-option.selected {
-		border-color: #fc2f4f;
-	}
-
-	.avatar-option:disabled {
-		cursor: default;
 	}
 
 	.stat-grid {

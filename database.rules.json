@@ -2,6 +2,9 @@
   "rules": {
     ".read": "auth !== null",
     ".write": "false",
+    "solutions": {
+      ".indexOn": ["date", "primary", "secondary"]
+    },
     "UserData": {
       "CompletionTimes": {
         ".read": "false",

@@ -1,3 +1,7 @@
+<script lang="ts">
+  import { SquareArrowOutUpRight } from 'lucide-svelte';
+</script>
+
 <style>
   .orbits-container {
     position: relative;
@@ -38,13 +42,13 @@
     width: 100px;
   }
 
-  .fa-arrow-up-right-from-square {
+  /* Class lands on a component, so it is outside this file's scope. */
+  .orbits-container :global(.external-link) {
     position: absolute;
     top: 0;
     right: 0;
-    font-size: 15px;
-    padding: 15px 20px 0 0; 
-    color: #6791D9
+    padding: 15px 20px 0 0;
+    color: #6791D9;
   }
 </style>
 
@@ -62,6 +66,6 @@
     </div>
 
     <div style="flex: 1;"></div>
-    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+    <SquareArrowOutUpRight size={15} class="external-link" />
   </div>
 </a>

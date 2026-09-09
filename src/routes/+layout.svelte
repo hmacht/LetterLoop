@@ -1,7 +1,10 @@
 <script lang="ts">
 	import '../app.css';
 	import './styles.css';
-	import '@fortawesome/fontawesome-free/css/all.min.css';
+	// Icons are Lucide components everywhere except the social brand marks, which
+	// Lucide does not ship -- this sheet is loaded for those four glyphs alone.
+	import '@fortawesome/fontawesome-free/css/brands.min.css';
+	import '@fortawesome/fontawesome-free/css/fontawesome.min.css';
 
 	import { onMount } from 'svelte';
 	import { session } from '$lib/session';
