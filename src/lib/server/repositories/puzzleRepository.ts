@@ -111,23 +111,36 @@ export async function exists(dayKey: string): Promise<boolean> {
 	return snapshot.exists();
 }
 
-/** How many published puzzles use `word` as their primary or secondary. */
-export async function countWordUsage(word: string): Promise<number> {
+/**
+ * Every day a word has been published on, as either half of the loop.
+ *
+ * Day keys rather than a count, so callers can answer "when was this last
+ * used?" without a second query. A word used twice on one day -- primary and
+ * secondary of the same loop -- appears once.
+ */
+export async function findWordUsage(word: string): Promise<string[]> {
 	const [primary, secondary] = await Promise.all([
-		countByField('primary', word),
-		countByField('secondary', word)
+		dayKeysByField('primary', word),
+		dayKeysByField('secondary', word)
 	]);
 
-	return primary + secondary;
+	return [...new Set([...primary, ...secondary])];
 }
 
-async function countByField(field: 'primary' | 'secondary', value: string): Promise<number> {
+async function dayKeysByField(field: 'primary' | 'secondary', value: string): Promise<string[]> {
 	const snapshot = await withDeadline(
 		adminRealtimeDb().ref(ROOT).orderByChild(field).equalTo(value).get(),
-		`count ${field} usage`
+		`find ${field} usage`
 	);
 
-	return snapshot.exists() ? snapshot.numChildren() : 0;
+	if (!snapshot.exists()) return [];
+
+	const dayKeys: string[] = [];
+	snapshot.forEach((child) => {
+		dayKeys.push(child.key as string);
+	});
+
+	return dayKeys;
 }
 
 /**

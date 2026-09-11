@@ -11,6 +11,7 @@ import * as puzzleService from '$lib/server/services/puzzleService';
 import * as statsService from '$lib/server/services/statsService';
 import * as profileService from '$lib/server/services/profileService';
 import * as leaderboardService from '$lib/server/services/leaderboardService';
+import { afterResponse } from '$lib/server/afterResponse';
 import { isPlausibleRun } from '$lib/server/gameRules';
 import { warm as warmDictionary } from '$lib/server/dictionary';
 import { todayKey } from '$lib/utils/gameDate';
@@ -190,28 +191,32 @@ async function finish(
 	]);
 
 	// Second wave: both need something from the first, and neither feeds the
-	// response. They are still awaited -- a serverless instance may freeze the
-	// moment it is sent, and a leaderboard row lost that way is not recoverable.
-	await Promise.all([
-		// Ranked only for registered players, on a genuine completion. The service
-		// decides silently -- see recordResult.
-		leaderboardService.recordResult(user, {
-			dayKey,
-			elapsedSeconds,
-			gaveUp,
-			flagged,
-			name: profile?.name ?? null,
-			avatar: profile?.avatar ?? 1
-		}),
-		profileService.saveGameData(user.uid, {
-			dayKey,
-			elapsedSeconds,
-			gaveUp,
-			completed: true,
-			completedAt: new Date().toISOString(),
-			solution: gaveUp ? null : solution.solution
-		})
-	]);
+	// response -- so the player does not wait a second round trip for them. The
+	// run itself is already closed above, which is the part that must not be
+	// lost; these two finish behind the response.
+	await afterResponse(
+		Promise.all([
+			// Ranked only for registered players, on a genuine completion. The
+			// service decides silently -- see recordResult.
+			leaderboardService.recordResult(user, {
+				dayKey,
+				elapsedSeconds,
+				gaveUp,
+				flagged,
+				name: profile?.name ?? null,
+				avatar: profile?.avatar ?? 1
+			}),
+			profileService.saveGameData(user.uid, {
+				dayKey,
+				elapsedSeconds,
+				gaveUp,
+				completed: true,
+				completedAt: new Date().toISOString(),
+				solution: gaveUp ? null : solution.solution
+			})
+		]),
+		`Filing the finished run for ${dayKey}`
+	);
 
 	return { dayKey, elapsedSeconds, gaveUp, flagged, solution, globalStats: stats, profile };
 }

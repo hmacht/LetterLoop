@@ -7,7 +7,16 @@
 	 * two pages behind a sidebar.
 	 */
 	import { onDestroy, onMount, tick } from 'svelte';
-	import { Heart, Hourglass, Puzzle, Shuffle, Users, type Icon } from 'lucide-svelte';
+	import {
+		Heart,
+		Hourglass,
+		Puzzle,
+		Shuffle,
+		TriangleAlert,
+		Users,
+		type Icon
+	} from 'lucide-svelte';
+	import { Confetti } from 'svelte-confetti';
 
 	import DictionaryLink from '$lib/components/DictionaryLink.svelte';
 	import {
@@ -16,10 +25,11 @@
 		scheduleLoop,
 		wordUsage,
 		upcomingLoops,
-		type ScheduledLoop
+		type ScheduledLoop,
+		type WordUsage
 	} from '$lib/services/adminService';
 	import { getTodaysStats } from '$lib/services/statsService';
-	import { formatDayKey, todayKey } from '$lib/utils/gameDate';
+	import { daysBetween, formatDayKey, todayKey } from '$lib/utils/gameDate';
 	import type { GlobalStats } from '$lib/models/globalStats';
 
 	import { profileStore } from '$lib/stores/profileStore';
@@ -37,9 +47,12 @@
 	let errorMessage = '';
 	let scheduled: ScheduledLoop | null = null;
 
-	let primaryUsage: number | null = null;
-	let secondaryUsage: number | null = null;
+	let primaryUsage: WordUsage | null = null;
+	let secondaryUsage: WordUsage | null = null;
 	let loadingUsage = false;
+
+	/** A word that ran this recently will still feel familiar to players. */
+	const RECENT_DAYS = 90;
 
 	// ---- the queue ----
 	let loops: ScheduledLoop[] = [];
@@ -71,15 +84,35 @@
 	let typing = false;
 	let timer: ReturnType<typeof setTimeout> | undefined;
 
+	/**
+	 * Scheduling a loop is the one thing this page exists for, so it gets a
+	 * burst. Cleared on a timer rather than an animation event, so a second
+	 * submit can restart the whole thing cleanly.
+	 */
+	const CELEBRATION_MS = 2800;
+
+	let celebrating = false;
+	let celebrationTimer: ReturnType<typeof setTimeout> | undefined;
+
 	const today = todayKey();
 
 	$: profile = $profileStore;
 	$: selectionComplete = !!selectedPrimary && !!selectedSecondary;
 	$: runsOut = loops.length > 0 ? formatDayKey(loops[loops.length - 1].dayKey) : '';
-	/* `upcoming()` starts from yesterday, so today's puzzle is already in the
+	/* `upcoming()` reaches back a few days, so today's puzzle is already in the
 	   queue we fetched -- no second call to read out the answer. */
 	$: todaysLoop = loops.find((loop) => loop.dayKey === today) ?? null;
 	$: todayParts = dateParts(today);
+
+	/* Either word running again within a couple of months is the thing worth
+	   catching, so both are checked the same way and warned about together. */
+	$: recent = [
+		{ word: selectedPrimary, usage: primaryUsage },
+		{ word: selectedSecondary, usage: secondaryUsage }
+	].filter((entry) => entry.word && wasRecent(entry.usage)) as Array<{
+		word: string;
+		usage: WordUsage;
+	}>;
 
 	$: segments = buildStatus(todayParts, todaysLoop, stats, loops);
 	$: totalChars = segments.reduce((count, segment) => count + length(segment), 0);
@@ -95,7 +128,22 @@
 		startTyping();
 	});
 
-	onDestroy(() => clearTimeout(timer));
+	onDestroy(() => {
+		clearTimeout(timer);
+		clearTimeout(celebrationTimer);
+	});
+
+	async function celebrate() {
+		clearTimeout(celebrationTimer);
+
+		// Off and back on across a frame, so a second loop scheduled while the
+		// first burst is still falling starts its own rather than joining it.
+		celebrating = false;
+		await tick();
+
+		celebrating = true;
+		celebrationTimer = setTimeout(() => (celebrating = false), CELEBRATION_MS);
+	}
 
 	function length(segment: Segment): number {
 		return segment.kind === 'icon' ? 1 : segment.value.length;
@@ -204,6 +252,20 @@
 		};
 	}
 
+	/** Has this word run inside the warning window? */
+	function wasRecent(usage: WordUsage | null): boolean {
+		if (!usage?.lastUsed) return false;
+		return daysBetween(usage.lastUsed, today) <= RECENT_DAYS;
+	}
+
+	/** "3 days ago", for a warning that should read at a glance. */
+	function howLongAgo(dayKey: string): string {
+		const days = daysBetween(dayKey, today);
+		if (days === 0) return 'today';
+		if (days === 1) return 'yesterday';
+		return `${days} days ago`;
+	}
+
 	/** "SEP 30" -- the queue's last day, short enough for a pill. */
 	function shortDay(dayKey: string) {
 		const { month, day } = dateParts(dayKey);
@@ -239,6 +301,8 @@
 			primaryUsage = null;
 			secondaryUsage = null;
 
+			celebrate();
+
 			// The queue just changed, and it is the next thing on the page.
 			await loadQueue();
 		} catch (error) {
@@ -253,18 +317,30 @@
 		selectedSecondary = null;
 		primaryUsage = null;
 		secondaryUsage = null;
-		secondaryWords = await secondaryOptions(word);
+
+		// Checked as soon as it is picked: being told a word ran last week is
+		// only useful before spending time choosing its partner.
+		const [options, usage] = await Promise.all([secondaryOptions(word), lookUpUsage(word)]);
+		secondaryWords = options;
+		primaryUsage = usage;
 	}
 
 	async function secondarySelected(word: string) {
 		selectedSecondary = word;
+		secondaryUsage = await lookUpUsage(word);
+	}
 
+	/** Usage for one word. A lookup that fails must not hold the panel open. */
+	async function lookUpUsage(word: string): Promise<WordUsage | null> {
 		loadingUsage = true;
-		[primaryUsage, secondaryUsage] = await Promise.all([
-			wordUsage(selectedPrimary ?? ''),
-			wordUsage(word)
-		]);
-		loadingUsage = false;
+		try {
+			return await wordUsage(word);
+		} catch (error) {
+			console.error(`Could not read usage for "${word}":`, error);
+			return null;
+		} finally {
+			loadingUsage = false;
+		}
 	}
 
 	async function shufflePrimaryWords() {
@@ -302,12 +378,12 @@
 </p>
 
 <!-- ---- new loop ---- -->
-<section class="card">
+<section class="card" class:celebrating>
 	<h2>New Loop</h2>
 	<p class="card-sub">Pick a first word, then a word that closes the loop.</p>
 
 	{#if scheduled}
-		<p class="flash good">
+		<p class="flash good" class:celebrating>
 			Scheduled <b>{scheduled.primary}</b> + <b>{scheduled.secondary}</b> for
 			<b>{formatDayKey(scheduled.dayKey)}</b>
 		</p>
@@ -369,22 +445,61 @@
 				{#if loadingUsage}
 					Counting past appearances...
 				{:else}
-					Used before: <b>{primaryUsage}</b>
-					&times; {selectedPrimary} &middot; <b>{secondaryUsage}</b>
+					Used before: <b>{primaryUsage?.count ?? 0}</b>
+					&times; {selectedPrimary} &middot; <b>{secondaryUsage?.count ?? 0}</b>
 					&times; {selectedSecondary}
 				{/if}
 			</p>
 		{:else if selectedPrimary}
 			<p class="selection-words"><DictionaryLink word={selectedPrimary} /> + ?</p>
-			<p class="usage">Pick a second word to see how often these have run.</p>
+			<p class="usage">
+				{#if loadingUsage}
+					Counting past appearances...
+				{:else}
+					Used before: <b>{primaryUsage?.count ?? 0}</b>
+					&times; {selectedPrimary}. Pick a second word.
+				{/if}
+			</p>
 		{:else}
 			<p class="selection-words muted">Nothing picked yet</p>
 		{/if}
+
+		<!-- Outside the branches above: the first word can be the recent one, and
+		     that is worth knowing before its partner is chosen. -->
+		{#each recent as entry (entry.word)}
+			<p class="recent-warning">
+				<TriangleAlert size={15} class="warning-icon" aria-hidden="true" />
+				<span>
+					<b>{entry.word}</b> ran
+					{howLongAgo(entry.usage.lastUsed ?? '')} on
+					<b>{formatDayKey(entry.usage.lastUsed ?? '')}</b>.
+				</span>
+			</p>
+		{/each}
 	</div>
 
-	<button class="lift" disabled={!selectionComplete || submitting} on:click={handleSubmit}>
-		{submitting ? 'Scheduling...' : 'Schedule this loop'}
-	</button>
+	<!-- The burst starts at the button, which is where the player's eye already
+	     is when it goes off. -->
+	<div class="launcher">
+		{#if celebrating}
+			<div class="confetti">
+				<Confetti
+					x={[-1.4, 1.4]}
+					y={[-0.9, 1.1]}
+					delay={[0, 260]}
+					amount={130}
+					duration={CELEBRATION_MS}
+					size={11}
+					fallDistance="180px"
+					colorArray={['#fc365a', '#ff8fab', '#ffd166', '#5ad2f4', '#8ce99a', '#ffffff']}
+				/>
+			</div>
+		{/if}
+
+		<button class="lift" disabled={!selectionComplete || submitting} on:click={handleSubmit}>
+			{submitting ? 'Scheduling...' : 'Schedule this loop'}
+		</button>
+	</div>
 </section>
 
 <!-- ---- the queue ---- -->
@@ -402,7 +517,7 @@
 
 		<ul class="queue">
 			{#each loops as loop (loop.dayKey)}
-				<li>
+				<li class:ran={daysBetween(loop.dayKey, today) > 0}>
 					<span class="when">
 						{formatDayKey(loop.dayKey)}
 						{#if loop.dayKey === today}
@@ -748,6 +863,95 @@
 		color: #fc365a;
 	}
 
+	/* A line rather than a banner: a word coming round again this soon is worth a
+	   look, not a refusal, and scheduling it anyway is still allowed. */
+	.recent-warning {
+		display: flex;
+		align-items: flex-start;
+		gap: 7px;
+		margin: 8px 0 0 0;
+		font-size: 13px;
+		line-height: 1.4;
+		color: #fc365a;
+	}
+
+	.recent-warning b {
+		font-weight: 700;
+	}
+
+	.recent-warning :global(.warning-icon) {
+		flex-shrink: 0;
+		margin-top: 1px;
+	}
+
+	/* ---- scheduled! ---- */
+
+	.launcher {
+		position: relative;
+	}
+
+	/* A point source at the top of the button. `pointer-events: none` so the
+	   falling paper never eats a click on the button underneath it. */
+	.confetti {
+		position: absolute;
+		top: 0;
+		left: 50%;
+		width: 0;
+		height: 0;
+		display: flex;
+		justify-content: center;
+		overflow: visible;
+		pointer-events: none;
+		z-index: 5;
+	}
+
+	/* The card takes the hit and bounces: a quick squash into the press, then a
+	   spring back through an overshoot. */
+	.card.celebrating {
+		animation: cheer 620ms cubic-bezier(0.34, 1.4, 0.5, 1);
+	}
+
+	@keyframes cheer {
+		0% {
+			transform: scale(1);
+		}
+		18% {
+			transform: scale(0.985) translateY(3px);
+		}
+		52% {
+			transform: scale(1.025) translateY(-6px);
+		}
+		78% {
+			transform: scale(0.995) translateY(1px);
+		}
+		100% {
+			transform: scale(1);
+		}
+	}
+
+	/* The receipt arrives with it, rather than just appearing. */
+	.flash.good.celebrating {
+		animation: land 520ms cubic-bezier(0.17, 0.89, 0.32, 1.3);
+	}
+
+	@keyframes land {
+		0% {
+			opacity: 0;
+			transform: translateY(-10px) scale(0.94);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.card.celebrating,
+		.flash.good.celebrating {
+			animation: none;
+		}
+	}
+
 	.lift {
 		display: block;
 		width: 100%;
@@ -811,6 +1015,11 @@
 		gap: 14px;
 		padding: 11px 0;
 		border-top: 2px dotted #f4d9dd;
+	}
+
+	/* The few days behind today are there for context, not for planning. */
+	.queue li.ran {
+		opacity: 0.5;
 	}
 
 	.when {

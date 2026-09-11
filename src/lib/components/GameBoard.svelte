@@ -1,6 +1,15 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { CirclePause, CircleQuestionMark, Delete, Eraser, Frown, Shuffle } from 'lucide-svelte';
+	import { onDestroy, onMount } from 'svelte';
+	import { scale } from 'svelte/transition';
+	import {
+		CirclePause,
+		CircleQuestionMark,
+		Delete,
+		Eraser,
+		Frown,
+		Shuffle,
+		X
+	} from 'lucide-svelte';
 
 	import Modal from '$lib/components/Modal.svelte';
 	import Toast from '$lib/components/Toast.svelte';
@@ -57,6 +66,11 @@
 	const SHAKE_MS = 380;
 	let shaking = false;
 
+	/** How long the refusal sits in the middle of the ring before fading. */
+	const REFUSAL_MS = 1400;
+	let refusal = '';
+	let refusalTimer: ReturnType<typeof setTimeout> | undefined;
+
 	/** The in-flight `start` call. Guesses wait on it rather than racing it. */
 	let starting: Promise<GameState> | null = null;
 
@@ -72,6 +86,8 @@
 	if (preloaded) applyPuzzle(preloaded);
 
 	onMount(startGame);
+
+	onDestroy(() => clearTimeout(refusalTimer));
 
 	async function startGame() {
 		// Two calls, deliberately in parallel:
@@ -149,8 +165,7 @@
 		const guess = selectedLetters.join('');
 		if (guess.length !== slotCount || selectedLetters.some((letter) => letter === '')) {
 			// Same refusal as a wrong answer -- the board says no either way.
-			shakeBoard();
-			notifications.danger('You must fill in every letter', 1000);
+			refuse('Fill in every letter');
 			return;
 		}
 
@@ -171,8 +186,7 @@
 			}
 
 			// Wrong answer: the board shakes it off and comes back.
-			shakeBoard();
-			notifications.danger('Incorrect', 800);
+			refuse('Incorrect');
 			submitting = false;
 		} catch (error) {
 			console.error('Could not submit the guess:', error);
@@ -282,6 +296,26 @@
 	}
 
 	/**
+	 * The board's answer to a guess it will not take: a shake, and a mark in the
+	 * middle of the ring where the player is already looking. It clears itself,
+	 * and clears early the moment they touch a letter again.
+	 */
+	function refuse(message: string) {
+		shakeBoard();
+
+		clearTimeout(refusalTimer);
+		refusal = message;
+		refusalTimer = setTimeout(() => (refusal = ''), REFUSAL_MS);
+	}
+
+	function clearRefusal() {
+		if (!refusal) return;
+
+		clearTimeout(refusalTimer);
+		refusal = '';
+	}
+
+	/**
 	 * Shakes the ring of letters on a wrong answer.
 	 *
 	 * Cleared and re-applied across a frame rather than toggled in place: the
@@ -331,6 +365,7 @@
 		const slot = selectedLetters.findIndex((value) => value === '');
 		if (slot === -1 || usedKeys.includes(index)) return;
 
+		clearRefusal();
 		selectedLetters[slot] = letter;
 		usedKeys = [...usedKeys, index];
 	}
@@ -338,6 +373,7 @@
 	function deleteLetter() {
 		if (frozen || usedKeys.length === 0) return;
 
+		clearRefusal();
 		const slot = usedKeys.length - 1;
 		selectedLetters[slot] = '';
 		usedKeys = usedKeys.slice(0, -1);
@@ -443,6 +479,15 @@
 						{letter}
 					</div>
 				{/each}
+
+				<!-- Sits at the ring's own centre, which is where the eye already is:
+				     the same anchor the circles are placed from, plus half a circle. -->
+				{#if refusal}
+					<div class="refusal" role="status" transition:scale={{ duration: 160, start: 0.8 }}>
+						<span class="refusal-mark"><X size={18} strokeWidth={3} aria-hidden="true" /></span>
+						<p>{refusal}</p>
+					</div>
+				{/if}
 			</div>
 
 			<!-- The dimming is tied to the run being over, not to the round trip:
@@ -751,6 +796,43 @@
 	/* Eases rather than snaps, so even the end-of-run dimming does not blink. */
 	.keyboard :global(.key) {
 		transition: opacity 0.18s ease;
+	}
+
+	/*
+	  The refusal sits dead centre of the ring. The circles are placed from a
+	  38% anchor and are 60px wide, so their shared centre is that anchor plus
+	  half a circle -- the same sum puts this on it.
+	*/
+	.refusal {
+		position: absolute;
+		left: calc(38% + 30px);
+		top: calc(38% + 30px);
+		transform: translate(-50%, -50%);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 6px;
+		pointer-events: none;
+		z-index: 2;
+	}
+
+	.refusal-mark {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 34px;
+		height: 34px;
+		border-radius: 50%;
+		background-color: #d92038;
+		color: white;
+	}
+
+	.refusal p {
+		margin: 0;
+		font-size: 12px;
+		font-weight: 700;
+		color: #d92038;
+		white-space: nowrap;
 	}
 
 	/* A wrong answer: the ring shrugs it off and hands the board back. A short

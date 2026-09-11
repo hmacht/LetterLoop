@@ -677,8 +677,8 @@
 		text-decoration: underline;
 	}
 
-	/* Sits under the board's sign-in line, so it picks up the same size and
-	   colour as that copy -- icon left, text to its right. */
+	/* Banded between rules like the profile row, so the two links out of the
+	   page read as the same kind of thing. */
 	.all-time-trigger {
 		display: flex;
 		flex-direction: row;
@@ -686,9 +686,11 @@
 		gap: 12px;
 		width: 100%;
 		margin: 1.1rem 0 0 0;
-		padding: 0;
+		padding: 0.95rem 0;
 		background: none;
 		border: none;
+		border-top: 1px solid rgba(0, 0, 0, 0.08);
+		border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 		cursor: pointer;
 		font-size: 14px;
 		line-height: 1.45;
