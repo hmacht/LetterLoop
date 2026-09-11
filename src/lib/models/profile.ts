@@ -4,7 +4,7 @@ export interface Profile {
 	email: string;
 	streak: number;
 	gamesPlayed: number;
-	/** Mean completion time in integer seconds. */
+	/** Mean completion time in seconds. Fractional -- never rounded before it is stored. */
 	averageTime: number;
 	admin: boolean;
 	/** 1-based index into the avatar set. See $lib/utils/avatars. */

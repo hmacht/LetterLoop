@@ -1,6 +1,6 @@
 /** Aggregate stats for one day, stored at `Stats/{dayKey}` in Realtime Database. */
 export interface GlobalStats {
-	/** Integer seconds. */
+	/** Seconds. Fractional -- never rounded before it is stored. */
 	averageSeconds: number;
 	/** Integer seconds. */
 	minSeconds: number;
