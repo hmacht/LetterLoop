@@ -57,6 +57,14 @@
 	--edge-soft: #f4d9dd;
 	--hairline: rgba(0, 0, 0, 0.08);
 
+	/* Lift on things that are not pressable -- cards, dialogs. Same solid
+	   shadow, just deeper, and it never moves. Cards on the pink pages take the
+	   blush; dialogs float over a dimmed page, where a neutral grey reads as
+	   depth rather than as more pink. */
+	--card-lift: 8px;
+	--card-lift-color: #ffd7de;
+	--card-lift-neutral: #ddd6d6;
+
 	/* Pressable */
 	--press: 4px;
 	--press-small: 3px;
@@ -300,6 +308,17 @@ button,
 
 .enter-key:active:not(:disabled) {
 	box-shadow: 0 0 0 var(--brand-deep);
+}
+
+/* Off while the guess is with the server: the only key that changes, since
+   dimming the whole keyboard for the length of a round trip reads as a flicker
+   when the answer comes back wrong. */
+.enter-key:disabled {
+	background-image: none;
+	background-color: #e8d5d8;
+	border-color: #e8d5d8;
+	color: #a9979a;
+	box-shadow: 0 var(--press) 0 #dcc4c8;
 }
 
 .disabled {

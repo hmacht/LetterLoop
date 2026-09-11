@@ -726,12 +726,12 @@
 	/* Cards sit up off the pink rather than sitting in it -- the whole portal is
 	   two stacked panels, so they carry the playfulness. */
 	.card {
-		background-color: white;
-		border: 2px solid #f4d9dd;
-		border-radius: 26px;
+		background-color: var(--surface);
+		border: 2px solid var(--edge-soft);
+		border-radius: var(--radius-card);
 		padding: 24px 22px;
 		margin-bottom: 1.75rem;
-		box-shadow: 0 10px 0 -4px #ffd7de;
+		box-shadow: 0 var(--card-lift) 0 var(--card-lift-color);
 	}
 
 	h2 {

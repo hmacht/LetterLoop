@@ -40,6 +40,8 @@
 
 	let letterBank = '';
 	let scrambledBank = '';
+	/** Ships with the puzzle, so the bottom slot can confirm itself offline. */
+	let sharedLetters: string[] = [];
 	let author = '---';
 	let dayKey = '';
 	let loopNumber: number | null = null;
@@ -55,6 +57,9 @@
 	let celebrating = false;
 	/** Set only when the game could not be fetched; empty means still loading. */
 	let loadError = '';
+
+	/** One lap of the "checking" wave. Each circle takes an equal share of it. */
+	const CHECK_WAVE_MS = 1400;
 
 	/** Each circle swells and colours in turn, clockwise from 12 o'clock. */
 	const CELEBRATION_STAGGER_MS = 80;
@@ -76,6 +81,15 @@
 	let starting: Promise<GameState> | null = null;
 
 	const sharedLetterIndexes = [0, 4];
+	/** Six o'clock on the ring: where the first word ends and the second starts. */
+	const BOTTOM_SHARED_INDEX = 4;
+
+	/* The one slot the board can mark on its own. Either shared letter may sit
+	   there -- which one depends on the word the player started with -- and
+	   everything else about the answer stays on the server. */
+	$: bottomSolved = sharedLetters.includes(
+		selectedLetters[BOTTOM_SHARED_INDEX]?.toLowerCase() ?? ''
+	);
 
 	/** The board is locked from the moment a full answer is committed. */
 	$: frozen = submitting || !!result;
@@ -145,6 +159,7 @@
 
 		letterBank = puzzle.letterBank;
 		scrambledBank = letterBank;
+		sharedLetters = puzzle.sharedLetters ?? [];
 		author = puzzle.author;
 		dayKey = puzzle.dayKey;
 		loopNumber = puzzle.loopNumber;
@@ -469,12 +484,16 @@
 						class="circle"
 						class:filled={letter !== ''}
 						class:shared={sharedLetterIndexes.includes(index)}
+						class:locked={index === BOTTOM_SHARED_INDEX && bottomSolved}
 						class:celebrate={celebrating}
+						class:checking={submitting && !celebrating}
 						style={`
               left: calc(38% + ${Math.cos((index / selectedLetters.length) * 2 * Math.PI - Math.PI / 2) * 100}px);
               top: calc(38% + ${Math.sin((index / selectedLetters.length) * 2 * Math.PI - Math.PI / 2) * 100}px);
               --pop-delay: ${index * CELEBRATION_STAGGER_MS}ms;
               --pop-duration: ${CELEBRATION_POP_MS}ms;
+              --wave-delay: ${(index * CHECK_WAVE_MS) / selectedLetters.length}ms;
+              --wave-duration: ${CHECK_WAVE_MS}ms;
             `}
 					>
 						{letter}
@@ -645,6 +664,72 @@
 	  once the moment the sweep began. With `forwards` each circle keeps its
 	  normal grey until its own turn starts.
 	*/
+	/*
+	  The bottom shared slot is the only one the board can judge on its own, and
+	  it says so quietly: one breath outward with a soft halo that fades, then
+	  back to resting. Not a celebration -- the run is not over -- just a nod.
+
+	  `:not(.celebrate)` keeps it out of the way of the winning sweep, which is
+	  otherwise the less specific rule and would lose this circle.
+	*/
+	.circle.locked:not(.celebrate) {
+		animation: settle 700ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	@keyframes settle {
+		0% {
+			transform: scale(1);
+			box-shadow: 0 0 0 0 rgba(252, 47, 79, 0.55);
+		}
+		40% {
+			transform: scale(1.07);
+			box-shadow: 0 0 0 9px rgba(252, 47, 79, 0);
+		}
+		70% {
+			transform: scale(0.985);
+		}
+		100% {
+			transform: scale(1);
+			box-shadow: 0 0 0 0 rgba(252, 47, 79, 0);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.circle.locked:not(.celebrate) {
+			animation: none;
+		}
+	}
+
+	/*
+	  Waiting on the server: a swell travels round the ring, one circle at a
+	  time. Every circle runs the same loop and starts a slot later than the one
+	  before it, so the bump chases itself around for as long as the guess is in
+	  flight. Deliberately gentle -- it is a pulse, not a verdict.
+	*/
+	/* `:not(.celebrate)` is for specificity as much as for safety: the settle
+	   rule above carries one too, and without a match here the confirmed bottom
+	   circle would outrank this and sit out the wave. */
+	.circle.checking:not(.celebrate) {
+		animation: wave var(--wave-duration, 1400ms) ease-in-out var(--wave-delay, 0ms) infinite;
+	}
+
+	@keyframes wave {
+		0%,
+		45%,
+		100% {
+			transform: scale(1);
+		}
+		18% {
+			transform: scale(1.09);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.circle.checking:not(.celebrate) {
+			animation: none;
+		}
+	}
+
 	/* `linear` overall: each keyframe below carries its own curve, which is what
 	   keeps the bounce from feeling metered. */
 	.circle.celebrate {

@@ -34,7 +34,8 @@ export async function getPublicPuzzle(dayKey: string = todayKey()): Promise<Publ
 		loopNumber: loopNumber(dayKey),
 		author: puzzle.author,
 		letterBank: scramble(puzzle.solution, dayKey),
-		wordLength: WORD_LENGTH
+		wordLength: WORD_LENGTH,
+		sharedLetters: sharedLetters(puzzle)
 	};
 }
 
@@ -69,6 +70,21 @@ export async function isAcceptedSolution(dayKey: string, guess: string): Promise
 
 	const [primary, secondary] = parseLoop(candidate, WORD_LENGTH);
 	return isWord(primary) && isWord(secondary);
+}
+
+/**
+ * The letters that can sit where the two words join.
+ *
+ * Each word starts on a joint: the words share their first and last letters, so
+ * the first letter of one is the last of the other. Which of the two lands at
+ * the bottom of the ring depends on the word the player starts with -- both are
+ * correct -- and any alternate the editor listed brings its own pair.
+ */
+function sharedLetters(puzzle: PuzzleRecord): string[] {
+	const loops = [puzzle.solution, ...puzzle.solutions].filter(Boolean);
+	const firsts = loops.flatMap((loop) => parseLoop(loop, WORD_LENGTH).map((word) => word[0]));
+
+	return [...new Set(firsts.filter(Boolean).map((letter) => letter.toLowerCase()))];
 }
 
 function isAnagramOf(a: string, b: string): boolean {

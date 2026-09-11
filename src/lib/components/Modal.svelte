@@ -88,13 +88,17 @@
 		overflow: visible;
 	}
 
+	/* Lifted like the cards and buttons: a solid shadow under the panel rather
+	   than a blur, so a dialog sits on the page the same way everything else
+	   does. Nothing presses it -- it does not move. */
 	.modal-card {
 		/* Focusable only as the dialog's initial target; never shows a ring. */
 		outline: none;
-		border: 1px solid #d7d7d7;
+		border: 2px solid var(--card-lift-neutral);
 		background-color: #fffbfb;
 		border-radius: 30px;
 		padding: 25px;
+		box-shadow: 0 var(--card-lift) 0 var(--card-lift-neutral);
 	}
 
 	.modal-header {
