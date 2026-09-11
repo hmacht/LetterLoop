@@ -31,9 +31,12 @@ export async function secondaryOptions(primary: string): Promise<string[]> {
 	return words;
 }
 
-export async function wordUsage(word: string): Promise<number> {
-	const { count } = await api.get<{ count: number }>(
-		`/api/admin/words?mode=usage&word=${encodeURIComponent(word)}`
-	);
-	return count;
+export interface WordUsage {
+	count: number;
+	/** Day key of the last time this word actually ran, or null. */
+	lastUsed: string | null;
+}
+
+export function wordUsage(word: string): Promise<WordUsage> {
+	return api.get<WordUsage>(`/api/admin/words?mode=usage&word=${encodeURIComponent(word)}`);
 }

@@ -1,14 +1,25 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
+	import { scale } from 'svelte/transition';
+	import {
+		CirclePause,
+		CircleQuestionMark,
+		Delete,
+		Eraser,
+		Frown,
+		Shuffle,
+		X
+	} from 'lucide-svelte';
 
 	import Modal from '$lib/components/Modal.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import Timer from '$lib/components/Timer.svelte';
 	import Help from '$lib/components/Help.svelte';
+	import Loading from '$lib/components/Loading.svelte';
 
 	import * as gameService from '$lib/services/gameService';
 	import type { GameResult, GameState } from '$lib/services/gameService';
-	import { loadTodaysPuzzle } from '$lib/services/puzzleService';
+	import { loadTodaysPuzzle, preloadedTodaysPuzzle } from '$lib/services/puzzleService';
 	import { notifications } from '$lib/utils/notifications';
 	import { formatDayKey } from '$lib/utils/gameDate';
 	import { setProfile } from '$lib/stores/profileStore';
@@ -18,6 +29,8 @@
 	export let result: GameResult | null = null;
 	/** True when the run was already over before this mount, not just finished. */
 	export let returning = false;
+	/** True when the finish could not be filed with the server. */
+	export let saveFailed = false;
 	export let showAd: boolean;
 
 	let showHelpModal = false;
@@ -39,18 +52,42 @@
 	let pauseBusy = false;
 	let submitting = false;
 	let celebrating = false;
-	let loadStatus = 'Loading Game...';
+	/** Set only when the game could not be fetched; empty means still loading. */
+	let loadError = '';
 
 	/** Each circle swells and colours in turn, clockwise from 12 o'clock. */
-	const CELEBRATION_STAGGER_MS = 90;
-	const CELEBRATION_POP_MS = 520;
+	const CELEBRATION_STAGGER_MS = 80;
+	const CELEBRATION_POP_MS = 480;
+
+	/** Wall clock at the first frame, so the sweep can be waited out mid-flight. */
+	let celebrationStartedAt = 0;
+
+	/** The board's "no" for a wrong answer. */
+	const SHAKE_MS = 380;
+	let shaking = false;
+
+	/** How long the refusal sits in the middle of the ring before fading. */
+	const REFUSAL_MS = 1400;
+	let refusal = '';
+	let refusalTimer: ReturnType<typeof setTimeout> | undefined;
 
 	/** The in-flight `start` call. Guesses wait on it rather than racing it. */
 	let starting: Promise<GameState> | null = null;
 
 	const sharedLetterIndexes = [0, 4];
 
+	/** The board is locked from the moment a full answer is committed. */
+	$: frozen = submitting || !!result;
+
+	// The menu fetches the puzzle while the player is still reading it, so the
+	// board can paint letters on its first frame. Awaiting the same call in
+	// `startGame` would still cost a render, and that render is a spinner.
+	const preloaded = preloadedTodaysPuzzle();
+	if (preloaded) applyPuzzle(preloaded);
+
 	onMount(startGame);
+
+	onDestroy(() => clearTimeout(refusalTimer));
 
 	async function startGame() {
 		// Two calls, deliberately in parallel:
@@ -97,7 +134,7 @@
 			running = !state.paused;
 			showPauseModal = state.paused;
 		} catch (error) {
-			loadStatus = error instanceof Error ? error.message : 'Error Loading Game :(';
+			loadError = error instanceof Error ? error.message : 'Error Loading Game :(';
 			console.error('Could not start the game:', error);
 		}
 	}
@@ -114,16 +151,27 @@
 		selectedLetters = Array(slotCount).fill('');
 	}
 
+	/**
+	 * Submits the board.
+	 *
+	 * The completeness check happens here so the keyboard can lock the instant
+	 * the player commits, rather than staying live for the length of a round
+	 * trip. Whether the answer is *right* is the server's call -- the browser is
+	 * never told today's solution -- so nothing celebrates until it replies.
+	 */
 	async function checkSolution() {
 		if (submitting || result) return;
 
 		const guess = selectedLetters.join('');
 		if (guess.length !== slotCount || selectedLetters.some((letter) => letter === '')) {
-			notifications.danger('You must fill in every letter', 1000);
+			// Same refusal as a wrong answer -- the board says no either way.
+			refuse('Fill in every letter');
 			return;
 		}
 
+		// Freezes the board: `submitting` gates every input path below.
 		submitting = true;
+
 		try {
 			// The board can be usable a moment before `start` resolves; wait for it
 			// rather than sending a guess the server has no run for.
@@ -131,16 +179,49 @@
 			const outcome = await gameService.submitGuess(guess);
 
 			if (outcome.correct) {
-				await celebrate();
+				startCelebrating();
+				await celebrationEnds();
 				finish(outcome.result);
-			} else {
-				notifications.danger('Incorrect', 1000);
+				return;
 			}
-		} catch (error) {
-			notifications.danger(error instanceof Error ? error.message : 'Something went wrong', 2000);
-		} finally {
+
+			// Wrong answer: the board shakes it off and comes back.
+			refuse('Incorrect');
 			submitting = false;
+		} catch (error) {
+			console.error('Could not submit the guess:', error);
+
+			// No reply means no verdict, so there is nothing to celebrate. The run
+			// is over for the player either way -- send them to the results with the
+			// board frozen, and say there that it was not filed.
+			finish(unsavedResult(), true);
 		}
+	}
+
+	/**
+	 * Stand-in result for a finish the server never recorded.
+	 *
+	 * Everything the server would have supplied -- the day's stats, the ordered
+	 * solution, the profile -- is simply absent, and the results page hides those
+	 * panels rather than inventing them. The time is the browser's own, which is
+	 * why it is never what gets ranked.
+	 */
+	function unsavedResult(): GameResult {
+		return {
+			dayKey,
+			elapsedSeconds: Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000)),
+			gaveUp: false,
+			flagged: false,
+			solution: { solution: '', primary: '', secondary: '' },
+			globalStats: {
+				averageSeconds: 0,
+				minSeconds: 0,
+				count: 0,
+				isUnderAverage: false,
+				isHighScore: false
+			},
+			profile: null
+		};
 	}
 
 	function requestGiveUp() {
@@ -203,57 +284,118 @@
 	}
 
 	/**
-	 * Plays the completion animation and resolves once it has finished.
-	 *
-	 * The results page used to replace the board the instant the server said
-	 * "correct", so there was no window for any of this to be seen.
+	 * Starts the winning sweep. Only ever called once the server has confirmed
+	 * the answer -- the circles going round is the game saying "you got it", so
+	 * it must never fire on a guess that turns out to be wrong.
 	 */
-	async function celebrate(): Promise<void> {
-		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+	function startCelebrating() {
+		if (prefersReducedMotion()) return;
 
 		celebrating = true;
-		const total = (slotCount - 1) * CELEBRATION_STAGGER_MS + CELEBRATION_POP_MS;
-		await new Promise((resolve) => setTimeout(resolve, total));
+		celebrationStartedAt = Date.now();
 	}
 
-	function finish(finished: GameResult) {
+	/**
+	 * The board's answer to a guess it will not take: a shake, and a mark in the
+	 * middle of the ring where the player is already looking. It clears itself,
+	 * and clears early the moment they touch a letter again.
+	 */
+	function refuse(message: string) {
+		shakeBoard();
+
+		clearTimeout(refusalTimer);
+		refusal = message;
+		refusalTimer = setTimeout(() => (refusal = ''), REFUSAL_MS);
+	}
+
+	function clearRefusal() {
+		if (!refusal) return;
+
+		clearTimeout(refusalTimer);
+		refusal = '';
+	}
+
+	/**
+	 * Shakes the ring of letters on a wrong answer.
+	 *
+	 * Cleared and re-applied across a frame rather than toggled in place: the
+	 * class going straight from on to on would not restart the animation, so a
+	 * second wrong guess in quick succession would sit still.
+	 */
+	function shakeBoard() {
+		if (prefersReducedMotion()) return;
+
+		shaking = false;
+		requestAnimationFrame(() => {
+			shaking = true;
+			setTimeout(() => (shaking = false), SHAKE_MS);
+		});
+	}
+
+	function prefersReducedMotion(): boolean {
+		return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+	}
+
+	/** Resolves when the sweep already under way has run its course. */
+	function celebrationEnds(): Promise<void> {
+		if (!celebrating) return Promise.resolve();
+
+		const total = (slotCount - 1) * CELEBRATION_STAGGER_MS + CELEBRATION_POP_MS;
+		const remaining = Math.max(0, total - (Date.now() - celebrationStartedAt));
+
+		return new Promise((resolve) => setTimeout(resolve, remaining));
+	}
+
+	function finish(finished: GameResult, unsaved = false) {
 		running = false;
 		// The server returns the freshly updated profile, so the stats panel does
 		// not need a second round trip to show the new streak.
 		if (finished.profile) setProfile(finished.profile);
+		saveFailed = unsaved;
+		// Still by way of the ad, whichever way the run ended.
 		showAd = true;
 		result = finished;
 	}
 
+	// Every way of touching the board runs through these, so freezing is a single
+	// condition rather than something each control has to remember.
 	function letterSelected(letter: string, index: number) {
+		if (frozen) return;
+
 		const slot = selectedLetters.findIndex((value) => value === '');
 		if (slot === -1 || usedKeys.includes(index)) return;
 
+		clearRefusal();
 		selectedLetters[slot] = letter;
 		usedKeys = [...usedKeys, index];
 	}
 
 	function deleteLetter() {
-		if (usedKeys.length === 0) return;
+		if (frozen || usedKeys.length === 0) return;
 
+		clearRefusal();
 		const slot = usedKeys.length - 1;
 		selectedLetters[slot] = '';
 		usedKeys = usedKeys.slice(0, -1);
 	}
 
 	function resetBoard() {
+		if (frozen) return;
+
 		selectedLetters = Array(slotCount).fill('');
 		usedKeys = [];
 	}
 
 	function shuffleLetters() {
+		if (frozen) return;
+
 		// Presentation only -- the server does not care what order we display in.
 		scrambledBank = [...letterBank].sort(() => Math.random() - 0.5).join('');
 		resetBoard();
 	}
 
 	function handleKeyPress(event: KeyboardEvent) {
-		if (showHelpModal || showPauseModal || showGiveUpModal || paused || result || !letterBank)
+		if (showHelpModal || showPauseModal || showGiveUpModal || paused || frozen || !letterBank)
 			return;
 
 		if (event.key === 'Enter') {
@@ -295,7 +437,7 @@
 			aria-label="Pause"
 			title="Pause"
 		>
-			<i class="fa-regular fa-circle-pause" aria-hidden="true"></i>
+			<CirclePause size={22} aria-hidden="true" />
 		</button>
 		<button
 			class="header-action"
@@ -304,7 +446,7 @@
 			aria-label="Give up"
 			title="Give up"
 		>
-			<i class="fa-regular fa-face-sad-tear" aria-hidden="true"></i>
+			<Frown size={22} aria-hidden="true" />
 		</button>
 		<button
 			class="header-action"
@@ -312,7 +454,7 @@
 			aria-label="How to play"
 			title="How to play"
 		>
-			<i class="fa-regular fa-circle-question" aria-hidden="true"></i>
+			<CircleQuestionMark size={22} aria-hidden="true" />
 		</button>
 	</div>
 
@@ -320,7 +462,7 @@
 
 	<div class="centered-container full-height-container board-area">
 		{#if letterBank}
-			<div class="circle-container mb-5 mt-5">
+			<div class="circle-container mb-5 mt-5" class:shaking>
 				{#each selectedLetters as letter, index}
 					<div
 						class="circle"
@@ -337,38 +479,46 @@
 						{letter}
 					</div>
 				{/each}
+
+				<!-- Sits at the ring's own centre, which is where the eye already is:
+				     the same anchor the circles are placed from, plus half a circle. -->
+				{#if refusal}
+					<div class="refusal" role="status" transition:scale={{ duration: 160, start: 0.8 }}>
+						<span class="refusal-mark"><X size={18} strokeWidth={3} aria-hidden="true" /></span>
+						<p>{refusal}</p>
+					</div>
+				{/if}
 			</div>
 
-			<div class="keyboard">
+			<!-- The dimming is tied to the run being over, not to the round trip:
+			     dimming for the length of a rejected guess reads as a flicker. -->
+			<div class="keyboard" class:frozen={!!result}>
 				{#each scrambledBank as letter, index (index)}
 					<button
 						class="key"
 						class:disabled={isDisabled(index)}
+						disabled={frozen}
 						on:click={() => letterSelected(letter, index)}
 					>
 						{letter}
 					</button>
 				{/each}
 
-				<button class="key" on:click={resetBoard} aria-label="Clear">
-					<i class="fa-solid fa-eraser"></i>
+				<button class="key" disabled={frozen} on:click={resetBoard} aria-label="Clear">
+					<Eraser size={22} aria-hidden="true" />
 				</button>
-				<button class="key" on:click={shuffleLetters} aria-label="Shuffle">
-					<i class="fa-solid fa-shuffle"></i>
+				<button class="key" disabled={frozen} on:click={shuffleLetters} aria-label="Shuffle">
+					<Shuffle size={22} aria-hidden="true" />
 				</button>
-				<button class="key" on:click={deleteLetter} aria-label="Delete">
-					<i class="fa-solid fa-delete-left"></i>
+				<button class="key" disabled={frozen} on:click={deleteLetter} aria-label="Delete">
+					<Delete size={22} aria-hidden="true" />
 				</button>
-				<button class="key enter-key" on:click={checkSolution} disabled={submitting}>
-					{#if submitting}
-						<i class="fa-solid fa-spinner fa-spin" aria-label="Checking"></i>
-					{:else}
-						Enter
-					{/if}
-				</button>
+				<button class="key enter-key" on:click={checkSolution} disabled={frozen}>Enter</button>
 			</div>
+		{:else if loadError}
+			<p>{loadError}</p>
 		{:else}
-			<p>{loadStatus}</p>
+			<Loading plain />
 		{/if}
 
 		<br />
@@ -486,22 +636,40 @@
 	  once the moment the sweep began. With `forwards` each circle keeps its
 	  normal grey until its own turn starts.
 	*/
+	/* `linear` overall: each keyframe below carries its own curve, which is what
+	   keeps the bounce from feeling metered. */
 	.circle.celebrate {
-		animation: pop var(--pop-duration, 520ms) ease-in-out var(--pop-delay, 0ms) forwards;
+		animation: pop var(--pop-duration, 480ms) linear var(--pop-delay, 0ms) forwards;
 	}
 
 	/* The shared circles are already gradient-filled, so they only need the
 	   swell -- but they still take their place in the sweep. */
 	.circle.celebrate:not(.shared) {
-		animation: pop-fill var(--pop-duration, 520ms) ease-in-out var(--pop-delay, 0ms) forwards;
+		animation: pop-fill var(--pop-duration, 480ms) linear var(--pop-delay, 0ms) forwards;
 	}
 
+	/*
+	  Each circle squishes the way the buttons do: pressed in fast, then let go
+	  and allowed to spring back through an overshoot. Swelling outwards first
+	  is what made it read as a stiff pulse -- a press starts by getting
+	  smaller.
+	*/
 	@keyframes pop {
 		0% {
 			transform: scale(1);
+			animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
 		}
-		45% {
-			transform: scale(1.32);
+		18% {
+			transform: scale(0.84);
+			animation-timing-function: cubic-bezier(0.17, 0.89, 0.32, 1.4);
+		}
+		52% {
+			transform: scale(1.12);
+			animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+		}
+		76% {
+			transform: scale(0.96);
+			animation-timing-function: ease-out;
 		}
 		100% {
 			transform: scale(1);
@@ -515,11 +683,25 @@
 			transform: scale(1);
 			background-image: linear-gradient(to bottom, #ff5793, #f70303);
 			color: #ffffff;
+			animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
 		}
-		45% {
-			transform: scale(1.32);
+		18% {
+			transform: scale(0.84);
 			background-image: linear-gradient(to bottom, #ff5793, #f70303);
 			color: #ffffff;
+			animation-timing-function: cubic-bezier(0.17, 0.89, 0.32, 1.4);
+		}
+		52% {
+			transform: scale(1.12);
+			background-image: linear-gradient(to bottom, #ff5793, #f70303);
+			color: #ffffff;
+			animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+		}
+		76% {
+			transform: scale(0.96);
+			background-image: linear-gradient(to bottom, #ff5793, #f70303);
+			color: #ffffff;
+			animation-timing-function: ease-out;
 		}
 		100% {
 			transform: scale(1);
@@ -600,5 +782,89 @@
 	.confirm-danger:disabled {
 		opacity: 0.6;
 		cursor: default;
+	}
+
+	/* The run is over and the board is no longer the player's to change. */
+	.keyboard.frozen :global(.key:not(.enter-key)) {
+		opacity: 0.45;
+	}
+
+	.keyboard :global(.key:disabled) {
+		cursor: default;
+	}
+
+	/* Eases rather than snaps, so even the end-of-run dimming does not blink. */
+	.keyboard :global(.key) {
+		transition: opacity 0.18s ease;
+	}
+
+	/*
+	  The refusal sits dead centre of the ring. The circles are placed from a
+	  38% anchor and are 60px wide, so their shared centre is that anchor plus
+	  half a circle -- the same sum puts this on it.
+	*/
+	.refusal {
+		position: absolute;
+		left: calc(38% + 30px);
+		top: calc(38% + 30px);
+		transform: translate(-50%, -50%);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 6px;
+		pointer-events: none;
+		z-index: 2;
+	}
+
+	.refusal-mark {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 34px;
+		height: 34px;
+		border-radius: 50%;
+		background-color: #d92038;
+		color: white;
+	}
+
+	.refusal p {
+		margin: 0;
+		font-size: 12px;
+		font-weight: 700;
+		color: #d92038;
+		white-space: nowrap;
+	}
+
+	/* A wrong answer: the ring shrugs it off and hands the board back. A short
+	   sway that decays, rather than a rattle -- it is a "no", not an alarm. */
+	.circle-container.shaking {
+		animation: shake 380ms ease-in-out;
+	}
+
+	@keyframes shake {
+		15% {
+			transform: translateX(-9px);
+		}
+		33% {
+			transform: translateX(8px);
+		}
+		51% {
+			transform: translateX(-6px);
+		}
+		69% {
+			transform: translateX(4px);
+		}
+		86% {
+			transform: translateX(-2px);
+		}
+		100% {
+			transform: translateX(0);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.circle-container.shaking {
+			animation: none;
+		}
 	}
 </style>

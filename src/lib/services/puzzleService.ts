@@ -13,11 +13,23 @@ import { api } from '$lib/services/apiClient';
 import type { PublicPuzzle } from '$lib/models/puzzle';
 
 let inFlight: Promise<PublicPuzzle> | null = null;
+let arrived: PublicPuzzle | null = null;
 
 /** Fetch (or reuse) today's puzzle. Safe to call repeatedly. */
 export function loadTodaysPuzzle(): Promise<PublicPuzzle> {
-	inFlight ??= api.get<PublicPuzzle>('/api/puzzle/today');
+	inFlight ??= api.get<PublicPuzzle>('/api/puzzle/today').then((puzzle) => (arrived = puzzle));
 	return inFlight;
+}
+
+/**
+ * The preloaded puzzle, if it has already landed.
+ *
+ * Awaiting `loadTodaysPuzzle()` costs a render even when the answer is already
+ * in hand, which is long enough for the board to flash a holding state. This
+ * lets it paint letters on its very first frame instead.
+ */
+export function preloadedTodaysPuzzle(): PublicPuzzle | null {
+	return arrived;
 }
 
 /**

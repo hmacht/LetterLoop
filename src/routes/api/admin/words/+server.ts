@@ -33,7 +33,7 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 		case 'usage': {
 			const word = url.searchParams.get('word');
 			if (!word) throw error(400, '`word` is required.');
-			return json({ word, count: await loopService.usage(word) });
+			return json({ word, ...(await loopService.usage(word)) });
 		}
 
 		default:

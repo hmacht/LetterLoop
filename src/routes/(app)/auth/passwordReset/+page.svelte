@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { Mail } from 'lucide-svelte';
+
   import logo_src from '$lib/images/logo.png';
   import { resetPassword } from '$lib/services/authService';
   import { Alert } from 'flowbite-svelte';
@@ -85,7 +87,7 @@
 
     {#if successMessage}
       <Alert color="green" class="mb-5 mt-3">
-        <i class="fa-regular fa-envelope"></i>
+        <Mail size={26} />
         {successMessage}
       </Alert>
     {/if}

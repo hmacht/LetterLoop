@@ -9,7 +9,7 @@ import { error } from '@sveltejs/kit';
 import * as puzzles from '$lib/server/repositories/puzzleRepository';
 import { isWord } from '$lib/server/dictionary';
 import { DEFAULT_WORD_LENGTH, formatLoop, hasLoopShape, isSWord } from '$lib/utils/loop';
-import { shiftDayKey, toDayKey } from '$lib/utils/gameDate';
+import { daysBetween, shiftDayKey, toDayKey } from '$lib/utils/gameDate';
 import wordList from '../../../../static/wordlists/prime.txt?raw';
 import type { PuzzleRecord } from '$lib/models/puzzle';
 
@@ -51,14 +51,42 @@ export function isValidLoop(primary: string, secondary: string): boolean {
 	return hasLoopShape(a, b) && isWord(a) && isWord(b);
 }
 
-export async function usage(word: string): Promise<number> {
-	return puzzles.countWordUsage(word.trim().toLowerCase());
+export interface WordUsage {
+	/** How many published days have used this word. */
+	count: number;
+	/** Day key of the most recent use that has already run, or null. */
+	lastUsed: string | null;
 }
 
-/** Puzzles scheduled from yesterday onward, so editors can see the queue. */
+/**
+ * How often a word has run, and when it last did.
+ *
+ * Days still in the queue are excluded from `lastUsed`: a word scheduled for
+ * next week has not been seen by anyone yet, so it cannot be the reason today's
+ * loop feels familiar.
+ */
+export async function usage(word: string): Promise<WordUsage> {
+	const dayKeys = await puzzles.findWordUsage(word.trim().toLowerCase());
+	const today = toDayKey();
+
+	// Picked by comparison rather than by sorting: `daysBetween` reads as a
+	// distance, and using it as a comparator quietly orders the wrong way round.
+	let lastUsed: string | null = null;
+	for (const dayKey of dayKeys) {
+		if (daysBetween(dayKey, today) < 0) continue; // Still in the queue.
+		if (!lastUsed || daysBetween(lastUsed, dayKey) > 0) lastUsed = dayKey;
+	}
+
+	return { count: dayKeys.length, lastUsed };
+}
+
+/** How far back the queue reaches, so editors can see what just ran. */
+const QUEUE_LOOKBACK_DAYS = 3;
+
+/** Puzzles from a few days back onward, so editors can see the queue in context. */
 export async function upcoming(): Promise<Array<PuzzleRecord & { dayKey: string }>> {
 	const from = new Date();
-	from.setDate(from.getDate() - 1);
+	from.setDate(from.getDate() - QUEUE_LOOKBACK_DAYS);
 	return puzzles.findPublishedFrom(from.toISOString());
 }
 

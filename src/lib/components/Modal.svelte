@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { X } from 'lucide-svelte';
+
 	import Toast from '$lib/components/Toast.svelte';
 
 	export let showModal: boolean;
@@ -61,7 +63,7 @@
 
 				{#if !hide_close}
 					<button class="modal-close" on:click={() => dialog.close()} aria-label="Close">
-						<i class="fa-solid fa-xmark"></i>
+						<X size={20} />
 					</button>
 				{/if}
 			</div>
