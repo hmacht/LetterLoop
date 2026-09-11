@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+
+	import Button from '$lib/components/ui/Button.svelte';
 	import logo_src from '$lib/images/logo.png';
 	import loop_podeum from '$lib/images/loop_icons/loop_podeum.png';
 	import { emailHasAccount, loginWithEmail, signUpWithEmail } from '$lib/services/authService';
@@ -119,9 +121,9 @@
 			/>
 		{/if}
 
-		<button class="btn" type="submit" disabled={!canSubmit}>
+		<Button class="btn" type="submit" disabled={!canSubmit}>
 			{loading ? 'Loading...' : actionLabel}
-		</button>
+		</Button>
 	</form>
 
 	{#if errorMessage}
@@ -158,7 +160,7 @@
 	.auth-header {
 		font-size: 28px;
 		margin: 3px 0 1.5rem 0;
-		color: black;
+		color: var(--ink);
 		font-weight: 500;
 		font-family: 'Playfair Display', serif;
 		text-align: center;
@@ -207,22 +209,11 @@
 		margin-left: 10px;
 	}
 
-	.btn {
+	/* Layout only -- the look comes from the shared button. */
+	:global(.btn) {
 		width: 78%;
 		max-width: 300px;
-		padding: 15px;
-		background-image: -webkit-linear-gradient(top, #ff4f87, #fc2f4f);
-		background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
-		color: white;
-		border: none;
-		border-radius: 25px;
-		cursor: pointer;
 		margin-top: 5px;
-	}
-
-	.btn:disabled {
-		opacity: 0.5;
-		cursor: default;
 	}
 
 	.error {
@@ -285,7 +276,7 @@
 	}
 
 	.legal a {
-		color: black;
+		color: var(--ink);
 		text-decoration: underline;
 	}
 </style>

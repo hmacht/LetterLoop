@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { CircleAlert, CircleQuestionMark, Share2, Smile } from 'lucide-svelte';
 
+	import Button from '$lib/components/ui/Button.svelte';
 	import Stats from '$lib/components/Stats.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import PromotionLink from '$lib/components/PromotionLink.svelte';
@@ -25,6 +26,8 @@
 	import loopCheck from '$lib/images/loop_icons/loop_check.png';
 	import loopX from '$lib/images/loop_icons/loop_x.png';
 	import loopPodeum from '$lib/images/loop_icons/loop_podeum.png';
+	import redditBubble from '$lib/images/redit/redit_letterloop_bubble.png';
+	import redditIcon from '$lib/images/redit/Reddit_Icon_FullColor.png';
 
 	import type { GameResult } from '$lib/services/gameService';
 	import type { AllTimeBoard, DailyLeaderboard } from '$lib/models/leaderboard';
@@ -170,7 +173,7 @@
 					<p class="signup-sub">
 						Track your streak, your average time and get your name on the leaderboard.
 					</p>
-					<a class="signup-button" href="/auth">Create a free account</a>
+					<Button href="/auth" block>Create a free account</Button>
 					<a class="signup-login" href="/auth">Already registered? Log in</a>
 				</div>
 			{/if}
@@ -208,10 +211,10 @@
 				</section>
 			{/if}
 
-			<button class="share-button" on:click={share}>
+			<Button class="share-button" on:click={share}>
 				<Share2 size={16} aria-hidden="true" />
 				Share
-			</button>
+			</Button>
 
 			{#if profile}
 				<button class="profile-trigger" on:click={() => (showProfile = true)}>
@@ -333,6 +336,23 @@
 
 			<div class="block-spacer-100"></div>
 		</div>
+
+		<!--
+			Both marks ship; CSS picks one. Swapping the `src` on a breakpoint would
+			leave the other file unrequested until the viewport changed, which reads
+			as a flash of nothing on a rotate.
+		-->
+		<a
+			class="reddit"
+			href="https://www.reddit.com/r/letterloop/"
+			target="_blank"
+			rel="noopener"
+			aria-label="LetterLoop on Reddit"
+			title="LetterLoop on Reddit"
+		>
+			<img class="reddit-wide" src={redditBubble} alt="" />
+			<img class="reddit-narrow" src={redditIcon} alt="" />
+		</a>
 	</main>
 {/if}
 
@@ -436,7 +456,7 @@
 		font-size: 27px;
 		font-weight: 700;
 		line-height: 1.2;
-		color: black;
+		color: var(--ink);
 		margin: 0 0 1.75rem 0;
 	}
 
@@ -462,8 +482,48 @@
 	.save-failed p {
 		font-size: 14px;
 		line-height: 1.45;
-		color: black;
+		color: var(--ink);
 		margin: 0;
+	}
+
+	/* Pinned to the page rather than the results column, so it holds the corner
+	   however far the board scrolls. The wide mark is a speech bubble, the narrow
+	   one just the Reddit face. */
+	.reddit {
+		position: fixed;
+		right: 18px;
+		bottom: 18px;
+		z-index: 20;
+		line-height: 0;
+	}
+
+	/* Each mark owns its own `display`. A shared `.reddit img { display: block }`
+	   would outrank these by one element selector and show both at once. */
+	.reddit-wide {
+		display: block;
+		width: 130px;
+		height: auto;
+	}
+
+	.reddit-narrow {
+		display: none;
+		width: 46px;
+		height: 46px;
+	}
+
+	@media (max-width: 640px) {
+		.reddit {
+			right: 14px;
+			bottom: 14px;
+		}
+
+		.reddit-wide {
+			display: none;
+		}
+
+		.reddit-narrow {
+			display: block;
+		}
 	}
 
 	.block {
@@ -475,7 +535,7 @@
 		font-size: 12px;
 		font-weight: 700;
 		letter-spacing: 1px;
-		color: black;
+		color: var(--ink);
 		margin: 0;
 	}
 
@@ -484,7 +544,7 @@
 		font-weight: 800;
 		letter-spacing: -1px;
 		margin: 6px 0 0 0;
-		color: black;
+		color: var(--ink);
 		font-variant-numeric: tabular-nums;
 	}
 
@@ -496,31 +556,20 @@
 	.body-text {
 		font-size: 18px;
 		line-height: 1.45;
-		color: black;
+		color: var(--ink);
 		margin-top: 6px;
 	}
 
 	.solution a {
-		color: black;
+		color: var(--ink);
 		text-decoration: underline;
 		text-transform: capitalize;
 	}
 
-	.share-button {
-		background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
-		color: white;
-		border: none;
-		border-radius: 999px;
+	/* Layout only -- the look comes from the shared button. */
+	:global(.share-button) {
 		width: 60%;
 		max-width: 240px;
-		height: 54px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 10px;
-		font-size: 16px;
-		font-weight: 600;
-		cursor: pointer;
 		margin: 0.5rem auto 1.75rem auto;
 	}
 
@@ -578,7 +627,7 @@
 		font-weight: 800;
 		line-height: 1.1;
 		letter-spacing: -0.5px;
-		color: black;
+		color: var(--ink);
 		margin: 0;
 	}
 
@@ -588,7 +637,7 @@
 		grid-column: 1 / -1;
 		font-size: 17px;
 		line-height: 1.3;
-		color: black;
+		color: var(--ink);
 		margin: 7px 0 0 0;
 		text-align: center;
 	}
@@ -651,29 +700,13 @@
 		font-family: 'Playfair Display', serif;
 		font-size: 17px;
 		line-height: 1.35;
-		color: black;
+		color: var(--ink);
 		margin: 0;
-	}
-
-	.signup-button {
-		display: block;
-		width: 100%;
-		padding: 15px 16px;
-		border-radius: 999px;
-		background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
-		color: white;
-		text-decoration: none;
-		font-size: 16px;
-		font-weight: 600;
-	}
-
-	.signup-button:hover {
-		text-decoration: none;
 	}
 
 	.signup-login {
 		font-size: 14px;
-		color: black;
+		color: var(--ink);
 		text-decoration: underline;
 	}
 
@@ -694,7 +727,7 @@
 		cursor: pointer;
 		font-size: 14px;
 		line-height: 1.45;
-		color: black;
+		color: var(--ink);
 		text-align: left;
 	}
 
@@ -733,7 +766,7 @@
 		cursor: pointer;
 		font-size: 14px;
 		line-height: 1.45;
-		color: black;
+		color: var(--ink);
 		text-align: left;
 	}
 
@@ -752,7 +785,7 @@
 
 	.tagline {
 		font-size: 12px;
-		color: black;
+		color: var(--ink);
 	}
 
 	.thanks {
@@ -762,7 +795,7 @@
 		gap: 7px;
 		margin: 8px 0 0 0;
 		font-size: 14px;
-		color: black;
+		color: var(--ink);
 	}
 
 	.help-list {

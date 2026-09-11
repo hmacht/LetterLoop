@@ -7,7 +7,7 @@
   .text-container {
     max-width: 800px;
     padding: 0 2rem 0 2rem;
-    color: black;
+    color: var(--ink);
   }
   </style>
 

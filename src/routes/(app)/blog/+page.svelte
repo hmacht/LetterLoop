@@ -25,7 +25,7 @@
 
 <style>
   .blog-link {
-    color: black;
+    color: var(--ink);
   }
 
   .blog-title {

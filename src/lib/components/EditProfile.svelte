@@ -6,6 +6,7 @@
 	 * Both save in one PATCH, so the modal closes on one round trip rather than
 	 * saving the name and the colour separately.
 	 */
+	import Button from '$lib/components/ui/Button.svelte';
 	import { profileStore, setProfile } from '$lib/stores/profileStore';
 	import { updateMyProfile } from '$lib/services/profileService';
 	import { AVATAR_CHOICES } from '$lib/images/avatars';
@@ -83,9 +84,9 @@
 			<p class="error">{errorMessage}</p>
 		{/if}
 
-		<button class="save" type="submit" disabled={!canSave}>
+		<Button class="save" type="submit" block disabled={!canSave}>
 			{saving ? 'Saving...' : 'Save changes'}
-		</button>
+		</Button>
 	</form>
 {:else}
 	<p class="hint">Your profile could not be loaded.</p>
@@ -110,7 +111,7 @@
 		background-color: white;
 		font: inherit;
 		font-size: 16px;
-		color: black;
+		color: var(--ink);
 	}
 
 	.input:focus {
@@ -163,25 +164,8 @@
 		margin: 1.1rem 0 0 0;
 	}
 
-	.save {
-		display: block;
-		width: 100%;
+	/* Layout only -- the look comes from the shared button. */
+	:global(.save) {
 		margin-top: 1.75rem;
-		padding: 14px 16px;
-		border: none;
-		border-radius: 999px;
-		background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
-		color: white;
-		font: inherit;
-		font-size: 16px;
-		font-weight: 600;
-		cursor: pointer;
-	}
-
-	.save:disabled {
-		background-image: none;
-		background-color: #e8d5d8;
-		color: #a9979a;
-		cursor: default;
 	}
 </style>

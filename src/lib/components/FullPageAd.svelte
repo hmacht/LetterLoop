@@ -1,6 +1,8 @@
 <script lang="ts">
   import { ArrowRight } from 'lucide-svelte';
 
+  import Button from '$lib/components/ui/Button.svelte';
+
   import { onMount } from 'svelte';
 
   export let showAd: boolean;
@@ -57,7 +59,7 @@
     gap: 7px;
     margin-top: 2rem;
     font-weight: 700;
-    color: black;
+    color: var(--ink);
   }
 
   /* Stands in for the digit, so there is one count, not two. */
@@ -69,30 +71,18 @@
     height: 26px;
     flex-shrink: 0;
     border-radius: 50%;
-    background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
+    background-image: var(--brand-gradient);
     color: white;
     font-size: 13px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
 
-  .skip-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 15px 16px;
-    background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
-    color: white;
-    border: none;
-    border-radius: 999px;
+  /* Layout only -- the look comes from the shared button. */
+  :global(.skip-btn) {
     width: 300px;
     max-width: 100%;
     margin-top: 2rem;
-    font: inherit;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
   }
 
 </style>
@@ -100,10 +90,10 @@
 <div class="main-container full-height-container">
   <div class="ad-container">
     {#if canSkip}
-      <button class="skip-btn" on:click={skipAd}>
+      <Button class="skip-btn" on:click={skipAd}>
         Skip &amp; View Stats
         <ArrowRight size={16} aria-hidden="true" />
-      </button>
+      </Button>
     {:else}
       <p class="waiting">
         <span>Skip available in</span>

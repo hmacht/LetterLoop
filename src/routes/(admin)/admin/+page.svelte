@@ -18,6 +18,7 @@
 	} from 'lucide-svelte';
 	import { Confetti } from 'svelte-confetti';
 
+	import Button from '$lib/components/ui/Button.svelte';
 	import DictionaryLink from '$lib/components/DictionaryLink.svelte';
 	import {
 		primaryOptions,
@@ -401,19 +402,20 @@
 	<p class="step">First word</p>
 	<div class="chips">
 		{#each primaryWords as word (word)}
-			<button
-				class="chip"
-				class:picked={selectedPrimary === word}
+			<Button
+				variant="outline"
+				size="sm"
+				selected={selectedPrimary === word}
 				on:click={() => primarySelected(word)}
 			>
 				{word}
-			</button>
+			</Button>
 		{/each}
 
-		<button class="chip shuffle" on:click={shufflePrimaryWords}>
+		<Button variant="quiet" size="sm" on:click={shufflePrimaryWords}>
 			<Shuffle size={14} aria-hidden="true" />
 			Shuffle
-		</button>
+		</Button>
 	</div>
 
 	{#if selectedPrimary}
@@ -421,13 +423,14 @@
 		{#if secondaryWords.length > 0}
 			<div class="chips">
 				{#each secondaryWords as word (word)}
-					<button
-						class="chip"
-						class:picked={selectedSecondary === word}
+					<Button
+						variant="outline"
+						size="sm"
+						selected={selectedSecondary === word}
 						on:click={() => secondarySelected(word)}
 					>
 						{word}
-					</button>
+					</Button>
 				{/each}
 			</div>
 		{:else}
@@ -496,9 +499,9 @@
 			</div>
 		{/if}
 
-		<button class="lift" disabled={!selectionComplete || submitting} on:click={handleSubmit}>
+		<Button block disabled={!selectionComplete || submitting} on:click={handleSubmit}>
 			{submitting ? 'Scheduling...' : 'Schedule this loop'}
-		</button>
+		</Button>
 	</div>
 </section>
 
@@ -549,7 +552,7 @@
 		font-weight: 800;
 		letter-spacing: -0.5px;
 		line-height: 1.1;
-		color: black;
+		color: var(--ink);
 		margin: 0;
 		text-align: left;
 	}
@@ -571,7 +574,7 @@
 		line-height: 2;
 		letter-spacing: 0.5px;
 		text-transform: uppercase;
-		color: #3a2c2e;
+		color: var(--ink);
 		margin: 0 0 1.6rem 0;
 		/* The spacing between facts lives in the typed text itself now. */
 		white-space: pre-wrap;
@@ -621,7 +624,7 @@
 		padding: 2px 11px;
 		border-radius: 999px;
 		background-color: white;
-		color: #2b2022;
+		color: var(--ink);
 		font-weight: 700;
 		white-space: nowrap;
 	}
@@ -641,7 +644,7 @@
 		display: inline-block;
 		padding: 12px 24px;
 		background-color: white;
-		color: #2b2022;
+		color: var(--ink);
 		font-weight: 700;
 		white-space: nowrap;
 		/* Thirteen long points -- enough to read as a burst, few enough that each
@@ -679,7 +682,7 @@
 	/* Underlined rather than pilled: it is a deadline, not a stat. */
 	.underline {
 		font-weight: 700;
-		color: #2b2022;
+		color: var(--ink);
 		text-decoration: underline;
 		text-underline-offset: 3px;
 		white-space: nowrap;
@@ -703,7 +706,7 @@
 	   14px line with an icon beside it. */
 	.powered {
 		font-size: 12px;
-		color: black;
+		color: var(--ink);
 	}
 
 	.thanks {
@@ -713,7 +716,7 @@
 		gap: 6px;
 		margin: 5px 0 0 0;
 		font-size: 12px;
-		color: black;
+		color: var(--ink);
 	}
 
 	.thanks :global(.heart) {
@@ -735,7 +738,7 @@
 		font-size: 18px;
 		font-weight: 800;
 		letter-spacing: -0.2px;
-		color: black;
+		color: var(--ink);
 		margin: 0;
 	}
 
@@ -777,43 +780,6 @@
 		gap: 9px;
 	}
 
-	/* Every button on the page is lifted: a hard shadow underneath that the
-	   button presses down into when it is clicked. */
-	.chip {
-		border: 2px solid #f0d3d7;
-		border-radius: 999px;
-		background-color: white;
-		padding: 9px 16px;
-		font: inherit;
-		font-size: 15px;
-		font-weight: 600;
-		color: #3a2c2e;
-		text-transform: lowercase;
-		cursor: pointer;
-		box-shadow: 0 3px 0 #f4d9dd;
-		transition:
-			transform 0.08s ease,
-			box-shadow 0.08s ease;
-	}
-
-	.chip:active {
-		transform: translateY(3px);
-		box-shadow: 0 0 0 #f4d9dd;
-	}
-
-	.chip.picked {
-		background-image: linear-gradient(to bottom, #ff5793, #fc2f4f);
-		border-color: #fc2f4f;
-		color: white;
-		box-shadow: 0 3px 0 #c9203c;
-	}
-
-	.chip.shuffle {
-		border-style: dashed;
-		color: #b0868c;
-		box-shadow: none;
-	}
-
 	.empty {
 		font-size: 14px;
 		color: #8a7477;
@@ -839,7 +805,7 @@
 	.selection-words {
 		font-size: 20px;
 		font-weight: 700;
-		color: black;
+		color: var(--ink);
 		margin: 4px 0 0 0;
 	}
 
@@ -849,7 +815,7 @@
 	}
 
 	.selection-words :global(a) {
-		color: black;
+		color: var(--ink);
 		text-decoration: underline;
 	}
 
@@ -886,8 +852,11 @@
 
 	/* ---- scheduled! ---- */
 
+	/* Carries the spacing the submit button used to own itself, now that the
+	   button is a shared component with no opinion about margins. */
 	.launcher {
 		position: relative;
+		margin-top: 1.6rem;
 	}
 
 	/* A point source at the top of the button. `pointer-events: none` so the
@@ -952,38 +921,6 @@
 		}
 	}
 
-	.lift {
-		display: block;
-		width: 100%;
-		margin-top: 1.6rem;
-		padding: 15px 16px;
-		border: none;
-		border-radius: 999px;
-		background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
-		color: white;
-		font: inherit;
-		font-size: 16px;
-		font-weight: 700;
-		cursor: pointer;
-		box-shadow: 0 5px 0 #c9203c;
-		transition:
-			transform 0.08s ease,
-			box-shadow 0.08s ease;
-	}
-
-	.lift:active:not(:disabled) {
-		transform: translateY(5px);
-		box-shadow: 0 0 0 #c9203c;
-	}
-
-	.lift:disabled {
-		background-image: none;
-		background-color: #e8d5d8;
-		color: #a9979a;
-		box-shadow: 0 5px 0 #dcc4c8;
-		cursor: default;
-	}
-
 	.flash {
 		margin: 1.1rem 0 0 0;
 		padding: 12px 14px;
@@ -1046,7 +983,7 @@
 	.words {
 		font-size: 16px;
 		font-weight: 700;
-		color: black;
+		color: var(--ink);
 		text-transform: lowercase;
 	}
 </style>

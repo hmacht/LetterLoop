@@ -29,13 +29,13 @@
     font-size: 18px;
     font-weight: 500;
     margin: 0;
-    color: black;
+    color: var(--ink);
   }
   .subtitle {
     font-size: 14px;
     color: #666;
     margin: 0;
-    color: black;
+    color: var(--ink);
   }
   .logo {
     padding-left: 0.6rem;

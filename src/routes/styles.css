@@ -13,9 +13,57 @@
 	--color-bg-2: hsl(224, 44%, 95%);
 	--color-theme-1: #ff3e00;
 	--color-theme-2: #4075a6;
-	--color-text: rgba(0, 0, 0, 0.7);
+	--color-text: #3d0b0b;
 	--column-width: 42rem;
 	--column-margin-top: 4rem;
+
+	/*
+	  ---- the style guide ----
+
+	  Everything below is the vocabulary the interface is built from. Components
+	  read these rather than repeating hex codes, so the game and the admin
+	  portal stay the same product.
+
+	  The house style for anything pressable is "lifted": a solid shadow sitting
+	  directly under the control, which the control presses down into when it is
+	  used. `--press` is how far it travels, and it is always the same number as
+	  the shadow's offset -- that is what makes it look like it is bottoming out
+	  rather than just sliding.
+	*/
+
+	/* Brand */
+	--brand: #fc365a;
+	--brand-deep: #c9203c;
+	--brand-gradient: linear-gradient(to bottom, #ff4f87, #fc2f4f);
+	--brand-soft: #ffe9e9;
+	/* The lift under an unfilled brand control: still red, just quieter. A
+	   neutral shadow there reads as grey trim next to the red edge. */
+	--brand-tint: #f9aebc;
+
+	/* Ink */
+	/* Nothing in the interface is pure black -- text is this near-black plum, so
+	   it sits in the same family as the pink the game is built from. */
+	--ink: #3d0b0b;
+	--ink-soft: #4a3a3c;
+	--ink-muted: #8a7477;
+	--ink-faint: #b0868c;
+
+	/* Surfaces and edges */
+	--surface: #ffffff;
+	/* A hint of the brand pink under the board -- far paler than the menu's, so
+	   the white keys still stand off it. */
+	--board-wash: #fff6f6;
+	--edge: #f0d3d7;
+	--edge-soft: #f4d9dd;
+	--hairline: rgba(0, 0, 0, 0.08);
+
+	/* Pressable */
+	--press: 4px;
+	--press-small: 3px;
+	--lift-ease: 0.08s ease;
+	--radius-pill: 999px;
+	--radius-card: 26px;
+
 	font-family: var(--font-body);
 	color: var(--color-text);
 }
@@ -24,7 +72,9 @@ body {
 	min-height: 100vh;
 	margin: 0;
 	background-attachment: fixed;
-	background-color: rgb(241, 237, 237);
+	/* The page behind everything is the same pink as the menu, so nothing shows
+	   grey through a short page or past the bottom of a scroll. */
+	background-color: var(--brand-soft);
 	background-size: 100vw 100vh;
 }
 
@@ -173,25 +223,30 @@ button,
 	padding: 40px;
 }
 
+/* The ring reads as the empty version of a key: same size, same edge colour, no
+   lift -- nothing here is pressable. */
 .circle {
 	position: absolute;
 	width: 60px;
 	height: 60px;
 	border-radius: 50%;
 	background-color: transparent;
-	border: 2px solid #dfdbdb;
+	border: 2px solid var(--edge);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	text-transform: uppercase;
 	font-size: 25px;
 	font-weight: 600;
+	transition:
+		background-color 0.12s ease,
+		border-color 0.12s ease;
 }
 
 .filled {
-	background-color: #e2dcdc;
-	color: rgb(0, 0, 0);
-	border: none;
+	background-color: var(--surface);
+	border-color: var(--edge-soft);
+	color: var(--ink);
 }
 
 .shared {
@@ -207,11 +262,15 @@ button,
 	margin-top: 35px;
 }
 
+/* Lifted like every other control -- see the style guide block at the top. The
+   letters are round rather than pill-shaped, but the press is the same. */
 .key {
 	width: 60px;
 	height: 60px;
+	border: none;
 	border-radius: 50%;
-	background-color: #e2dcdc;
+	background-color: var(--surface);
+	box-shadow: 0 var(--press) 0 var(--edge-soft);
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -219,12 +278,28 @@ button,
 	text-transform: uppercase;
 	font-size: 25px;
 	font-weight: 600;
+	color: var(--ink);
+	transition:
+		transform var(--lift-ease),
+		box-shadow var(--lift-ease);
 }
 
+.key:active:not(:disabled) {
+	transform: translateY(var(--press));
+	box-shadow: 0 0 0 var(--edge-soft);
+}
+
+/* Enter is the board's main action, so it takes the solid treatment. */
 .enter-key {
 	font-size: 12px;
-	background-color: transparent !important;
-	border: 2px solid #dfdbdb;
+	background-image: var(--brand-gradient);
+	border: 2px solid var(--brand-deep);
+	color: var(--surface);
+	box-shadow: 0 var(--press) 0 var(--brand-deep);
+}
+
+.enter-key:active:not(:disabled) {
+	box-shadow: 0 0 0 var(--brand-deep);
 }
 
 .disabled {
@@ -263,7 +338,7 @@ button,
 	font-size: 22px;
 	font-weight: 500;
 	font-style: normal;
-	color: black;
+	color: var(--ink);
 	padding-left: 10px;
 	padding-bottom: 3px;
 }
@@ -275,11 +350,11 @@ button,
 	font-size: 30px;
 	font-weight: 500;
 	font-style: normal;
-	color: black;
+	color: var(--ink);
 }
 
 .title-link {
-	color: black;
+	color: var(--ink);
 }
 
 .date {

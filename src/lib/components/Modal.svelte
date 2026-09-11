@@ -131,7 +131,7 @@
 		font-family: 'Playfair Display', serif;
 		font-size: 24px;
 		font-weight: 500;
-		color: black;
+		color: var(--ink);
 		margin: 0;
 		line-height: 1.2;
 	}

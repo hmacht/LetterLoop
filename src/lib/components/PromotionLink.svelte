@@ -5,17 +5,29 @@
 </script>
 
 <style>
+  /* Lifted like every button on the page -- it is the one thing here asking to
+     be clicked, so it should look pressable. The lift is the card's own dark
+     green rather than the usual pink, since the card brings its own colour. */
   .kickstarter-container {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 1.5em;
-    border: 1px solid #034752;
-    background-color: #09CE78;
+    border: 2px solid #14532d;
+    background-color: #09ce78;
     border-radius: 30px;
     margin: 1rem auto 0 auto;
     cursor: pointer;
+    box-shadow: 0 var(--press) 0 #14532d;
+    transition:
+      transform var(--lift-ease),
+      box-shadow var(--lift-ease);
+  }
+
+  .kickstarter-container:active {
+    transform: translateY(var(--press));
+    box-shadow: 0 0 0 #14532d;
   }
 
   .kickstarter-link {
@@ -31,13 +43,13 @@
     font-size: 18px;
     font-weight: 500;
     margin: 0;
-    color: black;
+    color: var(--ink);
   }
   .subtitle {
     font-size: 14px;
     color: #666;
     margin: 0;
-    color: black;
+    color: var(--ink);
     max-width: 200px;
   }
 

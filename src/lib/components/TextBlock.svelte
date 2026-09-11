@@ -9,7 +9,7 @@
   .text-container {
     max-width: 800px;
     padding: 0 2rem 0 2rem;
-    color: black;
+    color: var(--ink);
   }
 
   .text-container .header {
@@ -19,7 +19,7 @@
     font-size: 30px !important;
     font-weight: 500;
     font-style: normal;
-    color: black;
+    color: var(--ink);
   }
 
   :global(.text-container p) {

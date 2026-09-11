@@ -11,6 +11,7 @@
 		X
 	} from 'lucide-svelte';
 
+	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import Timer from '$lib/components/Timer.svelte';
@@ -562,9 +563,9 @@
 	title="Paused"
 	subtitle="Your timer is stopped and the board is hidden. Nothing counts against you until you resume."
 >
-	<button class="share-button" on:click={resumeGame} disabled={pauseBusy}>
+	<Button block on:click={resumeGame} disabled={pauseBusy}>
 		{pauseBusy ? 'Resuming...' : 'Resume'}
-	</button>
+	</Button>
 </Modal>
 
 <style>
@@ -582,6 +583,14 @@
 
 	/* Drops the board away from the timer cluster so the two read as separate
 	   things rather than one stack. */
+	/* The board sits on the same pink wash as the menu and the results, just
+	   paler -- the white keys and the ring need to read against it. */
+	main {
+		display: block;
+		min-height: 100vh;
+		background-color: var(--board-wash);
+	}
+
 	.board-area {
 		padding-top: 28px;
 	}
@@ -611,7 +620,7 @@
 	@media (hover: hover) {
 		.header-action:hover:not(:disabled) {
 			background-color: rgba(0, 0, 0, 0.07);
-			color: #000;
+			color: var(--ink);
 		}
 	}
 
@@ -727,26 +736,6 @@
 		font-variant-numeric: tabular-nums;
 		padding-right: 4px;
 		color: #333;
-	}
-
-	.share-button {
-		background-image: -webkit-linear-gradient(top, #ff4f87, #fc2f4f);
-		background-image: linear-gradient(to bottom, #ff4f87, #fc2f4f);
-		color: white;
-		border-radius: 20px;
-		width: 100%;
-		height: 56px;
-		border: none;
-		text-transform: uppercase;
-		font-size: 12px;
-		font-weight: 600;
-		letter-spacing: 1px;
-		cursor: pointer;
-	}
-
-	.share-button:disabled {
-		opacity: 0.6;
-		cursor: default;
 	}
 
 	.confirm-actions {

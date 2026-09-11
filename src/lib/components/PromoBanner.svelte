@@ -13,7 +13,7 @@
   }
 
   a {
-    color: black
+    color: var(--ink);
   }
 </style>
 

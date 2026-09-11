@@ -62,7 +62,7 @@
   .menu-header {
     font-size: 30px;
     margin: 3px;
-    color: black;
+    color: var(--ink);
     font-weight: 500;
     font-family: "Playfair Display", serif;
   }

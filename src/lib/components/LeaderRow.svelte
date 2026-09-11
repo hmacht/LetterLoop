@@ -114,7 +114,7 @@
 
 	.name {
 		font-weight: 500;
-		color: black;
+		color: var(--ink);
 		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
